@@ -1,0 +1,355 @@
+// Medical Sidebar - Integración cuidadosa con Bamboo
+
+.medical-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  transition: width 0.3s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 40;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+
+  &.collapsed {
+    overflow: visible;
+  }
+
+  .sidebar-header {
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+    color: white;
+
+    .sidebar-title {
+      color: white;
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .toggle-button {
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+    }
+  }
+
+  .search-section {
+    padding: 1rem;
+    position: relative;
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      transition: border-color 0.2s;
+      font-family: 'Montserrat', sans-serif;
+
+      &:focus {
+        outline: none;
+        border-color: #0066cc;
+        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+      }
+
+      &:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+      }
+    }
+
+    .search-loading {
+      position: absolute;
+      right: 1.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+  }
+
+  .collapsed-search {
+    padding: 0.5rem;
+    
+    .search-icon-button {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.25rem;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: #004d99;
+      }
+    }
+  }
+
+  .patients-container {
+    padding: 1rem;
+
+    .section-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #6b7280;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    .patients-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    // ✅ ESTILOS BAMBOO CARDS - REQUERIMIENTO OBLIGATORIO DEL CLIENTE (REACTIVADO v1.5.5)
+    .patient-card-bamboo {
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      
+      // Override Bamboo card styles for medical theme
+      ::ng-deep bmb-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.75rem;
+        background-color: #ffffff;
+        
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+          border-color: #0066cc;
+        }
+      }
+
+      &.active {
+        ::ng-deep bmb-card {
+          border-color: #0066cc;
+          background-color: #f0f7ff;
+          box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
+        }
+      }
+    }
+
+    // 🎯 ESTILOS HTML CARDS - FALLBACK TEMPORAL MIENTRAS SE ARREGLA BAMBOO
+    .patient-card-html {
+      padding: 0.75rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background-color: #ffffff;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 0.75rem;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+        border-color: #0066cc;
+      }
+
+      &.active {
+        border-color: #0066cc;
+        background-color: #f0f7ff;
+        box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
+      }
+    }
+
+    // Estilos para bmb-card con override
+    ::ng-deep .patient-card-wrapper {
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 0.5rem;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15) !important;
+      }
+
+      &.active {
+        border-color: #0066cc !important;
+        background-color: #f0f7ff !important;
+      }
+
+      .bmb-card {
+        padding: 0.75rem !important;
+        border: 1px solid #e5e7eb !important;
+        background-color: #ffffff !important;
+      }
+    }
+
+    .patient-content {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .patient-avatar {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 0.875rem;
+      flex-shrink: 0;
+    }
+
+    .patient-info {
+      flex-grow: 1;
+      min-width: 0;
+
+      .patient-name {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #1f2937;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .patient-id {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin: 0;
+        margin-top: 0.125rem;
+      }
+    }
+
+    .active-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background-color: #10b981;
+      color: white;
+      border-radius: 4px;
+      font-weight: 500;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .active-badge-simple {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background-color: #10b981;
+      color: white;
+      border-radius: 4px;
+      font-weight: 500;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem 1rem;
+
+      .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      .empty-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+      }
+    }
+
+    .collapsed-patients {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: center;
+
+      .collapsed-patient-button {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid #e5e7eb;
+        background-color: #f9fafb;
+        color: #374151;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.875rem;
+
+        &:hover {
+          background-color: #f3f4f6;
+          border-color: #0066cc;
+        }
+
+        &.active {
+          background-color: #0066cc;
+          color: white;
+          border-color: #0066cc;
+        }
+      }
+
+      .collapsed-medical-indicator {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+        font-size: 1.5rem;
+      }
+    }
+  }
+}
+
+// Overrides globales para componentes de Bamboo en modo médico
+::ng-deep {
+  // Bamboo Badge personalizado para TecSalud
+  .bmb-badge--success {
+    background-color: #10b981 !important;
+    color: white !important;
+  }
+
+  // Bamboo Card personalizado para pacientes
+  .bmb-card {
+    border-radius: 8px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  // Tema TecSalud para componentes Bamboo
+  .medical-sidebar {
+    --bmb-primary-color: #0066cc;
+    --bmb-secondary-color: #004d99;
+    --bmb-success-color: #10b981;
+  }
+}
+
+// Responsive styles
+@media (max-width: 768px) {
+  .medical-sidebar {
+    position: fixed;
+    z-index: 50;
+    
+    &:not(.collapsed) {
+      width: 100% !important;
+      max-width: 300px;
+    }
+  }
+} 

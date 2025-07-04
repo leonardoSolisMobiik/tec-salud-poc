@@ -1,0 +1,1089 @@
+# PRD - ASISTENTE VIRTUAL EXPEDIENTES CLÍNICOS TECSALUD
+## FRONTEND - MAQUETA FUNCIONAL REACT VITE
+
+**Versión:** 1.0  
+**Fecha:** junio 2025  
+**Tipo:** Prototipo Frontend Funcional  
+**Stack:** React + Vite + TypeScript + Styled Components  
+
+---
+
+## 1. OBJETIVO DEL PROTOTIPO
+
+Crear una **maqueta funcional completa** en React Vite que simule toda la experiencia de usuario del Asistente Virtual, incluyendo:
+- Interfaz visual premium (estilo Apple/Kosas)
+- Todas las interacciones y flujos de usuario
+- Simulación de respuestas del copiloto con datos mock
+- Transiciones y animaciones sofisticadas
+- Funcionalidad de voz simulada
+- Visor de PDFs funcional
+
+**IMPORTANTE:** Esta es una maqueta **sin backend real** - toda la funcionalidad será simulada con datos mock y lógica frontend.
+
+---
+
+## 2. STACK TECNOLÓGICO
+
+### 2.1 Base del Proyecto
+```bash
+# Inicialización
+npm create vite@latest tecsalud-copiloto -- --template react-ts
+cd tecsalud-copiloto
+npm install
+```
+
+### 2.2 Dependencias Principales
+```json
+{
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "styled-components": "^6.1.0",
+    "framer-motion": "^10.16.0",
+    "zustand": "^4.4.0",
+    "react-router-dom": "^6.8.0",
+    "react-speech-kit": "^3.0.0",
+    "@react-pdf-viewer/core": "^3.12.0",
+    "@react-pdf-viewer/default-layout": "^3.12.0",
+    "pdfjs-dist": "^3.4.120",
+    "react-use-gesture": "^9.1.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/styled-components": "^5.1.26",
+    "typescript": "^5.0.0",
+    "vite": "^4.4.0"
+  }
+}
+```
+
+---
+
+## 3. ARQUITECTURA DE COMPONENTES
+
+### 3.1 Estructura de Carpetas
+```
+src/
+├── components/
+│   ├── layout/
+│   │   ├── Dashboard.tsx          # Pantalla principal
+│   │   ├── Header.tsx             # Cabecera dinámica
+│   │   └── Layout.tsx             # Layout principal
+│   ├── medical/
+│   │   ├── PatientSearch.tsx      # Buscador con autocompletado
+│   │   ├── PatientContext.tsx     # Contexto visual activo
+│   │   ├── RecentPatients.tsx     # Lista de pacientes recientes
+│   │   ├── Copilot.tsx           # Chat conversacional
+│   │   └── PDFViewer.tsx         # Visor lateral de PDFs
+│   ├── ui/
+│   │   ├── Button.tsx            # Botones styled
+│   │   ├── Input.tsx             # Inputs styled
+│   │   ├── Toast.tsx             # Notificaciones toast
+│   │   ├── Badge.tsx             # Badges clickeables
+│   │   ├── LoadingSpinner.tsx    # Indicadores de carga
+│   │   └── Modal.tsx             # Modales reutilizables
+│   ├── animations/
+│   │   ├── FadeIn.tsx            # Animación fade in
+│   │   ├── SlideIn.tsx           # Animación slide
+│   │   └── Pulse.tsx             # Animación pulse
+│   └── voice/
+│       ├── VoiceCommand.tsx      # Componente de comandos de voz
+│       └── VoiceRecognition.tsx  # Hook de reconocimiento
+├── hooks/
+│   ├── usePatientSearch.ts       # Hook búsqueda de pacientes
+│   ├── useVoiceCommands.ts       # Hook comandos de voz
+│   ├── useCopilot.ts            # Hook chat copiloto
+│   ├── useToast.ts              # Hook notificaciones
+│   └── usePDFViewer.ts          # Hook visor PDF
+├── stores/
+│   ├── medicalStore.ts          # Estado médico principal
+│   ├── uiStore.ts               # Estado de UI
+│   └── voiceStore.ts            # Estado de comandos de voz
+├── data/
+│   ├── mockPatients.ts          # Datos mock de pacientes
+│   ├── mockResponses.ts         # Respuestas mock del copiloto
+│   └── mockPDFs.ts              # Referencias mock a PDFs
+├── styles/
+│   ├── theme.ts                 # Tema y colores
+│   ├── globalStyles.ts          # Estilos globales
+│   └── animations.ts            # Animaciones reutilizables
+└── utils/
+    ├── dateHelpers.ts           # Helpers de fechas
+    ├── searchHelpers.ts         # Helpers de búsqueda
+    └── voiceHelpers.ts          # Helpers de voz
+```
+
+### 3.2 Layout Principal
+
+**Ubicación:** `src/components/layout/Layout.tsx`
+
+**Estructura del Layout:**
+- **Panel Izquierdo (300px fijo):**
+  - Lista de pacientes recientes
+  - Buscador de pacientes
+  - Navegación rápida
+  
+- **Panel Central (adaptable):**
+  - Header con contexto del paciente
+  - Chat del copiloto
+  - Input de mensajes
+  - Indicadores de estado
+  - Ancho: se adapta al espacio disponible
+  - Márgenes laterales automáticos para centrado
+  
+- **Panel Derecho (400px, deslizable):**
+  - Visor de PDFs
+  - Controles de documento
+  - Botón de cierre
+
+**Comportamiento Responsive:**
+- **Desktop (>1024px):**
+  - Panel izquierdo: 300px fijo
+  - Panel central: resto del espacio disponible
+  - Panel derecho: 400px cuando está abierto
+  - Scroll independiente por panel
+  
+- **Tablet (768px-1024px):**
+  - Panel izquierdo colapsable
+  - Chat central adaptable al 100%
+  - PDF viewer como overlay
+  
+- **Mobile (<768px):**
+  - Navegación por pestañas/drawers
+  - Paneles como overlays
+  - Gestos de swipe para navegación
+
+**Props Interface:**
+```typescript
+interface LayoutProps {
+  children: React.ReactNode;
+  showPDFViewer?: boolean;
+  onPDFViewerClose?: () => void;
+}
+```
+
+**Implementación Base:**
+```typescript
+const Layout = styled.div`
+  display: grid;
+  grid-template-columns: 300px 1fr auto;
+  height: 100vh;
+  overflow: hidden;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: auto 1fr;
+  }
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const LeftPanel = styled.aside`
+  width: 300px;
+  border-right: 1px solid ${props => props.theme.colors.gray[200]};
+  background: ${props => props.theme.colors.gray[50]};
+  overflow-y: auto;
+  
+  @media (max-width: 1024px) {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transform: translateX(${props => props.isOpen ? '0' : '-100%'});
+    transition: transform 0.3s ease;
+    z-index: 10;
+  }
+`;
+
+const MainContent = styled.main`
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 24px;
+  
+  @media (max-width: 1024px) {
+    padding: 0 16px;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 0 12px;
+  }
+`;
+
+const RightPanel = styled.aside<{ isOpen: boolean }>`
+  width: 400px;
+  border-left: 1px solid ${props => props.theme.colors.gray[200]};
+  background: white;
+  transform: translateX(${props => props.isOpen ? '0' : '100%'});
+  transition: transform 0.3s ease;
+  
+  @media (max-width: 1024px) {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
+  }
+`;
+```
+
+**Características Clave:**
+- Panel central adaptable con máximo 1200px
+- Padding lateral responsivo
+- Scroll independiente por panel
+- Transiciones suaves entre estados
+- Soporte para gestos touch
+- Manejo de estados de overlay
+- Breakpoints definidos
+- Persistencia de estado
+
+---
+
+## 4. COMPONENTES PRINCIPALES
+
+### 4.1 Dashboard Component
+
+**Ubicación:** `src/components/layout/Dashboard.tsx`
+
+**Funcionalidad:**
+- Mensaje de bienvenida personalizado: "¡Buen día, Dr. (que abrió el sistema)!"
+- Buscador prominente en esquina superior
+- Lista de 5 pacientes recientes
+- Animación de entrada suave
+- Layout responsive
+
+**Props Interface:**
+```typescript
+interface DashboardProps {
+  userName: string;
+  recentPatients: Patient[];
+}
+```
+
+**Estados internos:**
+- Loading state inicial
+- Animaciones de entrada
+- Estado del buscador
+
+### 4.2 PatientSearch Component
+
+**Ubicación:** `src/components/medical/PatientSearch.tsx`
+
+**Funcionalidad:**
+- Input con autocompletado en tiempo real (< 500ms)
+- Dropdown con máximo 5 resultados
+- Navegación por teclado (↑↓ Enter)
+- Highlight de texto coincidente
+- Animaciones de entrada/salida
+
+**Props Interface:**
+```typescript
+interface PatientSearchProps {
+  onPatientSelect: (patient: Patient) => void;
+  placeholder?: string;
+}
+```
+
+**Estados internos:**
+- searchTerm: string
+- results: Patient[]
+- selectedIndex: number
+- isOpen: boolean
+- isLoading: boolean
+
+### 4.3 PatientContext Component
+
+**Ubicación:** `src/components/medical/PatientContext.tsx`
+
+**Funcionalidad:**
+- Cabecera dinámica que cambia a azul tenue cuando hay paciente activo
+- Avatar con iniciales del paciente
+- Información: nombre, edad, ID
+- Animaciones de transición suaves
+- Parpadeo verde para comandos de voz (3 segundos)
+
+**Props Interface:**
+```typescript
+interface PatientContextProps {
+  activePatient: Patient | null;
+  isVoiceActivated?: boolean;
+}
+```
+
+**Estados internos:**
+- isAnimating: boolean para controlar parpadeo verde
+- previousPatient: Patient | null para transiciones
+
+### 4.4 Copilot Component
+
+**Ubicación:** `src/components/medical/Copilot.tsx`
+
+**Funcionalidad:**
+- Chat conversacional con nombre "Copiloto"
+- Ancho adaptable con máximo 1200px
+- Respuestas simuladas en < 4 segundos
+- Badges clickeables en respuestas: `[documento.pdf · pág X]`
+- Comandos especiales: `/nota`
+- Historial de conversación por paciente
+- Indicadores de escritura/procesamiento
+- Scroll automático
+- Sistema de herramientas del agente:
+  - Indicador visual cuando el agente está usando herramientas
+  - Loader específico para búsqueda en expedientes
+  - Animación de "pensando" mientras procesa
+  - Feedback visual del tipo de herramienta en uso
+
+**Props Interface:**
+```typescript
+interface CopilotProps {
+  activePatient: Patient | null;
+  onBadgeClick: (document: string, page: number) => void;
+}
+```
+
+**Estados internos:**
+- messages: Message[]
+- currentInput: string
+- isTyping: boolean
+- isProcessing: boolean
+
+**Implementación Base:**
+```typescript
+const CopilotContainer = styled.div`
+  width: 100%;
+  max-width: 1200px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  margin: 0 auto;
+`;
+
+const MessagesContainer = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const InputContainer = styled.div`
+  border-top: 1px solid ${props => props.theme.colors.gray[200]};
+  padding: 16px 24px;
+  background: white;
+`;
+
+const MessageWrapper = styled.div<{ isUser: boolean }>`
+  display: flex;
+  flex-direction: column;
+  align-items: ${props => props.isUser ? 'flex-end' : 'flex-start'};
+  max-width: 85%;
+  align-self: ${props => props.isUser ? 'flex-end' : 'flex-start'};
+`;
+
+const Message = styled.div<{ isUser: boolean }>`
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: ${props => props.isUser ? props.theme.colors.primary.blue : props.theme.colors.gray[100]};
+  color: ${props => props.isUser ? 'white' : props.theme.colors.text.primary};
+`;
+```
+
+**Características Clave:**
+- Ancho adaptable con máximo 1200px
+- Scroll independiente para mensajes
+- Input siempre visible en la parte inferior
+- Soporte para markdown en mensajes
+- Badges interactivos para documentos
+- Indicadores de estado claros
+- Animaciones suaves de entrada
+- Persistencia de conversación por paciente
+
+### 4.5 PDFViewer Component
+
+**Ubicación:** `src/components/medical/PDFViewer.tsx`
+
+**Funcionalidad:**
+- Panel lateral derecho de 400px
+- Deslizamiento suave desde la derecha
+- Navegación directa a página específica
+- Controles de zoom y navegación
+- Botón de cierre "⤫"
+- Búsqueda dentro del documento
+- Responsive: overlay en tablet/móvil
+
+**Props Interface:**
+```typescript
+interface PDFViewerProps {
+  isOpen: boolean;
+  document: string;
+  initialPage: number;
+  onClose: () => void;
+}
+```
+
+**Estados internos:**
+- currentPage: number
+- zoom: number
+- isLoading: boolean
+- searchTerm: string
+
+**Implementación Base:**
+```typescript
+const PDFViewerContainer = styled.aside<{ isOpen: boolean }>`
+  width: 400px;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  right: 0;
+  background: white;
+  border-left: 1px solid ${props => props.theme.colors.gray[200]};
+  transform: translateX(${props => props.isOpen ? '0' : '100%'});
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  
+  @media (max-width: 1024px) {
+    width: 100%;
+    max-width: 400px;
+  }
+`;
+
+const PDFHeader = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const PDFContent = styled.div`
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+`;
+
+const PDFControls = styled.div`
+  padding: 16px;
+  border-top: 1px solid ${props => props.theme.colors.gray[200]};
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  color: ${props => props.theme.colors.gray[500]};
+  
+  &:hover {
+    color: ${props => props.theme.colors.gray[700]};
+  }
+`;
+```
+
+**Características Clave:**
+- Panel lateral fijo de 400px
+- Transición suave al abrir/cerrar
+- Controles siempre visibles
+- Zoom y navegación intuitivos
+- Búsqueda con highlight
+- Overlay en responsive
+- Gestos touch para navegación
+
+### 4.6 VoiceCommand Component
+
+**Ubicación:** `src/components/voice/VoiceCommand.tsx`
+
+**Funcionalidad:**
+- Reconocimiento de comandos de voz simulado
+- Comando: "Copiloto, cambia al paciente [nombre]"
+- Confirmación verbal simulada
+- Feedback visual (pulso de micrófono)
+- Timeout de 30 segundos
+
+**Props Interface:**
+```typescript
+interface VoiceCommandProps {
+  onVoiceCommand: (command: VoiceCommand) => void;
+  isListening: boolean;
+}
+```
+
+---
+
+## 5. STORES (ZUSTAND)
+
+### 5.1 Medical Store
+
+**Ubicación:** `src/stores/medicalStore.ts`
+
+```typescript
+interface Patient {
+  id: string;
+  name: string;
+  age: number;
+  lastVisit: string;
+  photo?: string;
+  expediente: string;
+}
+
+interface Message {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+  badges?: Badge[];
+}
+
+interface Badge {
+  text: string;
+  document: string;
+  page: number;
+}
+
+interface MedicalStore {
+  // Estado
+  activePatient: Patient | null;
+  recentPatients: Patient[];
+  allPatients: Patient[];
+  chatHistory: Record<string, Message[]>; // Por paciente
+  currentChat: Message[];
+  
+  // Acciones
+  setActivePatient: (patient: Patient) => void;
+  searchPatients: (term: string) => Patient[];
+  addMessage: (message: Message) => void;
+  clearChat: () => void;
+  addToRecent: (patient: Patient) => void;
+}
+```
+
+### 5.2 UI Store
+
+**Ubicación:** `src/stores/uiStore.ts`
+
+```typescript
+interface UIStore {
+  // Estados de UI
+  isLoading: boolean;
+  toasts: Toast[];
+  isVoiceListening: boolean;
+  pdfViewer: {
+    isOpen: boolean;
+    document: string;
+    page: number;
+  };
+  
+  // Acciones
+  setLoading: (loading: boolean) => void;
+  showToast: (message: string, type: 'success' | 'error' | 'info') => void;
+  removeToast: (id: string) => void;
+  toggleVoiceListening: () => void;
+  openPDFViewer: (document: string, page: number) => void;
+  closePDFViewer: () => void;
+}
+```
+
+---
+
+## 6. DATOS MOCK
+
+### 6.1 Mock Patients
+
+**Ubicación:** `src/data/mockPatients.ts`
+
+```typescript
+export const mockPatients: Patient[] = [
+  {
+    id: "12345",
+    name: "Julio Gómez Martínez",
+    age: 37,
+    lastVisit: "2024-12-15",
+    photo: "/avatars/julio.jpg",
+    expediente: "EXP-12345"
+  },
+  {
+    id: "12346", 
+    name: "Carlos Gómez López",
+    age: 46,
+    lastVisit: "2024-12-14",
+    expediente: "EXP-12346"
+  },
+  {
+    id: "12347",
+    name: "María González Ruiz",
+    age: 52,
+    lastVisit: "2024-12-13",
+    expediente: "EXP-12347"
+  },
+  // ... más pacientes para testing
+];
+
+export const recentPatients = mockPatients.slice(0, 5);
+```
+
+### 6.2 Mock Copilot Responses
+
+**Ubicación:** `src/data/mockResponses.ts`
+
+```typescript
+export const mockResponses: Record<string, MockResponse> = {
+  "laboratorios colesterol": {
+    text: `Los laboratorios de colesterol del último año muestran:
+
+• Colesterol total: 245 mg/dL (15 Mar 2025)
+• LDL: 165 mg/dL (15 Mar 2025) 
+• HDL: 42 mg/dL (15 Mar 2025)
+• Triglicéridos: 190 mg/dL (15 Mar 2025)
+
+Los valores se encuentran elevados, especialmente el LDL.`,
+    badges: [
+      { text: "lab_colesterol_mar2025.pdf · pág 4", document: "lab_colesterol_mar2025.pdf", page: 4 }
+    ],
+    delay: 2500
+  },
+  
+  "presión arterial": {
+    text: `Últimas mediciones de presión arterial:
+
+• 28 Nov 2024: 145/92 mmHg
+• 15 Nov 2024: 150/95 mmHg  
+• 02 Nov 2024: 142/88 mmHg
+
+Presenta hipertensión arterial estadio 1.`,
+    badges: [
+      { text: "consulta_nov2024.pdf · pág 2", document: "consulta_nov2024.pdf", page: 2 }
+    ],
+    delay: 1800
+  },
+  
+  "/nota": {
+    text: `📝 **Función de Notas Clínicas**
+
+Esta funcionalidad te permitirá crear notas clínicas estructuradas. En la versión completa podrás:
+
+• Crear notas por plantillas
+• Dictar notas por voz
+• Generar resúmenes automáticos
+• Integrar con el expediente
+
+*Función en desarrollo*`,
+    badges: [],
+    delay: 1000
+  }
+};
+```
+
+---
+
+## 7. FUNCIONALIDADES ESPECÍFICAS
+
+### 7.1 Autocompletado de Búsqueda
+
+**Requerimientos:**
+- Respuesta < 500ms
+- Mínimo 2 caracteres para activar
+- Máximo 5 resultados
+- Búsqueda por nombre, apellido, ID
+- Highlight de coincidencias
+- Navegación por teclado
+
+**Implementación:**
+```typescript
+const usePatientSearch = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [results, setResults] = useState<Patient[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const debouncedSearch = useMemo(
+    () => debounce((term: string) => {
+      // Lógica de búsqueda mock
+      setIsLoading(true);
+      setTimeout(() => {
+        const filtered = mockPatients.filter(p => 
+          p.name.toLowerCase().includes(term.toLowerCase()) ||
+          p.expediente.includes(term)
+        ).slice(0, 5);
+        setResults(filtered);
+        setIsLoading(false);
+      }, 200); // Simular latencia
+    }, 300),
+    []
+  );
+  
+  return { searchTerm, setSearchTerm, results, isLoading };
+};
+```
+
+### 7.2 Sistema de Toast Notifications
+
+**Requerimientos:**
+- Aparece desde arriba-derecha
+- Duración: 4 segundos
+- Animación suave de entrada/salida
+- Múltiples toasts apilables
+- Auto-dismiss
+
+**Tipos de Toast:**
+- Success (verde): Confirmaciones
+- Info (azul): Información general
+- Warning (amarillo): Advertencias
+- Error (rojo): Errores
+
+### 7.3 Simulación de Comandos de Voz
+
+**Requerimientos:**
+- Comando: "Copiloto, cambia al paciente [nombre]"
+- Simulación de reconocimiento de voz
+- Confirmación verbal simulada
+- Feedback visual: pulso del micrófono
+- Timeout: 30 segundos
+
+**Estados del comando de voz:**
+1. Idle (no escuchando)
+2. Listening (escuchando comando)
+3. Processing (procesando comando)
+4. Confirming (esperando confirmación)
+5. Executing (ejecutando cambio)
+
+### 7.4 Visor de PDFs Simulado
+
+**Requerimientos:**
+- Deslizamiento lateral desde la derecha
+- Navegación a página específica
+- PDFs de muestra en `/public/pdfs/`
+- Controles: zoom, navegación, búsqueda
+- Botón de cierre "⤫"
+
+**PDFs Mock necesarios:**
+- `lab_colesterol_mar2025.pdf`
+- `consulta_nov2024.pdf`
+- `rayos_x_torax.pdf`
+- `estudios_cardiologia.pdf`
+
+### 7.5 Sistema de Herramientas del Agente
+
+**Requerimientos:**
+- Visualización del proceso de uso de herramientas del agente
+- Feedback claro al usuario durante la búsqueda de información
+- Animaciones específicas para cada estado del proceso
+
+**Estados del Proceso:**
+1. **Pensando** (Agente evaluando la pregunta)
+   - Loader suave tipo "dots" pulsantes
+   - Mensaje: "Analizando tu pregunta..."
+   - Duración: 1-2 segundos
+
+2. **Usando Herramienta** (Agente buscando en expedientes)
+   - Loader más activo tipo "circular progress"
+   - Mensaje: "Buscando en expedientes..."
+   - Indicador de herramienta específica en uso
+   - Duración: 2-4 segundos
+
+3. **Procesando Resultados** (Agente formulando respuesta)
+   - Loader tipo "typing"
+   - Mensaje: "Preparando respuesta..."
+   - Duración: 1-2 segundos
+
+**Implementación:**
+```typescript
+interface AgentToolState {
+  isThinking: boolean;
+  isUsingTool: boolean;
+  currentTool: 'search' | 'read' | 'analyze' | null;
+  processingResults: boolean;
+}
+
+const useAgentTools = () => {
+  const [toolState, setToolState] = useState<AgentToolState>({
+    isThinking: false,
+    isUsingTool: false,
+    currentTool: null,
+    processingResults: false
+  });
+
+  const simulateToolUse = async (question: string) => {
+    // 1. Pensando
+    setToolState({ ...toolState, isThinking: true });
+    await delay(1500);
+
+    // 2. Usando herramienta
+    setToolState({ 
+      isThinking: false, 
+      isUsingTool: true,
+      currentTool: 'search',
+      processingResults: false 
+    });
+    await delay(3000);
+
+    // 3. Procesando resultados
+    setToolState({ 
+      isThinking: false,
+      isUsingTool: false,
+      currentTool: null,
+      processingResults: true 
+    });
+    await delay(1500);
+
+    // 4. Completado
+    setToolState({
+      isThinking: false,
+      isUsingTool: false,
+      currentTool: null,
+      processingResults: false
+    });
+  };
+
+  return { toolState, simulateToolUse };
+};
+```
+
+**Componentes Visuales:**
+```typescript
+const ThinkingIndicator = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: ${props => props.theme.colors.gray[50]};
+  border-radius: 8px;
+  margin: 8px 0;
+`;
+
+const ToolIndicator = styled(motion.div)<{ tool: string }>`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: ${props => props.theme.colors.primary.blueLight};
+  border-radius: 12px;
+  margin: 12px 0;
+  
+  svg {
+    color: ${props => props.theme.colors.primary.blue};
+  }
+`;
+
+const ProcessingIndicator = styled(motion.div)`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 8px 0;
+`;
+```
+
+**Animaciones:**
+```typescript
+const thinkingVariants = {
+  initial: { opacity: 0, y: 10 },
+  animate: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.3 }
+  },
+  exit: { 
+    opacity: 0, 
+    y: -10,
+    transition: { duration: 0.2 }
+  }
+};
+
+const toolIndicatorVariants = {
+  initial: { opacity: 0, x: -20 },
+  animate: { 
+    opacity: 1, 
+    x: 0,
+    transition: { duration: 0.4, ease: "easeOut" }
+  },
+  exit: { 
+    opacity: 0, 
+    x: 20,
+    transition: { duration: 0.3 }
+  }
+};
+
+const processingVariants = {
+  initial: { opacity: 0, scale: 0.95 },
+  animate: { 
+    opacity: 1, 
+    scale: 1,
+    transition: { duration: 0.3 }
+  },
+  exit: { 
+    opacity: 0, 
+    scale: 0.95,
+    transition: { duration: 0.2 }
+  }
+};
+```
+
+---
+
+## 8. ESTILOS Y TEMA
+
+### 8.1 Paleta de Colores
+
+```typescript
+export const theme = {
+  colors: {
+    primary: {
+      blue: '#2196F3',
+      blueDark: '#1976D2',
+      blueLight: '#E3F2FD',
+    },
+    context: {
+      active: '#E3F2FD',
+      activeBorder: '#BBDEFB',
+    },
+    success: {
+      green: '#4CAF50',
+      greenLight: '#E8F5E8',
+    },
+    text: {
+      primary: '#1a202c',
+      secondary: '#64748b',
+      muted: '#94a3b8',
+    },
+    gray: {
+      50: '#f8fafc',
+      100: '#f1f5f9',
+      200: '#e2e8f0',
+      300: '#cbd5e1',
+      500: '#64748b',
+      700: '#334155',
+      900: '#0f172a',
+    }
+  },
+  fonts: {
+    primary: "'SF Pro Text', -apple-system, BlinkMacSystemFont, sans-serif",
+    display: "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
+  },
+  spacing: {
+    xs: '4px',
+    sm: '8px', 
+    md: '16px',
+    lg: '24px',
+    xl: '32px',
+    xxl: '48px',
+  },
+  borderRadius: {
+    sm: '6px',
+    md: '12px',
+    lg: '16px',
+    xl: '20px',
+    full: '9999px',
+  }
+};
+```
+
+### 8.2 Animaciones Clave
+
+**Entrada de Dashboard:**
+- Fade in + slide up
+- Duración: 600ms
+- Easing: ease-out
+
+**Cambio de Contexto:**
+- Color transition: 300ms
+- Scale slight: 1.02 durante transición
+
+**Parpadeo de Voz:**
+- Verde durante 3 segundos exactos
+- Suave fade in/out
+
+**Toast Notifications:**
+- Slide in desde derecha
+- Duración: 300ms entrada, 300ms salida
+
+---
+
+## 9. TESTING Y VALIDACIÓN
+
+### 9.1 Casos de Uso a Probar
+
+1. **Flujo completo Dashboard → Búsqueda → Contexto → Chat**
+2. **Autocompletado con diferentes términos de búsqueda**
+3. **Navegación por teclado en resultados**
+4. **Simulación de comandos de voz**
+5. **Apertura y navegación en visor PDF**
+6. **Responsive en móvil, tablet, desktop**
+7. **Toast notifications múltiples**
+8. **Persistencia de contexto durante la sesión**
+
+### 9.2 Métricas de Rendimiento
+
+- **Autocompletado:** < 500ms
+- **Respuesta Copiloto:** < 4 segundos (simulado)
+- **Cambio de contexto:** < 1 segundo
+- **Carga inicial:** < 3 segundos
+- **Animaciones:** 60fps
+
+---
+
+## 10. ENTREGABLES
+
+### 10.1 Estructura Final
+```
+tecsalud-copiloto/
+├── public/
+│   ├── pdfs/                    # PDFs de muestra
+│   ├── avatars/                 # Fotos de pacientes mock
+│   └── favicon.ico
+├── src/                         # Todo el código fuente
+└── README.md                    # Instrucciones de instalación
+```
+
+### 10.2 Scripts de Desarrollo
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build", 
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx",
+    "test": "vitest"
+  }
+}
+```
+
+---
+
+## 11. NOTAS IMPORTANTES
+
+### 11.1 Simulaciones Mock
+- **Autenticación:** Simulada con delay y validación básica
+- **Búsqueda de pacientes:** Filtrado local de array mock
+- **Respuestas Copiloto:** Respuestas predefinidas con delays
+- **Comandos de voz:** Simulación con botones y timeouts
+- **PDFs:** Archivos reales en `/public/pdfs/`
+
+### 11.2 Responsividad
+- **Mobile first:** Diseño base para móvil
+- **Breakpoints:** 768px (tablet), 1024px (desktop)
+- **Chat adaptable:** Full screen en móvil, lateral en desktop
+- **Buscador colapsible** en móviles
+
+### 11.3 Accesibilidad
+- **ARIA labels** en todos los componentes interactivos
+- **Navegación por teclado** completa
+- **Contraste de colores** WCAG AA
+- **Screen reader friendly**
+
+---
+
+**🎯 OBJETIVO FINAL:** Una maqueta funcional completa que demuestre toda la experiencia de usuario con datos simulados, lista para integración posterior con backend real. 

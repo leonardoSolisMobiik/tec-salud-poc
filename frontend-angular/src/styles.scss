@@ -1,0 +1,129 @@
+/* TecSalud Medical System - Global Styles with Bamboo Design System */
+
+/* CSS Variables for TecSalud Medical Theme */
+:root {
+  /* TecSalud Primary Colors */
+  --bmb-color-primary: #0066cc;
+  --bmb-color-primary-dark: #004d99;
+  --bmb-color-primary-light: #3385d6;
+  
+  /* Medical Status Colors */
+  --bmb-color-success: #28a745;
+  --bmb-color-warning: #ffc107;
+  --bmb-color-danger: #dc3545;
+  --bmb-color-info: #17a2b8;
+  
+  /* Medical Typography */
+  --medical-font-family: 'Montserrat', 'Helvetica Neue', Arial, sans-serif;
+  --medical-font-size-base: 14px;
+  
+  /* Medical Spacing & Layout */
+  --medical-border-radius: 8px;
+  --medical-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --medical-box-shadow-hover: 0 4px 12px rgba(0, 102, 204, 0.15);
+}
+
+/* Global Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--medical-font-family);
+  font-size: var(--medical-font-size-base);
+  line-height: 1.6;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  background-color: #f8f9fa;
+}
+
+/* Medical Component Themes */
+.medical-active {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-color: var(--bmb-color-primary) !important;
+  box-shadow: var(--medical-box-shadow-hover);
+}
+
+.medical-sidebar {
+  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+  border-right: 2px solid #e9ecef;
+}
+
+.medical-chat {
+  background: linear-gradient(135deg, #fafbfc 0%, #f1f3f4 100%);
+}
+
+/* Bamboo Component Customizations for Medical Theme */
+.bmb-card {
+  border-radius: var(--medical-border-radius);
+  box-shadow: var(--medical-box-shadow);
+  transition: all 0.2s ease;
+  
+  &:hover {
+    box-shadow: var(--medical-box-shadow-hover);
+  }
+}
+
+.bmb-search-input {
+  border-radius: var(--medical-border-radius);
+}
+
+.bmb-badge {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 4px;
+}
+
+.bmb-button {
+  border-radius: var(--medical-border-radius);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.bmb-avatar {
+  border-radius: 50%;
+  font-weight: 600;
+}
+
+/* Medical Status Classes */
+.status-active { color: var(--bmb-color-success); }
+.status-inactive { color: var(--bmb-color-danger); }
+.status-pending { color: var(--bmb-color-warning); }
+.status-info { color: var(--bmb-color-info); }
+
+/* Utility Classes for Medical UI */
+.medical-text-primary { color: var(--bmb-color-primary); }
+.medical-text-secondary { color: #6c757d; }
+.medical-bg-primary { background-color: var(--bmb-color-primary); }
+.medical-border-primary { border-color: var(--bmb-color-primary); }
+
+/* Accessibility & Focus States */
+.bmb-button:focus,
+.bmb-card:focus,
+.medical-interactive:focus {
+  outline: 2px solid var(--bmb-color-primary);
+  outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+  
+  .medical-sidebar {
+    width: 280px !important;
+  }
+}
+
+/* Animation Enhancements */
+@keyframes medical-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.medical-fade-in {
+  animation: medical-fade-in 0.3s ease-out;
+}

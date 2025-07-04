@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Asistente Virtual - TecSalud</title>
+    <style>
+      /* CSS específico para ocultar marca Manus */
+      body > div:last-child:not(#root),
+      body > a:last-child,
+      body > button:last-child,
+      [style*="position: fixed"][style*="bottom"][style*="right"],
+      [style*="position:fixed"][style*="bottom"][style*="right"],
+      div[style*="z-index: 999"]:not(#root *),
+      div[style*="z-index:999"]:not(#root *),
+      div[style*="z-index: 9999"]:not(#root *),
+      div[style*="z-index:9999"]:not(#root *) {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        display: none !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        top: -9999px !important;
+        width: 0 !important;
+        height: 0 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

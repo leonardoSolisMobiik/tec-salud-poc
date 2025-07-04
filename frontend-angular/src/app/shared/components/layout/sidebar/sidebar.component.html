@@ -1,0 +1,110 @@
+<aside 
+  class="medical-sidebar"
+  [class.collapsed]="(uiStateService.isSidebarCollapsed$ | async)"
+  [style.width]="(uiStateService.isSidebarCollapsed$ | async) ? '80px' : '300px'">
+  
+  <!-- Header -->
+  <div class="sidebar-header">
+    <h2 *ngIf="!(uiStateService.isSidebarCollapsed$ | async)" class="sidebar-title">
+      🩺 Pacientes TecSalud
+    </h2>
+    <button 
+      (click)="toggleSidebar()"
+      class="toggle-button">
+      <span *ngIf="!(uiStateService.isSidebarCollapsed$ | async)">✕</span>
+      <span *ngIf="(uiStateService.isSidebarCollapsed$ | async)">☰</span>
+    </button>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section" *ngIf="!(uiStateService.isSidebarCollapsed$ | async)">
+    <input 
+      type="text"
+      placeholder="Buscar paciente..."
+      class="search-input"
+      (input)="onSearchInputChange($any($event.target).value)"
+      [disabled]="isSearching">
+    <div *ngIf="isSearching" class="search-loading">Buscando...</div>
+  </div>
+
+  <!-- Collapsed Search Icon -->
+  <div class="collapsed-search" *ngIf="(uiStateService.isSidebarCollapsed$ | async)">
+    <button 
+      (click)="toggleSidebar()"
+      class="search-icon-button">
+      🔍
+    </button>
+  </div>
+
+  <!-- Patients List -->
+  <div class="patients-container">
+    <div *ngIf="!(uiStateService.isSidebarCollapsed$ | async)">
+      <h3 class="section-title">
+        ❤️ Pacientes Recientes ({{recentPatients.length}})
+      </h3>
+      
+      <!-- Debug info -->
+      <div class="debug-info" style="background: #fff3cd; padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 12px;">
+        🔍 Debug: {{recentPatients.length}} pacientes cargados
+      </div>
+      
+      <div class="patients-list">
+        <!-- ✅ BAMBOO CARDS RESTAURADAS - Versión actualizada 1.5.5 -->
+        <bmb-card
+          *ngFor="let patient of recentPatients; trackBy: trackByPatientId"
+          [class]="getPatientCardClasses(patient)"
+          (click)="selectPatient(patient)"
+          class="patient-card-wrapper patient-card-bamboo"
+          type="normal">
+          
+          <div class="patient-content">
+            <!-- Avatar -->
+            <div class="patient-avatar">
+              {{ getPatientInitials(patient) }}
+            </div>
+            
+            <!-- Patient Info -->
+            <div class="patient-info">
+              <div class="patient-name">{{ patient.name }}</div>
+              <div class="patient-id">ID: {{ patient.id }}</div>
+            </div>
+            
+            <!-- Status Badge -->
+            <span *ngIf="isPatientActive(patient)" class="active-badge-simple">
+              ✅ Activo
+            </span>
+                      </div>
+            
+        </bmb-card>
+        
+        <!-- Empty State -->
+        <div *ngIf="recentPatients.length === 0" class="empty-state">
+          <!-- Usando emoji temporalmente en lugar de bmb-icon -->
+          <div class="empty-icon">👤</div>
+          <p>No hay pacientes recientes</p>
+          <small>Busca un paciente para comenzar</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Collapsed Icons -->
+    <div *ngIf="(uiStateService.isSidebarCollapsed$ | async)" class="collapsed-patients">
+      <div 
+        *ngFor="let patient of recentPatients.slice(0, 5); trackBy: trackByPatientId"
+        class="collapsed-patient-item">
+        <button
+          (click)="selectPatient(patient)"
+          [class]="getCollapsedPatientClasses(patient)"
+          class="collapsed-patient-button"
+          [attr.title]="patient.name">
+          {{ getPatientInitials(patient) }}
+        </button>
+      </div>
+      
+      <!-- Collapsed medical icon indicator -->
+      <div class="collapsed-medical-indicator">
+        ❤️
+      </div>
+    </div>
+  </div>
+</aside> 

@@ -1,0 +1,321 @@
+# Product Requirements Document (PRD)
+# TecSalud Frontend Migration: React to Angular + Bamboo Design System
+
+**Project:** TecSalud Medical Assistant - Frontend Migration to Angular with Bamboo DS
+**Creation Date:** 2025-01-07
+**Version:** 1.0
+**Status:** Planning Phase
+
+---
+
+## 1. EXECUTIVE SUMMARY
+
+### 1.1 Objective
+Migrate the existing TecSalud medical assistant frontend from React to Angular 18+, integrating the official Bamboo Design System from Tecnológico de Monterrey to ensure institutional consistency and improved maintainability.
+
+### 1.2 Background
+- Current frontend built with React 19.1.0 + Styled Components
+- **IMPORTANT: Existing FastAPI backend will be completely reused without any modifications**
+- Backend already implements:
+  - Azure OpenAI integration (GPT-4o/4o-mini)
+  - Medical Coordinator with specialized agents
+  - Chroma vector database for semantic search
+  - SQLite for patient records
+  - Streaming API endpoints for chat
+  - All medical logic and AI orchestration
+- Need for institutional alignment with Tec de Monterrey standards
+- Requirement to use Bamboo Design System for UI consistency
+
+### 1.3 Success Criteria
+- Full feature parity with existing React application
+- Integration with Bamboo Design System components
+- Maintained connection to existing FastAPI backend
+- Improved type safety with TypeScript
+- Sub-4 second response times for medical queries
+- Mobile responsive design
+
+---
+
+## 2. SCOPE
+
+### 2.1 In Scope
+- Complete frontend migration to Angular 18+
+- Bamboo Design System integration
+- All existing medical features:
+  - Patient search and context management
+  - Medical chat with Azure OpenAI integration
+  - Streaming responses
+  - Document management (future)
+  - Voice commands (future)
+- Responsive design for desktop and tablet
+- Connection to existing backend API
+
+### 2.2 Out of Scope
+- **Backend modifications (FastAPI backend remains completely unchanged)**
+- New feature development beyond current functionality
+- Mobile native applications
+- Authentication system (future phase)
+- PDF viewer implementation (future phase)
+
+---
+
+## 3. TECHNICAL REQUIREMENTS
+
+### 3.1 Technology Stack
+- **Framework:** Angular 18+
+- **UI Components:** Bamboo Design System (@ti-tecnologico-de-monterrey-oficial/ds-ng)
+- **State Management:** RxJS + Angular Services
+- **Styling:** SCSS + Bamboo theme system
+- **Build Tool:** Angular CLI
+- **Package Manager:** npm
+- **TypeScript:** Latest stable version
+
+### 3.2 Browser Support
+- Chrome (latest 2 versions)
+- Firefox (latest 2 versions)
+- Safari (latest 2 versions)
+- Edge (latest 2 versions)
+
+### 3.3 Performance Requirements
+- Initial load time: < 3 seconds
+- API response handling: < 100ms overhead
+- Smooth animations at 60fps
+- Bundle size: < 2MB initial load
+
+---
+
+## 4. FUNCTIONAL REQUIREMENTS
+
+### 4.1 Core Features
+
+#### 4.1.1 Patient Management
+- **Search Functionality**
+  - Real-time patient search with debouncing (300ms)
+  - Autocomplete suggestions
+  - Recent patients list
+  - Visual feedback for active patient context
+
+#### 4.1.2 Medical Chat Interface
+- **Chat Functionality**
+  - Message history per patient
+  - Streaming responses from Azure OpenAI
+  - Markdown rendering for AI responses
+  - Conversational loading states
+  - Error handling and retry mechanisms
+
+#### 4.1.3 Layout and Navigation
+- **Responsive Layout**
+  - Collapsible sidebar (300px expanded, 80px collapsed)
+  - Central chat area (max 1200px)
+  - Header with patient context indicator
+  - Mobile-responsive breakpoints (768px, 1024px)
+
+### 4.2 UI Components Mapping
+
+| Feature | Current (React) | Target (Bamboo) | Backend API |
+|---------|----------------|-----------------|-------------|
+| Search Input | Custom SearchInput | bmb-search-input | GET /api/v1/patients/search |
+| Patient Cards | Custom Card | bmb-card | GET /api/v1/patients |
+| Medical Chat | Copilot.jsx | Custom with Bamboo | POST /api/v1/chat/medical/stream |
+| Loading | LoadingSpinner | bmb-progress-circle | N/A |
+| Notifications | Toast | bmb-toast | N/A |
+| Forms | React Hook Form | Bamboo form components | Various endpoints |
+| Navigation | Custom Sidebar | bmb-top-bar + custom | N/A |
+
+---
+
+## 4.3 BACKEND API REUSE
+
+### Existing FastAPI Backend Endpoints (NO CHANGES REQUIRED)
+The Angular frontend will connect to the exact same API endpoints:
+
+**Patient Management:**
+- `GET /api/v1/patients` - List all patients
+- `GET /api/v1/patients/search?q={query}` - Search patients
+- `GET /api/v1/patients/{patient_id}` - Get patient details
+- `POST /api/v1/patients/{patient_id}/interactions` - Record interactions
+
+**Medical Chat:**
+- `POST /api/v1/chat/medical` - Send medical query (non-streaming)
+- `POST /api/v1/chat/medical/stream` - Send medical query (SSE streaming)
+- `POST /api/v1/chat/quick` - Quick responses
+- `POST /api/v1/chat/analyze-case` - Case analysis
+
+**Health & System:**
+- `GET /api/v1/health` - System health check
+- `GET /api/v1/health/azure-openai` - Azure OpenAI status
+
+**Configuration:**
+- Backend runs on `http://localhost:8000`
+- CORS already configured for localhost origins
+- All Azure OpenAI logic handled by backend
+- Medical Coordinator and agents remain unchanged
+
+---
+
+## 5. NON-FUNCTIONAL REQUIREMENTS
+
+### 5.1 Design Consistency
+- Follow Bamboo Design System guidelines
+- Maintain Tec de Monterrey brand identity
+- Medical-specific color extensions allowed
+
+### 5.2 Accessibility
+- WCAG 2.1 AA compliance
+- Keyboard navigation support
+- Screen reader compatibility
+- High contrast mode support
+
+### 5.3 Security
+- No sensitive data in frontend code
+- Secure API communication
+- Input validation and sanitization
+- XSS protection
+
+### 5.4 Maintainability
+- Modular component architecture
+- Comprehensive TypeScript types
+- Unit test coverage > 70%
+- Clear documentation
+
+---
+
+## 6. USER EXPERIENCE REQUIREMENTS
+
+### 6.1 Interaction Patterns
+- **Patient Selection Flow**
+  1. Search → Autocomplete → Selection
+  2. Visual confirmation (header color change to #E3F2FD)
+  3. Toast notification
+  4. Context activation
+
+- **Chat Interaction**
+  1. Type message → Send
+  2. Conversational loader appears
+  3. Streaming response renders progressively
+  4. Markdown formatting applied
+
+### 6.2 Visual Design
+- **Color Palette**
+  - Primary: Bamboo blue (#0066CC)
+  - Medical context: #2196F3
+  - Active patient: #E3F2FD
+  - Success: #4CAF50
+  - Warning: #FF9800
+  - Error: #F44336
+
+### 6.3 Responsive Behavior
+- **Desktop (>1024px):** Full layout with expanded sidebar
+- **Tablet (768-1024px):** Collapsible sidebar, adjusted spacing
+- **Mobile (<768px):** Hidden sidebar, full-width chat
+
+---
+
+## 7. MIGRATION STRATEGY
+
+### 7.1 Phased Approach
+1. **Phase 1:** Project setup and base configuration
+2. **Phase 2:** Core services and state management
+3. **Phase 3:** Layout components with Bamboo
+4. **Phase 4:** Patient management features
+5. **Phase 5:** Medical chat implementation
+6. **Phase 6:** Testing and optimization
+
+### 7.2 Parallel Development
+- Maintain existing React app during migration
+- New Angular app in `frontend-angular/` directory
+- Shared backend API connection
+- Gradual feature migration
+
+---
+
+## 8. TESTING REQUIREMENTS
+
+### 8.1 Unit Testing
+- Component testing with Jasmine/Karma
+- Service testing with mocked dependencies
+- 70% code coverage minimum
+
+### 8.2 Integration Testing
+- API integration tests
+- Streaming functionality tests
+- State management tests
+
+### 8.3 E2E Testing
+- Critical user flows
+- Cross-browser testing
+- Responsive design validation
+
+---
+
+## 9. DEPLOYMENT REQUIREMENTS
+
+### 9.1 Build Configuration
+- Production optimized builds
+- Environment-specific configurations
+- Asset optimization and compression
+
+### 9.2 Deployment Process
+- CI/CD pipeline compatible
+- Docker containerization ready
+- Static file hosting compatible
+
+---
+
+## 10. TIMELINE ESTIMATE
+
+### 10.1 Without AI Assistance
+- Total Duration: 6-8 weeks
+- Developer Resources: 2 frontend developers
+
+### 10.2 With AI Assistance (Claude, Cursor, Copilot)
+- Total Duration: 3-4 weeks
+- Developer Resources: 1 frontend developer
+- Estimated savings: 40-50%
+
+---
+
+## 11. RISKS AND MITIGATIONS
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Bamboo limitations for medical UI | Medium | Create custom medical components extending Bamboo |
+| Learning curve for Angular | Medium | Utilize AI tools and Angular documentation |
+| API compatibility issues | Low | Backend remains unchanged, use same endpoints |
+| Performance degradation | Medium | Implement lazy loading and optimization |
+
+---
+
+## 12. ACCEPTANCE CRITERIA
+
+1. All existing React features functional in Angular
+2. Bamboo Design System properly integrated
+3. Performance metrics met or exceeded
+4. Responsive design working across devices
+5. No regression in user experience
+6. Clean code with proper TypeScript types
+7. Documentation complete
+8. Tests passing with required coverage
+
+---
+
+## 13. FUTURE CONSIDERATIONS
+
+- Authentication and authorization
+- PDF document viewer integration
+- Voice command implementation
+- Offline capabilities with PWA
+- Advanced medical visualizations
+- Multi-language support
+
+---
+
+## APPROVAL
+
+This PRD requires approval from:
+- [ ] Development Team Lead
+- [ ] UX/UI Designer
+- [ ] Product Owner
+- [ ] Technical Architect
+
+Last Updated: 2025-01-07
