@@ -4,8 +4,8 @@ import { CommonModule } from '@angular/common';
 // Importar componentes REQUERIDOS por cliente (v1.5.5 funciona correctamente)
 import { 
   BmbCardComponent,          // ✅ Cards para pacientes - ERROR RESUELTO
+  // BmbSearchInputComponent,   // ❌ Removido - Usar input nativo con estilos Bamboo
   // BmbBadgeComponent,         // Agregar después
-  // BmbSearchInputComponent,    // Agregar después
   // BmbIconComponent,           // Agregar después
   // BmbToastComponent,          // Agregar después
   // BmbCardButtonComponent,     // Agregar después
@@ -19,7 +19,8 @@ import { MedicalIconComponent } from './components/icons/medical-icon.component'
 
 // FASE 1: Componentes funcionando correctamente con v1.5.5
 const BAMBOO_COMPONENTS_PHASE_1 = [
-  BmbCardComponent          // ✅ ERROR DE PROYECCIÓN RESUELTO
+  BmbCardComponent           // ✅ ERROR DE PROYECCIÓN RESUELTO
+  // BmbSearchInputComponent    // ❌ Removido - Usar input nativo con estilos Bamboo
   // BmbBadgeComponent         // Próximo a agregar
 ];
 

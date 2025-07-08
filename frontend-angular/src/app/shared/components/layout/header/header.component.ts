@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { UiStateService, MedicalStateService } from '@core/services';
 import { Patient } from '@core/models';
@@ -7,7 +8,7 @@ import { Patient } from '@core/models';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   template: `
     <header class="app-header" [class.patient-active]="activePatient$ | async">
       <!-- Mobile Menu Toggle -->
@@ -45,9 +46,59 @@ import { Patient } from '@core/models';
           <span class="action-icon">🔔</span>
           <span class="notification-badge" *ngIf="false">3</span>
         </button>
-        <button class="action-btn" title="Configuración">
-          <span class="action-icon">⚙️</span>
-        </button>
+        
+        <!-- 🚨 DROPDOWN DE NAVEGACIÓN DESHABILITADO TEMPORALMENTE -->
+        <!-- <div class="nav-dropdown" style="position: relative; z-index: 9999;">
+          <button class="nav-dropdown-trigger" 
+                  (click)="toggleNavDropdown()"
+                  style="background: #ff6b6b !important; color: white !important; padding: 12px 20px !important; border: 3px solid #000 !important; border-radius: 8px !important; font-weight: bold !important; font-size: 16px !important; cursor: pointer !important;">
+            📋 MENÚ NAVEGACIÓN
+          </button>
+          
+          <div class="nav-dropdown-menu" 
+               *ngIf="isNavDropdownOpen"
+               style="position: absolute !important; top: 100% !important; right: 0 !important; background: white !important; border: 3px solid #000 !important; border-radius: 8px !important; box-shadow: 0 8px 16px rgba(0,0,0,0.3) !important; padding: 10px !important; min-width: 250px !important; z-index: 9999 !important;">
+            
+            <a routerLink="/chat" 
+               (click)="closeNavDropdown()"
+               class="nav-dropdown-item"
+               style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: lime !important; color: black !important; text-decoration: none !important; border: 2px solid #000 !important; border-radius: 4px !important; font-weight: bold !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.5rem !important;">🩺</span>
+              <span>Copiloto Médico</span>
+            </a>
+            
+            <a routerLink="/dashboard" 
+               (click)="closeNavDropdown()"
+               class="nav-dropdown-item"
+               style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: cyan !important; color: black !important; text-decoration: none !important; border: 2px solid #000 !important; border-radius: 4px !important; font-weight: bold !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.5rem !important;">📊</span>
+              <span>Dashboard</span>
+            </a>
+            
+            <a routerLink="/patients" 
+               (click)="closeNavDropdown()"
+               class="nav-dropdown-item"
+               style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: orange !important; color: black !important; text-decoration: none !important; border: 2px solid #000 !important; border-radius: 4px !important; font-weight: bold !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.5rem !important;">👥</span>
+              <span>Gestión Pacientes</span>
+            </a>
+            
+            <a routerLink="/test-bamboo" 
+               (click)="closeNavDropdown()"
+               class="nav-dropdown-item"
+               style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: magenta !important; color: white !important; text-decoration: none !important; border: 2px solid #000 !important; font-weight: bold !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.5rem !important;">🧪</span>
+              <span>Test Bamboo</span>
+            </a>
+            
+            <hr style="margin: 10px 0 !important; border: 1px solid #000 !important;">
+            
+            <div style="padding: 8px 16px !important; background: #f0f0f0 !important; border-radius: 4px !important; font-weight: bold !important; color: #333 !important; font-size: 14px !important;">
+              🚧 Próximamente: Subir Documentos
+            </div>
+          </div>
+        </div> -->
+        
         <div class="user-menu">
           <div class="user-avatar">LS</div>
           <span class="user-name" *ngIf="!(isMobile$ | async)">Dr. Solis</span>
@@ -259,11 +310,79 @@ import { Patient } from '@core/models';
         display: none;
       }
     }
+    
+    /* 🚨 ESTILOS DROPDOWN NAVEGACIÓN */
+    .nav-dropdown {
+      position: relative;
+      z-index: 9999;
+    }
+    
+    .nav-dropdown-trigger {
+      background: #ff6b6b !important;
+      color: white !important;
+      padding: 12px 20px !important;
+      border: 3px solid #000 !important;
+      border-radius: 8px !important;
+      font-weight: bold !important;
+      font-size: 16px !important;
+      cursor: pointer !important;
+      transition: all 0.3s !important;
+      
+      &:hover {
+        background: #ff5252 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+      }
+    }
+    
+    .nav-dropdown-menu {
+      position: absolute !important;
+      top: 100% !important;
+      right: 0 !important;
+      background: white !important;
+      border: 3px solid #000 !important;
+      border-radius: 8px !important;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3) !important;
+      padding: 10px !important;
+      min-width: 250px !important;
+      z-index: 9999 !important;
+      animation: dropdownFadeIn 0.3s ease-out !important;
+    }
+    
+    .nav-dropdown-item {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      padding: 12px 16px !important;
+      margin: 4px 0 !important;
+      text-decoration: none !important;
+      border: 2px solid #000 !important;
+      border-radius: 4px !important;
+      font-weight: bold !important;
+      transition: all 0.2s !important;
+      
+      &:hover {
+        transform: translateX(5px) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+      }
+    }
+    
+    @keyframes dropdownFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   `]
 })
 export class HeaderComponent implements OnInit {
   activePatient$: Observable<Patient | null>;
   isMobile$: Observable<boolean>;
+  isNavDropdownOpen = false;
   
   constructor(
     private uiState: UiStateService,
@@ -282,5 +401,13 @@ export class HeaderComponent implements OnInit {
   clearPatientContext(): void {
     this.medicalState.setActivePatient(null);
     this.uiState.showSuccessToast('Contexto del paciente limpiado');
+  }
+  
+  toggleNavDropdown(): void {
+    this.isNavDropdownOpen = !this.isNavDropdownOpen;
+  }
+  
+  closeNavDropdown(): void {
+    this.isNavDropdownOpen = false;
   }
 }

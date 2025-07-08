@@ -235,6 +235,14 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                   
                   <div class="dropdown-separator"></div>
                   
+                  <button class="dropdown-item" (click)="navigateTo('/admin-bulk-upload')">
+                    <span class="dropdown-icon">🔧</span>
+                    <div class="dropdown-text">
+                      <div class="dropdown-title">Admin: Carga Masiva</div>
+                      <div class="dropdown-subtitle">Procesamiento de lotes TecSalud</div>
+                    </div>
+                  </button>
+                  
                   <button class="dropdown-item" (click)="navigateTo('/documents')">
                     <span class="dropdown-icon">📄</span>
                     <div class="dropdown-text">
@@ -511,7 +519,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       )
       .subscribe((event: NavigationEnd) => {
         // Show router-outlet for specific routes, hide for chat
-        const showRouterOutletRoutes = ['/documents', '/documents/list', '/dashboard', '/patients', '/test-bamboo'];
+        const showRouterOutletRoutes = ['/documents', '/documents/list', '/dashboard', '/patients', '/test-bamboo', '/admin-bulk-upload'];
         this.shouldShowRouterOutlet = showRouterOutletRoutes.some(route => event.url.startsWith(route));
       });
   }
@@ -758,6 +766,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   navigateTo(route: string): void {
     this.closeNavDropdown();
     this.router.navigate([route]);
+  }
+
+  onDropdownClick(route: string): void {
+    this.navigateTo(route);
   }
 
 }

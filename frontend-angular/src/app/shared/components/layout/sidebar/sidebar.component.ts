@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router'; // ⚡ AGREGAR: Para navegación al chat
+import { Router, RouterLink, RouterLinkActive } from '@angular/router'; // ⚡ AGREGAR: Para navegación al chat
 import { Subject, takeUntil, debounceTime } from 'rxjs';
 import { MedicalStateService } from '@core/services';
 import { UiStateService } from '@core/services';
@@ -12,6 +12,8 @@ import { BambooModule } from '../../../bamboo.module'; // ✅ BAMBOO REACTIVADO 
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
+    RouterLinkActive,
     BambooModule // ✅ BAMBOO REQUERIDO POR CLIENTE
   ],
   templateUrl: './sidebar.component.html',

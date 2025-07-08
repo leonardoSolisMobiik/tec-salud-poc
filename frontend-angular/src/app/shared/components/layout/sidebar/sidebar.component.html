@@ -36,6 +36,67 @@
     </button>
   </div>
 
+  <!-- 🔥 PRUEBA SUPER VISIBLE DE NAVEGACIÓN - SIN CONDICIONES -->
+  <div style="background: red !important; color: white !important; padding: 20px !important; font-size: 20px !important; font-weight: bold !important; text-align: center !important; margin: 10px !important; border: 5px solid yellow !important;">
+    🚨 MENÚ DE NAVEGACIÓN AQUÍ 🚨
+  </div>
+
+  <!-- NAVEGACIÓN CON MISMA ESTRATEGIA EXITOSA QUE PATIENT CARDS -->
+  <div class="nav-container-simple" style="padding: 15px !important; margin: 10px !important; background: #f0f0f0 !important; border: 2px solid #ccc !important; border-radius: 8px !important; display: block !important; visibility: visible !important;">
+    
+    <!-- Usando bmb-card igual que patient cards -->
+    <bmb-card 
+      class="nav-card-wrapper"
+      type="normal"
+      style="margin-bottom: 10px !important; background: lime !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
+      <a 
+        routerLink="/chat" 
+        routerLinkActive="active"
+        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: black !important; font-weight: bold !important;">
+        <span style="font-size: 1.5rem !important;">🩺</span>
+        <span>Copiloto Médico</span>
+      </a>
+    </bmb-card>
+    
+    <bmb-card 
+      class="nav-card-wrapper"
+      type="normal"
+      style="margin-bottom: 10px !important; background: cyan !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
+      <a 
+        routerLink="/dashboard" 
+        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: black !important; font-weight: bold !important;">
+        <span style="font-size: 1.5rem !important;">📤</span>
+        <span>Subir Expedientes</span>
+      </a>
+    </bmb-card>
+    
+    <bmb-card 
+      class="nav-card-wrapper"
+      type="normal"
+      style="margin-bottom: 10px !important; background: magenta !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
+      <a 
+        routerLink="/dashboard" 
+        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: white !important; font-weight: bold !important;">
+        <span style="font-size: 1.5rem !important;">📚</span>
+        <span>Ver Documentos</span>
+      </a>
+    </bmb-card>
+    
+    <bmb-card 
+      class="nav-card-wrapper"
+      type="normal"
+      style="margin-bottom: 10px !important; background: orange !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
+      <a 
+        routerLink="/patients" 
+        routerLinkActive="active"
+        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: black !important; font-weight: bold !important;">
+        <span style="font-size: 1.5rem !important;">👥</span>
+        <span>Gestión Pacientes</span>
+      </a>
+    </bmb-card>
+    
+  </div>
+
   <!-- Patients List -->
   <div class="patients-container">
     <div *ngIf="!(uiStateService.isSidebarCollapsed$ | async)">

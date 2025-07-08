@@ -6,9 +6,7 @@ import { ChatMessage } from '@core/models';
 import { MedicalStateService, StreamingService } from '@core/services';
 
 // Import available Bamboo Components
-import { 
-  BmbCardComponent,
-} from '@ti-tecnologico-de-monterrey-oficial/ds-ng';
+// (Currently none used in this component)
 
 @Component({
   selector: 'app-medical-chat',
@@ -16,692 +14,473 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    BmbCardComponent,
   ],
   template: `
-    <div class="medical-chat-container">
+    <!-- 🚨 BANNER ULTRA MEGA VISIBLE -->
+    <div class="mega-banner" id="bamboo-banner">
+      <div class="mega-banner-content">
+        <span class="mega-icon">🚨</span>
+        <span class="mega-text">¡¡¡ BAMBOO TOKENS FUNCIONANDO !!!</span>
+        <span class="mega-icon">🚨</span>
+            </div>
+          </div>
+          
+    <!-- 🚨 BANNER SÚPER VISIBLE -->
+    <div class="verification-banner">
+      <div class="banner-content">
+        <span class="banner-icon">🎯</span>
+        <span class="banner-text">BAMBOO TOKENS ACTIVADOS</span>
+        <span class="banner-icon">✨</span>
+            </div>
+            </div>
+
+    <!-- Main chat container -->
+    <div class="chat-container">
       <!-- Header -->
-      <header class="medical-header">
-        <div class="header-content">
-          <div class="header-left">
-            <div class="medical-logo">🏥</div>
-            <div class="header-title">
-              <h1>TecSalud Medical AI</h1>
-              <p>Powered by Bamboo Design System</p>
+      <div class="chat-header">
+        <div class="patient-info" *ngIf="activePatient">
+          <div class="patient-avatar">
+            {{ activePatient.name.charAt(0) }}
             </div>
-          </div>
-          
-          <div class="header-right" *ngIf="activePatient">
-            <div class="patient-info">
-              👤 {{ activePatient.name }}
-            </div>
-            <div class="status-info">
-              <span *ngIf="!isStreaming" class="status ready">✅ Listo</span>
-              <span *ngIf="isStreaming" class="status processing">⏳ Procesando...</span>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <!-- Main Chat Area -->
-      <main class="chat-main" #messagesContainer>
-        <!-- Welcome State -->
-        <div *ngIf="chatMessages.length === 0" class="welcome-section">
-          
-          <!-- Hero Card -->
-          <bmb-card class="hero-card">
-            <div class="hero-content">
-              <div class="hero-icon">🤖</div>
-              <h2>Asistente Médico Inteligente</h2>
-              <p>Sistema avanzado de IA médica integrado con Bamboo Design System para una experiencia consistente con los estándares de TecSalud</p>
-            </div>
-          </bmb-card>
-
-          <!-- Feature Cards -->
-          <div class="features-grid">
-            <bmb-card class="feature-card">
-              <div class="feature-content">
-                <div class="feature-icon">🎨</div>
-                <h3>Bamboo DS</h3>
-                <span class="feature-badge success">✅ Integrado</span>
-                <p>Cards funcionando correctamente</p>
+          <div class="patient-details">
+            <h3>{{ activePatient.name }}</h3>
+            <p>ID: {{ activePatient.id }}</p>
               </div>
-            </bmb-card>
-
-            <bmb-card class="feature-card">
-              <div class="feature-content">
-                <div class="feature-icon">👥</div>
-                <h3>Pacientes</h3>
-                <span class="feature-badge info">📊 {{ recentPatients.length }} disponibles</span>
-                <p>Base de datos SQLite</p>
               </div>
-            </bmb-card>
-
-            <bmb-card class="feature-card">
-              <div class="feature-content">
-                <div class="feature-icon">🔗</div>
-                <h3>Backend</h3>
-                <span class="feature-badge success">✅ FastAPI activo</span>
-                <p>Puerto 8000 conectado</p>
+        <div class="no-patient" *ngIf="!activePatient">
+          Selecciona un paciente para comenzar
               </div>
-            </bmb-card>
-
-            <bmb-card class="feature-card">
-              <div class="feature-content">
-                <div class="feature-icon">🧠</div>
-                <h3>IA Médica</h3>
-                <span class="feature-badge primary">⭐ Azure OpenAI</span>
-                <p>Streaming en tiempo real</p>
-              </div>
-            </bmb-card>
           </div>
 
-          <!-- Call to Action -->
-          <bmb-card *ngIf="!activePatient" class="cta-card">
-            <div class="cta-content">
-              <span class="cta-icon">ℹ️</span>
-              <div>
-                <h4>🚀 ¡Listo para comenzar!</h4>
-                <p>Selecciona un paciente en el sidebar para activar el asistente médico con IA</p>
+      <!-- Messages area -->
+      <div class="chat-main" #messagesContainer>
+        <div class="welcome-section" *ngIf="!activePatient">
+          <div class="hero-content">
+            <h2>Asistente Médico IA</h2>
+            <p>Selecciona un paciente para comenzar la consulta</p>
               </div>
-            </div>
-          </bmb-card>
         </div>
 
-        <!-- Chat Messages -->
-        <div class="chat-messages" *ngIf="chatMessages.length > 0">
-          <div *ngFor="let message of chatMessages; trackBy: trackMessage" 
-               class="message-wrapper"
-               [class.user-message]="message.role === 'user'"
-               [class.assistant-message]="message.role === 'assistant'">
-            
-            <bmb-card class="message-card">
-              <!-- Message Header -->
-              <div class="message-header">
-                <div class="message-author">
-                  <span class="author-avatar" 
-                        [class.user]="message.role === 'user'"
-                        [class.assistant]="message.role === 'assistant'">
-                    {{ message.role === 'user' ? '👤' : '🤖' }}
-                  </span>
-                  <span class="author-name">
-                    {{ message.role === 'user' ? 'Dr. Usuario' : 'Asistente IA' }}
-                  </span>
+        <!-- Messages -->
+        <div class="messages-list" *ngIf="activePatient">
+          <div 
+            *ngFor="let message of chatMessages; trackBy: trackMessage"
+            [class]="'message-item ' + (message.role === 'user' ? 'user-message' : 'assistant-message')"
+          >
+            <div class="message-content">
+              <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
+              <div class="message-time">{{ formatTime(message.timestamp) }}</div>
                 </div>
-                <span class="message-time">{{ formatTime(message.timestamp) }}</span>
               </div>
               
-              <!-- Message Content -->
-              <div class="message-content" [innerHTML]="formatMessageContent(message.content)"></div>
-
-              <!-- Message Actions -->
-              <div class="message-actions" *ngIf="message.role === 'assistant'">
-                <button class="action-btn" (click)="copyMessage(message.content)" title="Copiar">📋</button>
-                <button class="action-btn" (click)="likeMessage(message)" title="Me gusta">👍</button>
-                <button class="action-btn" (click)="repeatMessage(message)" title="Repetir">🔄</button>
-              </div>
-            </bmb-card>
-          </div>
-
-          <!-- Streaming Message -->
-          <div *ngIf="isStreaming" class="message-wrapper assistant-message streaming">
-            <bmb-card class="message-card">
-              <div class="message-header">
-                <div class="message-author">
-                  <span class="author-avatar assistant">🤖</span>
-                  <span class="author-name">Asistente IA</span>
-                </div>
-                <span class="processing-badge">⏳ Procesando...</span>
-              </div>
-              
+          <!-- Streaming message -->
+          <div class="message-item assistant-message" *ngIf="isStreaming">
               <div class="message-content">
-                <div class="thinking-indicator">
-                  <div class="pulse-dots">
-                    <span></span><span></span><span></span>
+              <div class="message-text">{{ streamingMessage }}</div>
+              <div class="message-time">Escribiendo...</div>
                   </div>
-                  <span>Analizando con IA médica...</span>
                 </div>
               </div>
-            </bmb-card>
           </div>
-        </div>
-      </main>
 
-      <!-- Input Area -->
-      <footer class="chat-footer">
-        <!-- Quick Actions -->
-        <div class="quick-actions" *ngIf="activePatient">
-          <button *ngFor="let action of quickActions" 
-                  class="quick-btn"
-                  (click)="useQuickAction(action)"
-                  [disabled]="isStreaming">
-            {{ action.label }}
-          </button>
-        </div>
-
-        <!-- Input Section -->
+      <!-- Footer -->
+      <div class="chat-footer" *ngIf="activePatient">
         <div class="input-section">
           <div class="input-container">
             <textarea
               [(ngModel)]="currentMessage"
               (keydown.enter)="onEnterPressed($event)"
               (input)="onInputChange($event)"
-              placeholder="Describe los síntomas del paciente o haz una consulta médica..."
-              rows="3"
+              placeholder="Describe los síntomas o haz una pregunta médica..."
               class="message-input"
-              [disabled]="isStreaming || !activePatient"
-              #messageInput>
-            </textarea>
-            
+              rows="3"
+              [disabled]="isStreaming"
+            ></textarea>
             <div class="input-footer">
-              <span class="char-count">{{ currentMessage.length }}/2000 caracteres</span>
+              <div class="char-count">
+                {{ currentMessage.length }}/1000
+              </div>
               <button
-                class="send-btn"
-                [class.active]="canSendMessage"
                 (click)="sendMessage()"
-                [disabled]="!canSendMessage">
-                <span *ngIf="!isStreaming">📤 Enviar</span>
-                <span *ngIf="isStreaming">⏳ Enviando...</span>
+                [disabled]="!canSendMessage"
+                class="send-btn-premium"
+              >
+                <span class="premium-text">ENVIAR</span>
               </button>
             </div>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   `,
   styles: [`
-    .medical-chat-container {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background: #f8f9fa;
+    /* 🚨 MEGA BANNER ULTRA VISIBLE */
+    .mega-banner {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100vw !important;
+      height: 80px !important;
+      background: linear-gradient(90deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 999999 !important;
+      animation: megaPulse 1s infinite !important;
+      border: 5px solid #FF0000 !important;
+      box-shadow: 0 0 50px rgba(255, 0, 0, 0.8) !important;
     }
 
-    /* Header */
-    .medical-header {
-      background: linear-gradient(135deg, #0066cc 0%, #004d99 100%);
-      color: white;
-      padding: 1rem 2rem;
-      box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+    .mega-banner-content {
+      display: flex !important;
+      align-items: center !important;
+      gap: 30px !important;
+      color: white !important;
+      font-weight: 900 !important;
+      font-size: 2rem !important;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8) !important;
+      letter-spacing: 2px !important;
+      text-transform: uppercase !important;
     }
 
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
+    .mega-icon {
+      font-size: 3rem !important;
+      animation: megaBounce 0.5s infinite !important;
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+    .mega-text {
+      font-size: 2.5rem !important;
+      animation: megaShake 0.5s infinite !important;
     }
 
-    .medical-logo {
-      font-size: 2rem;
-      width: 48px;
-      height: 48px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    @keyframes megaPulse {
+      0%, 100% { 
+        background: linear-gradient(90deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
+        transform: scale(1) !important;
+      }
+      50% { 
+        background: linear-gradient(90deg, #FF4500, #FF6B35, #FFFF00, #FF6B35, #FF4500) !important;
+        transform: scale(1.05) !important;
+      }
     }
 
-    .header-title h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 700;
+    @keyframes megaBounce {
+      0%, 100% { transform: translateY(0) rotate(0deg) !important; }
+      50% { transform: translateY(-15px) rotate(180deg) !important; }
     }
 
-    .header-title p {
-      margin: 0;
-      font-size: 0.875rem;
-      opacity: 0.9;
+    @keyframes megaShake {
+      0%, 100% { transform: translateX(0) !important; }
+      25% { transform: translateX(-10px) !important; }
+      75% { transform: translateX(10px) !important; }
     }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
+    /* 🚨 BANNER SÚPER VISIBLE */
+    .verification-banner {
+      position: fixed !important;
+      top: 80px !important;
+      left: 0 !important;
+      right: 0 !important;
+      height: 60px !important;
+      background: linear-gradient(90deg, #FF6B35, #F7931E, #FF6B35) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 99999 !important;
+      animation: bannerPulse 2s infinite !important;
+    }
+
+    .banner-content {
+      display: flex !important;
+      align-items: center !important;
+      gap: 20px !important;
+      color: white !important;
+      font-weight: 900 !important;
+      font-size: 1.5rem !important;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .banner-icon {
+      font-size: 2rem !important;
+      animation: bounce 1s infinite !important;
+    }
+
+    .banner-text {
+      letter-spacing: 3px !important;
+      animation: shimmer 2s infinite !important;
+    }
+
+    @keyframes bannerPulse {
+      0%, 100% { opacity: 0.9 !important; }
+      50% { opacity: 1 !important; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0) !important; }
+      50% { transform: translateY(-10px) !important; }
+    }
+
+    @keyframes shimmer {
+      0% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important; }
+      50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8) !important; }
+      100% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important; }
+    }
+
+    /* CONTENEDOR PRINCIPAL */
+    .chat-container {
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100vh !important;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+      margin-top: 140px !important;
+    }
+
+    /* HEADER */
+    .chat-header {
+      padding: 20px !important;
+      background: white !important;
+      border-bottom: 1px solid #e0e0e0 !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
     }
 
     .patient-info {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
-      font-weight: 600;
+      display: flex !important;
+      align-items: center !important;
+      gap: 15px !important;
     }
 
-    .status {
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      font-size: 0.875rem;
-      font-weight: 500;
+    .patient-avatar {
+      width: 50px !important;
+      height: 50px !important;
+      border-radius: 50% !important;
+      background: #2196F3 !important;
+      color: white !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 1.2rem !important;
+      font-weight: bold !important;
     }
 
-    .status.ready {
-      background: rgba(76, 175, 80, 0.2);
-      color: #4caf50;
+    .patient-details h3 {
+      margin: 0 !important;
+      color: #333 !important;
     }
 
-    .status.processing {
-      background: rgba(255, 152, 0, 0.2);
-      color: #ff9800;
+    .patient-details p {
+      margin: 5px 0 0 0 !important;
+      color: #666 !important;
+      font-size: 0.9rem !important;
     }
 
-    /* Main Chat Area */
+    /* ÁREA DE MENSAJES */
     .chat-main {
-      flex: 1;
-      overflow-y: auto;
-      padding: 2rem;
-      background: #f8f9fa;
+      flex: 1 !important;
+      overflow-y: auto !important;
+      padding: 20px !important;
     }
 
-    /* Welcome Section */
     .welcome-section {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-
-    .hero-card {
-      margin-bottom: 2rem;
-      border: 2px solid #0066cc;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 100% !important;
     }
 
     .hero-content {
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .hero-icon {
-      font-size: 4rem;
-      margin-bottom: 1rem;
+      text-align: center !important;
+      background: white !important;
+      padding: 40px !important;
+      border-radius: 20px !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
     }
 
     .hero-content h2 {
-      margin: 0 0 1rem 0;
-      color: #0066cc;
-      font-size: 2rem;
-      font-weight: 700;
+      color: #333 !important;
+      margin-bottom: 10px !important;
     }
 
     .hero-content p {
-      margin: 0;
-      color: #666;
-      font-size: 1.1rem;
-      line-height: 1.6;
+      color: #666 !important;
     }
 
-    /* Feature Cards Grid */
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+    /* MENSAJES */
+    .messages-list {
+      max-width: 800px !important;
+      margin: 0 auto !important;
     }
 
-    .feature-card {
-      border: 1px solid #e5e7eb;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
-    }
-
-    .feature-content {
-      text-align: center;
-      padding: 1.5rem;
-    }
-
-    .feature-icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .feature-content h3 {
-      margin: 0 0 0.5rem 0;
-      color: #333;
-      font-size: 1.25rem;
-      font-weight: 600;
-    }
-
-    .feature-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      border-radius: 12px;
-      font-size: 0.875rem;
-      font-weight: 500;
-      margin-bottom: 0.75rem;
-    }
-
-    .feature-badge.success {
-      background: #e8f5e8;
-      color: #2e7d32;
-    }
-
-    .feature-badge.info {
-      background: #e3f2fd;
-      color: #1976d2;
-    }
-
-    .feature-badge.primary {
-      background: #e8f0fe;
-      color: #0066cc;
-    }
-
-    .feature-content p {
-      margin: 0;
-      color: #666;
-      font-size: 0.875rem;
-    }
-
-    /* Call to Action */
-    .cta-card {
-      border: 2px solid #ff9800;
-      background: #fff8e1;
-    }
-
-    .cta-content {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.5rem;
-    }
-
-    .cta-icon {
-      font-size: 2rem;
-    }
-
-    .cta-content h4 {
-      margin: 0 0 0.5rem 0;
-      color: #e65100;
-      font-size: 1.25rem;
-    }
-
-    .cta-content p {
-      margin: 0;
-      color: #f57c00;
-      font-size: 1rem;
-    }
-
-    /* Chat Messages */
-    .chat-messages {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .message-wrapper {
-      margin-bottom: 1.5rem;
+    .message-item {
+      margin-bottom: 20px !important;
     }
 
     .user-message {
-      margin-left: 20%;
+      display: flex !important;
+      justify-content: flex-end !important;
     }
 
     .assistant-message {
-      margin-right: 20%;
-    }
-
-    .message-card {
-      border: 1px solid #e5e7eb;
-    }
-
-    .user-message .message-card {
-      border-color: #0066cc;
-      background: #f0f7ff;
-    }
-
-    .assistant-message .message-card {
-      border-color: #e5e7eb;
-      background: white;
-    }
-
-    .message-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #f0f0f0;
-    }
-
-    .message-author {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .author-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-    }
-
-    .author-avatar.user {
-      background: #e3f2fd;
-    }
-
-    .author-avatar.assistant {
-      background: #f3e5f5;
-    }
-
-    .author-name {
-      font-weight: 600;
-      color: #333;
-      font-size: 0.875rem;
-    }
-
-    .message-time {
-      font-size: 0.75rem;
-      color: #666;
+      display: flex !important;
+      justify-content: flex-start !important;
     }
 
     .message-content {
-      line-height: 1.6;
-      color: #333;
-      margin-bottom: 0.75rem;
+      max-width: 70% !important;
+      padding: 15px 20px !important;
+      border-radius: 20px !important;
+      background: white !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
     }
 
-    .message-actions {
-      display: flex;
-      gap: 0.5rem;
-      padding-top: 0.5rem;
-      border-top: 1px solid #f0f0f0;
+    .user-message .message-content {
+      background: #2196F3 !important;
+      color: white !important;
     }
 
-    .action-btn {
-      background: none;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      padding: 0.25rem 0.5rem;
-      cursor: pointer;
-      font-size: 0.75rem;
-      transition: background 0.2s;
+    .message-text {
+      line-height: 1.5 !important;
     }
 
-    .action-btn:hover {
-      background: #f5f5f5;
+    .message-time {
+      font-size: 0.75rem !important;
+      opacity: 0.7 !important;
+      margin-top: 5px !important;
     }
 
-    /* Streaming Animation */
-    .thinking-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: #666;
-    }
-
-    .pulse-dots {
-      display: flex;
-      gap: 0.25rem;
-    }
-
-    .pulse-dots span {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #0066cc;
-      animation: pulse 1.4s infinite;
-    }
-
-    .pulse-dots span:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-
-    .pulse-dots span:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-
-    @keyframes pulse {
-      0%, 80%, 100% {
-        opacity: 0.3;
-        transform: scale(0.8);
-      }
-      40% {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    /* Footer */
+    /* FOOTER */
     .chat-footer {
-      background: white;
-      border-top: 1px solid #e5e7eb;
-      padding: 1rem 2rem;
+      padding: 20px !important;
+      background: white !important;
+      border-top: 1px solid #e0e0e0 !important;
     }
 
-    .quick-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      justify-content: center;
-    }
-
-    .quick-btn {
-      background: #f8f9fa;
-      border: 1px solid #e5e7eb;
-      border-radius: 20px;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      font-size: 0.875rem;
-      transition: all 0.2s;
-    }
-
-    .quick-btn:hover:not(:disabled) {
-      background: #e3f2fd;
-      border-color: #0066cc;
-      color: #0066cc;
-    }
-
-    .quick-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* Input Section */
     .input-section {
-      max-width: 800px;
-      margin: 0 auto;
+      max-width: 800px !important;
+      margin: 0 auto !important;
     }
 
     .input-container {
-      background: white;
-      border: 2px solid #e5e7eb;
-      border-radius: 12px;
-      overflow: hidden;
-      transition: border-color 0.2s;
+      border: 2px solid #e0e0e0 !important;
+      border-radius: 15px !important;
+      background: white !important;
+      transition: all 0.3s ease !important;
     }
 
     .input-container:focus-within {
-      border-color: #0066cc;
+      border-color: #2196F3 !important;
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1) !important;
     }
 
     .message-input {
-      width: 100%;
-      border: none;
-      outline: none;
-      padding: 1rem;
-      font-size: 1rem;
-      line-height: 1.5;
-      resize: none;
-      font-family: inherit;
+      width: 100% !important;
+      border: none !important;
+      outline: none !important;
+      padding: 15px !important;
+      font-size: 1rem !important;
+      resize: none !important;
+      background: transparent !important;
     }
 
-    .message-input:disabled {
-      background: #f5f5f5;
-      color: #999;
+    .message-input::placeholder {
+      color: #999 !important;
     }
 
     .input-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      background: #f8f9fa;
-      border-top: 1px solid #e5e7eb;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      padding: 10px 15px !important;
+      border-top: 1px solid #f0f0f0 !important;
     }
 
     .char-count {
-      font-size: 0.75rem;
-      color: #666;
+      color: #666 !important;
+      font-size: 0.8rem !important;
     }
 
-    .send-btn {
-      background: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 0.75rem 1.5rem;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
+    /* 🚀 BOTÓN MEGA ULTRA VISIBLE */
+    .send-btn-premium {
+      min-width: 160px !important;
+      height: 60px !important;
+      background: linear-gradient(45deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
+      border: 4px solid #FF0000 !important;
+      border-radius: 30px !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 0 30px rgba(255, 0, 0, 0.8) !important;
+      animation: buttonMegaPulse 1s infinite !important;
+      transform: scale(1.3) !important;
+      position: relative !important;
+      z-index: 9999 !important;
     }
 
-    .send-btn:hover:not(:disabled) {
-      background: #0052a3;
-      transform: translateY(-1px);
+    .send-btn-premium:hover {
+      transform: scale(1.5) !important;
+      box-shadow: 0 0 50px rgba(255, 0, 0, 1) !important;
     }
 
-    .send-btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-      transform: none;
+    .send-btn-premium:disabled {
+      opacity: 0.5 !important;
+      cursor: not-allowed !important;
+      transform: scale(1) !important;
+      animation: none !important;
     }
 
-    .send-btn.active {
-      background: #0066cc;
+    .premium-text {
+      color: white !important;
+      font-size: 1.2rem !important;
+      font-weight: 900 !important;
+      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8) !important;
+      letter-spacing: 2px !important;
+      text-transform: uppercase !important;
     }
 
-    /* Responsive */
+    @keyframes buttonMegaPulse {
+      0%, 100% {
+        box-shadow: 0 0 30px rgba(255, 0, 0, 0.8) !important;
+        background: linear-gradient(45deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
+      }
+      50% {
+        box-shadow: 0 0 50px rgba(255, 0, 0, 1) !important;
+        background: linear-gradient(45deg, #FF4500, #FF6B35, #FFFF00, #FF6B35, #FF4500) !important;
+      }
+    }
+
+    /* RESPONSIVE */
     @media (max-width: 768px) {
-      .chat-main {
-        padding: 1rem;
+      .chat-container {
+        margin-top: 120px !important;
       }
       
-      .chat-footer {
-        padding: 1rem;
+      .mega-banner {
+        height: 60px !important;
       }
       
-      .user-message {
-        margin-left: 10%;
+      .verification-banner {
+        height: 50px !important;
+        top: 60px !important;
       }
       
-      .assistant-message {
-        margin-right: 10%;
+      .mega-banner-content {
+        font-size: 1.5rem !important;
       }
       
-      .features-grid {
-        grid-template-columns: 1fr;
+      .banner-content {
+        font-size: 1.2rem !important;
+      }
+      
+      .banner-icon {
+        font-size: 1.5rem !important;
+      }
+      
+      .message-content {
+        max-width: 85% !important;
+      }
+      
+      .send-btn-premium {
+        min-width: 140px !important;
+        height: 50px !important;
       }
     }
   `]
@@ -809,6 +588,8 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     console.log('🩺 - recentPatients:', this.recentPatients.length);
     console.log('🩺 - chatMessages:', this.chatMessages.length);
     console.log('🩺 ============================================');
+    
+    // ✅ Initialization complete
   }
 
   ngAfterViewChecked(): void {
@@ -817,6 +598,8 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
       this.shouldScrollToBottom = false;
     }
   }
+
+
 
   ngOnDestroy(): void {
     this.destroy$.next();

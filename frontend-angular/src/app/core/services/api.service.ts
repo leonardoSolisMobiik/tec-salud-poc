@@ -114,6 +114,101 @@ export class ApiService {
     );
   }
 
+  // ========== Document Management ==========
+  
+  uploadDocument(formData: FormData): Observable<any> {
+    // Don't set Content-Type header, let browser set it for FormData
+    return this.http.post<any>(
+      `${this.apiUrl}/api/v1/documents/upload`,
+      formData
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getDocuments(patientId?: string, documentType?: string): Observable<any> {
+    let params = new URLSearchParams();
+    if (patientId) params.set('patient_id', patientId);
+    if (documentType) params.set('document_type', documentType);
+    
+    const url = `${this.apiUrl}/api/v1/documents/${params.toString() ? '?' + params.toString() : ''}`;
+    
+    return this.http.get<any>(url, { headers: this.headers }).pipe(
+      retry(1),
+      catchError(this.handleError)
+    );
+  }
+
+  getDocumentById(documentId: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}/api/v1/documents/${documentId}`,
+      { headers: this.headers }
+    ).pipe(
+      retry(1),
+      catchError(this.handleError)
+    );
+  }
+
+  searchDocuments(query: string, patientId?: string, documentType?: string): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/api/v1/documents/search`,
+      { query, patient_id: patientId, document_type: documentType },
+      { headers: this.headers }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  deleteDocument(documentId: string): Observable<any> {
+    return this.http.delete<any>(
+      `${this.apiUrl}/api/v1/documents/${documentId}`,
+      { headers: this.headers }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  // ========== Generic HTTP Methods ==========
+  
+  get(url: string): Observable<any> {
+    return this.http.get<any>(
+      `${this.apiUrl}${url}`,
+      { headers: this.headers }
+    ).pipe(
+      retry(1),
+      catchError(this.handleError)
+    );
+  }
+
+  post(url: string, data: any): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}${url}`,
+      data,
+      { headers: this.headers }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  put(url: string, data: any): Observable<any> {
+    return this.http.put<any>(
+      `${this.apiUrl}${url}`,
+      data,
+      { headers: this.headers }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  delete(url: string): Observable<any> {
+    return this.http.delete<any>(
+      `${this.apiUrl}${url}`,
+      { headers: this.headers }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   // ========== Health Checks ==========
   
   checkHealth(): Observable<HealthCheckResponse> {

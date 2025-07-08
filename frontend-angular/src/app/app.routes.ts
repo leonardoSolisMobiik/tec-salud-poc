@@ -27,6 +27,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/document-viewer/document-list.component').then(m => m.DocumentListComponent)
   },
   {
+    path: 'admin-bulk-upload',
+    loadComponent: () => import('./features/admin-bulk-upload/admin-bulk-upload.component').then(m => m.AdminBulkUploadComponent)
+  },
+  {
     path: 'test-bamboo',
     loadComponent: () => import('./shared/components/test-bamboo/test-bamboo.component').then(m => m.TestBambooComponent)
   },

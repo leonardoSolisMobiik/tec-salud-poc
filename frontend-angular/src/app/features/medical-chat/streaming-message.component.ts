@@ -33,67 +33,146 @@ import { marked } from 'marked';
     </div>
   `,
   styles: [`
+    /* 🎯 PREMIUM STREAMING MESSAGE CON TOKENS BAMBOO */
     .streaming-message {
       display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-      max-width: 80%;
+      gap: var(--bmb-spacing-s);
+      margin-bottom: var(--bmb-spacing-l);
+      max-width: 85%;
       margin-right: auto;
       opacity: 0;
-      animation: fadeIn 0.3s ease-in forwards;
+      animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      position: relative;
     }
     
+    /* 🎨 MESSAGE AVATAR PREMIUM */
     .message-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--medical-context-active);
+      width: 44px;
+      height: 44px;
+      border-radius: var(--bmb-radius-full);
+      background: linear-gradient(135deg, 
+        rgba(156, 39, 176, 0.2) 0%, 
+        rgba(156, 39, 176, 0.1) 100%
+      );
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       flex-shrink: 0;
       position: relative;
+      box-shadow: 0 4px 12px rgba(156, 39, 176, 0.2);
+      border: 2px solid rgba(156, 39, 176, 0.1);
+      backdrop-filter: blur(5px);
+      
+      /* Efecto glow */
+      &::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        border-radius: var(--bmb-radius-full);
+        background: linear-gradient(135deg, 
+          rgba(156, 39, 176, 0.3) 0%, 
+          rgba(156, 39, 176, 0.1) 100%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+      }
+      
+      &:hover::before {
+        opacity: 1;
+        animation: pulse-glow 2s infinite;
+      }
       
       .ai-icon {
         animation: pulse 2s infinite;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
       }
     }
     
+    @keyframes pulse-glow {
+      0%, 100% { 
+        opacity: 0.3; 
+        transform: scale(1);
+      }
+      50% { 
+        opacity: 0.6; 
+        transform: scale(1.1);
+      }
+    }
+    
+    /* 🎯 MESSAGE CONTENT PREMIUM */
     .message-content {
-      background: var(--medical-surface);
-      border: 1px solid var(--medical-divider);
-      border-radius: 1rem;
-      padding: 0.75rem 1rem;
+      background: linear-gradient(135deg, 
+        rgba(255, 255, 255, 0.95) 0%, 
+        rgba(255, 255, 255, 0.9) 100%
+      );
+      border: 1px solid rgba(var(--general_contrasts-container-outline), 0.2);
+      border-radius: var(--bmb-radius-m);
+      padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
       min-width: 0;
       flex: 1;
       position: relative;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      
+      /* Efecto glass top */
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, 
+          transparent 0%, 
+          rgba(156, 39, 176, 0.3) 50%, 
+          transparent 100%
+        );
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      
+      &:hover::before {
+        opacity: 1;
+      }
     }
     
+    /* 🎨 MESSAGE HEADER PREMIUM */
     .message-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      margin-bottom: var(--bmb-spacing-s);
       font-size: 0.75rem;
-      opacity: 0.8;
+      opacity: 0.9;
+      font-weight: 500;
     }
     
     .message-role {
-      font-weight: 600;
-      color: var(--medical-blue);
+      font-weight: 700;
+      color: rgb(var(--color-blue-tec));
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.7rem;
     }
     
+    /* 🎯 TYPING INDICATOR PREMIUM */
     .typing-indicator {
       display: flex;
-      gap: 2px;
+      gap: var(--bmb-spacing-xs);
       
       .dot {
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: var(--medical-blue);
+        width: 5px;
+        height: 5px;
+        border-radius: var(--bmb-radius-full);
+        background: rgb(var(--color-blue-tec));
         animation: typing 1.4s infinite ease-in-out;
+        box-shadow: 0 0 6px rgba(var(--color-blue-tec), 0.4);
         
         &:nth-child(1) { animation-delay: 0s; }
         &:nth-child(2) { animation-delay: 0.2s; }
@@ -101,65 +180,135 @@ import { marked } from 'marked';
       }
     }
     
-    .message-text {
-      line-height: 1.5;
-      word-wrap: break-word;
-      position: relative;
-      
-      .cursor {
-        color: var(--medical-blue);
-        animation: blink 1s infinite;
-        font-weight: bold;
-      }
-    }
-    
-    .loading-text {
-      color: var(--medical-text-secondary);
-      font-style: italic;
-      font-size: 0.875rem;
-    }
-    
-    /* Animations */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-    
     @keyframes typing {
       0%, 60%, 100% {
         transform: translateY(0);
         opacity: 0.3;
+        box-shadow: 0 0 6px rgba(var(--color-blue-tec), 0.2);
       }
       30% {
-        transform: translateY(-10px);
+        transform: translateY(-8px);
         opacity: 1;
+        box-shadow: 0 0 12px rgba(var(--color-blue-tec), 0.6);
+      }
+    }
+    
+    /* 🎨 MESSAGE TEXT PREMIUM */
+    .message-text {
+      line-height: 1.6;
+      word-wrap: break-word;
+      position: relative;
+      color: rgb(var(--general_contrasts-text-primary));
+      font-weight: 500;
+      
+      .cursor {
+        color: rgb(var(--color-blue-tec));
+        animation: blink 1s infinite;
+        font-weight: bold;
+        text-shadow: 0 0 4px rgba(var(--color-blue-tec), 0.4);
       }
     }
     
     @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
+      0%, 50% { 
+        opacity: 1; 
+        text-shadow: 0 0 8px rgba(var(--color-blue-tec), 0.6);
+      }
+      51%, 100% { 
+        opacity: 0; 
+        text-shadow: none;
+      }
     }
     
-    /* Mobile responsive */
+    /* 🎯 LOADING TEXT PREMIUM */
+    .loading-text {
+      color: rgb(var(--general_contrasts-text-secondary));
+      font-style: italic;
+      font-size: 0.875rem;
+      font-weight: 500;
+      position: relative;
+      
+      span {
+        display: inline-block;
+        animation: loadingPulse 2s infinite;
+      }
+    }
+    
+    @keyframes loadingPulse {
+      0%, 100% { 
+        opacity: 0.6; 
+        transform: scale(1);
+      }
+      50% { 
+        opacity: 1; 
+        transform: scale(1.02);
+      }
+    }
+    
+    /* 🎨 ENTRANCE ANIMATION PREMIUM */
+    @keyframes fadeIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(20px) scale(0.95);
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { 
+        transform: scale(1);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+      50% { 
+        transform: scale(1.1);
+        filter: drop-shadow(0 4px 8px rgba(156, 39, 176, 0.2));
+      }
+    }
+    
+    /* 🎨 MOBILE RESPONSIVE PREMIUM */
     @media (max-width: 768px) {
       .streaming-message {
-        max-width: 90%;
+        max-width: 95%;
+        gap: var(--bmb-spacing-xs);
       }
       
       .message-avatar {
-        width: 32px;
-        height: 32px;
-        font-size: 1rem;
+        width: 36px;
+        height: 36px;
+        font-size: 1.1rem;
       }
       
       .message-content {
-        padding: 0.5rem 0.75rem;
+        padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
+      }
+      
+      .message-header {
+        margin-bottom: var(--bmb-spacing-xs);
+      }
+      
+      .message-text {
+        font-size: 0.875rem;
+      }
+      
+      .loading-text {
+        font-size: 0.8rem;
+      }
+    }
+    
+    /* 🎯 ENHANCED VISUAL EFFECTS */
+    .streaming-message:hover {
+      transform: translateY(-2px);
+      
+      .message-content {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+      
+      .message-avatar {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(156, 39, 176, 0.3);
       }
     }
   `]

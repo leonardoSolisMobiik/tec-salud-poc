@@ -8,6 +8,15 @@ import { ApiService, UiStateService } from '@core/services';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
+    <!-- 🚨 BANNER DE PRUEBA BAMBOO EN DASHBOARD -->
+    <div class="bamboo-test-banner">
+      <div class="test-content">
+        <span class="test-icon">🎯</span>
+        <span class="test-text">BAMBOO TOKENS FUNCIONANDO EN DASHBOARD</span>
+        <span class="test-icon">✨</span>
+      </div>
+    </div>
+
     <div class="dashboard-container">
       <h1>TecSalud Medical Assistant</h1>
       <p>Sistema de Asistente Médico con IA</p>
@@ -15,9 +24,10 @@ import { ApiService, UiStateService } from '@core/services';
       <div class="quick-actions">
         <h2>Acciones Rápidas</h2>
         <div class="action-cards">
-          <a routerLink="/chat" class="action-card">
-            <h3>Chat Médico</h3>
-            <p>Consulta con el asistente de IA</p>
+          <a routerLink="/chat" class="action-card chat-card-mega">
+            <h3>🚀 Chat Médico IA</h3>
+            <p>📱 CLICK AQUÍ para ver el componente con banners súper visibles</p>
+            <div class="mega-indicator">➤ VER BANNERS AQUÍ ⭐</div>
           </a>
           <a routerLink="/patients" class="action-card">
             <h3>Gestión de Pacientes</h3>
@@ -38,10 +48,71 @@ import { ApiService, UiStateService } from '@core/services';
     </div>
   `,
   styles: [`
+    /* 🚨 BANNER DE PRUEBA BAMBOO */
+    .bamboo-test-banner {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      width: 100vw !important;
+      height: 70px !important;
+      background: linear-gradient(90deg, #FF6B35, #F7931E, #FF6B35) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      z-index: 999999 !important;
+      animation: testPulse 2s infinite !important;
+      border-bottom: 3px solid #FF4500 !important;
+      box-shadow: 0 3px 15px rgba(255, 107, 53, 0.5) !important;
+    }
+
+    .test-content {
+      display: flex !important;
+      align-items: center !important;
+      gap: 20px !important;
+      color: white !important;
+      font-weight: 900 !important;
+      font-size: 1.4rem !important;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+      letter-spacing: 2px !important;
+    }
+
+    .test-icon {
+      font-size: 2rem !important;
+      animation: testBounce 1s infinite !important;
+    }
+
+    .test-text {
+      animation: testShimmer 2s infinite !important;
+    }
+
+    @keyframes testPulse {
+      0%, 100% { 
+        background: linear-gradient(90deg, #FF6B35, #F7931E, #FF6B35) !important;
+        transform: scale(1) !important;
+      }
+      50% { 
+        background: linear-gradient(90deg, #FF4500, #FF6B35, #FF4500) !important;
+        transform: scale(1.02) !important;
+      }
+    }
+
+    @keyframes testBounce {
+      0%, 100% { transform: translateY(0) rotate(0deg) !important; }
+      50% { transform: translateY(-5px) rotate(10deg) !important; }
+    }
+
+    @keyframes testShimmer {
+      0% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important; }
+      50% { text-shadow: 0 0 15px rgba(255, 255, 255, 0.8) !important; }
+      100% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important; }
+    }
+
     .dashboard-container {
       padding: 2rem;
       max-width: 1200px;
       margin: 0 auto;
+      margin-top: 80px !important; /* Para el banner */
     }
     
     h1 {
@@ -81,6 +152,61 @@ import { ApiService, UiStateService } from '@core/services';
       
       p {
         color: var(--medical-text-secondary);
+      }
+    }
+
+    /* 🚀 TARJETA MEGA VISIBLE PARA CHAT */
+    .chat-card-mega {
+      background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%) !important;
+      border: 3px solid #2196F3 !important;
+      animation: cardPulse 3s infinite !important;
+      transform: scale(1.05) !important;
+      box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3) !important;
+      
+      h3 {
+        color: #1976D2 !important;
+        font-size: 1.5rem !important;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1) !important;
+      }
+      
+      p {
+        color: #1565C0 !important;
+        font-weight: 600 !important;
+        margin-bottom: 10px !important;
+      }
+      
+      .mega-indicator {
+        background: linear-gradient(90deg, #FF4500, #FF6B35) !important;
+        color: white !important;
+        padding: 8px 15px !important;
+        border-radius: 20px !important;
+        font-weight: 800 !important;
+        text-align: center !important;
+        animation: indicatorGlow 2s infinite !important;
+        letter-spacing: 1px !important;
+      }
+      
+      &:hover {
+        transform: scale(1.1) !important;
+        box-shadow: 0 12px 35px rgba(33, 150, 243, 0.4) !important;
+      }
+    }
+
+    @keyframes cardPulse {
+      0%, 100% { 
+        box-shadow: 0 8px 25px rgba(33, 150, 243, 0.3) !important;
+      }
+      50% { 
+        box-shadow: 0 12px 35px rgba(33, 150, 243, 0.5) !important;
+      }
+    }
+
+    @keyframes indicatorGlow {
+      0%, 100% { 
+        box-shadow: 0 0 10px rgba(255, 69, 0, 0.5) !important;
+      }
+      50% { 
+        box-shadow: 0 0 20px rgba(255, 69, 0, 0.8) !important;
       }
     }
     

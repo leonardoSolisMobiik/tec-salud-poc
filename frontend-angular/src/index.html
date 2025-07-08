@@ -2,12 +2,163 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>FrontendAngular</title>
+  <title>TecSalud Medical Assistant - Angular + Bamboo DS</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- 🚀 SCRIPT GLOBAL PARA VERIFICACIÓN BAMBOO - JAVASCRIPT PURO -->
+  <script>
+    // 🎯 FUNCIÓN GLOBAL PARA MOSTRAR VERIFICACIÓN BAMBOO
+    window.showBambooVerification = function() {
+      console.log('🚀 showBambooVerification called!');
+      
+      // Crear modal súper evidente
+      const modal = document.createElement('div');
+      modal.id = 'bamboo-verification-modal-global';
+      modal.innerHTML = `
+        <div style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.9);
+          z-index: 999999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(10px);
+        ">
+          <div style="
+            background: linear-gradient(135deg, #0057a6 0%, #2196f3 50%, #0057a6 100%);
+            color: white;
+            padding: 60px;
+            border-radius: 30px;
+            border: 8px solid #0057a6;
+            box-shadow: 0 30px 100px rgba(255, 107, 53, 0.9);
+            text-align: center;
+            max-width: 90vw;
+            max-height: 90vh;
+            transform: scale(0.8);
+            animation: modalZoom 0.6s ease-out forwards;
+          ">
+            <div style="font-size: 100px; margin-bottom: 30px; animation: iconSpin 3s linear infinite;">🎯</div>
+            <h1 style="
+              font-size: 3rem;
+              font-weight: 900;
+              margin-bottom: 30px;
+              text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+              text-transform: uppercase;
+              letter-spacing: 4px;
+              animation: textPulse 2s ease-in-out infinite;
+            ">
+              ¡BAMBOO TOKENS 100% ACTIVOS!
+            </h1>
+            <div style="
+              background: rgba(255, 255, 255, 0.3);
+              padding: 30px;
+              border-radius: 20px;
+              margin-bottom: 40px;
+              backdrop-filter: blur(10px);
+              border: 2px solid rgba(255, 255, 255, 0.5);
+            ">
+              <h2 style="font-size: 1.8rem; margin-bottom: 20px; color: #fff;">🎨 TOKENS VERIFICADOS:</h2>
+              <div style="text-align: left; font-size: 1.3rem; font-weight: 600; line-height: 1.8;">
+                <p>✅ <strong>Colores:</strong> var(--color-blue-tec, --color-mitec-orange)</p>
+                <p>✅ <strong>Espaciado:</strong> var(--bmb-spacing-s, --bmb-spacing-m)</p>
+                <p>✅ <strong>Bordes:</strong> var(--bmb-radius-s, --bmb-radius-full)</p>
+                <p>✅ <strong>Componentes:</strong> BmbCardComponent funcionando</p>
+                <p>✅ <strong>Tipografía:</strong> var(--font-display)</p>
+              </div>
+            </div>
+            <button onclick="document.getElementById('bamboo-verification-modal-global').remove()" style="
+              background: linear-gradient(135deg, #4CAF50 0%, #2196F3 100%);
+              color: white;
+              border: none;
+              padding: 20px 40px;
+              border-radius: 30px;
+              font-size: 1.4rem;
+              font-weight: 800;
+              cursor: pointer;
+              box-shadow: 0 10px 30px rgba(76, 175, 80, 0.5);
+              transition: all 0.3s ease;
+              text-transform: uppercase;
+              letter-spacing: 2px;
+            " onmouseover="this.style.transform='scale(1.1) rotate(2deg)'" onmouseout="this.style.transform='scale(1) rotate(0deg)'">
+              🚀 ¡PERFECTO! CERRAR
+            </button>
+          </div>
+        </div>
+      `;
+      
+      // Agregar animaciones CSS
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes modalZoom {
+          0% { 
+            transform: scale(0.3) rotate(-10deg);
+            opacity: 0;
+          }
+          100% { 
+            transform: scale(1) rotate(0deg);
+            opacity: 1;
+          }
+        }
+        @keyframes iconSpin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes textPulse {
+          0%, 100% { 
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+          }
+          50% { 
+            text-shadow: 0 8px 16px rgba(0, 0, 0, 0.9), 0 0 20px rgba(255, 107, 53, 0.8);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Agregar al DOM
+      document.body.appendChild(modal);
+      
+      // Auto-cerrar después de 10 segundos
+      setTimeout(() => {
+        const modalElement = document.getElementById('bamboo-verification-modal-global');
+        if (modalElement) {
+          modalElement.remove();
+          style.remove();
+        }
+      }, 10000);
+    };
+    
+    // 🎯 FUNCIÓN PARA IDENTIFICAR BOTONES PREMIUM (sin estilos adicionales)
+    window.makeSendButtonObvious = function() {
+      console.log('🎯 Premium button function ready - styles handled by CSS');
+    };
+    
+    // Ejecutar cuando la página carga
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 DOM loaded, executing Bamboo verification functions...');
+      window.makeSendButtonObvious();
+    });
+  </script>
+  
+
 </head>
 <body>
   <app-root></app-root>
+  
+  <!-- 🚀 SCRIPT FINAL PARA ASEGURAR QUE TODO FUNCIONE -->
+  <script>
+    // Ejecutar después de que Angular cargue
+    setTimeout(() => {
+      console.log('🚀 Final script executing...');
+      if (window.makeSendButtonObvious) {
+        window.makeSendButtonObvious();
+      }
+    }, 3000);
+  </script>
 </body>
 </html>

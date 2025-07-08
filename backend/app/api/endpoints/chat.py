@@ -1,6 +1,6 @@
 """
 Chat Endpoints
-API endpoints for medical chat functionality with Azure OpenAI
+API endpoints for medical chat functionality with enhanced hybrid context
 """
 
 import logging
@@ -12,6 +12,7 @@ import json
 from app.models.chat import ChatRequest, ChatResponse, ChatMessage, ModelType
 from app.services.azure_openai_service import AzureOpenAIService
 from app.services.chroma_service import chroma_service
+from app.services.enhanced_document_service import ContextStrategy
 from app.agents.medical_coordinator import MedicalCoordinatorAgent
 from app.utils.exceptions import AzureOpenAIError, ChromaError
 
@@ -49,46 +50,64 @@ async def medical_chat(
     background_tasks: BackgroundTasks
 ) -> ChatResponse:
     """
-    Medical chat endpoint with intelligent agent routing
+    Enhanced medical chat endpoint with hybrid document context
     
     This endpoint:
-    1. Analyzes the user query to determine the best agent
-    2. Retrieves relevant patient context if patient_id provided
-    3. Routes to specialized medical agents
-    4. Returns comprehensive medical assistance
+    1. Analyzes the user query to determine the best agent and context strategy
+    2. Retrieves hybrid context (vectors + full documents) if patient_id provided
+    3. Routes to specialized medical agents with enhanced context
+    4. Returns comprehensive medical assistance with context metadata
     """
     try:
-        logger.info(f"🏥 Medical chat request: {len(request.messages)} messages")
+        logger.info(f"🏥 Enhanced medical chat request: {len(request.messages)} messages, patient_id: {request.patient_id}")
         
         # Ensure all services are initialized
         await ensure_services_initialized()
         
-        # Get patient context if patient_id provided
-        patient_context = None
+        # Legacy context retrieval for backward compatibility
+        legacy_context = None
         if request.patient_id and request.include_context:
             try:
-                patient_context = await chroma_service.get_patient_context(
+                legacy_context = await chroma_service.get_patient_context(
                     request.patient_id
                 )
-                logger.info(f"📋 Retrieved context for patient {request.patient_id}")
+                logger.info(f"📋 Retrieved legacy context for patient {request.patient_id}")
             except ChromaError as e:
-                logger.warning(f"⚠️ Could not retrieve patient context: {str(e)}")
+                logger.warning(f"⚠️ Could not retrieve legacy patient context: {str(e)}")
         
-        # Route request through medical coordinator
+        # Determine context strategy if specified
+        context_strategy = None
+        if hasattr(request, 'context_strategy') and request.context_strategy:
+            try:
+                context_strategy = ContextStrategy(request.context_strategy)
+            except ValueError:
+                logger.warning(f"⚠️ Invalid context strategy: {request.context_strategy}, using default")
+        
+        # Route request through enhanced medical coordinator
         response = await coordinator_agent.process_request(
             messages=request.messages,
-            patient_context=patient_context,
+            patient_context=legacy_context,
+            patient_id=int(request.patient_id) if request.patient_id else None,  # Enhanced context
             model_type=request.model_type or ModelType.GPT4O,
             temperature=request.temperature,
-            max_tokens=request.max_tokens
+            max_tokens=request.max_tokens,
+            context_strategy=context_strategy
         )
+        
+        # Enhanced logging with context metadata
+        if response.metadata and "coordinator" in response.metadata:
+            coord_meta = response.metadata["coordinator"]
+            logger.info(f"✅ Enhanced response generated - Agent: {coord_meta.get('agent_used')}, "
+                       f"Context: {coord_meta.get('total_context_documents', 0)} docs, "
+                       f"Tokens: {coord_meta.get('total_context_tokens', 0)}")
         
         # Log interaction for audit trail
         background_tasks.add_task(
             _log_medical_interaction,
             request.patient_id,
             request.messages[-1].content if request.messages else "",
-            response.content
+            response.content,
+            response.metadata
         )
         
         return response
@@ -97,77 +116,251 @@ async def medical_chat(
         logger.error(f"❌ Azure OpenAI error: {str(e)}")
         raise HTTPException(status_code=503, detail=f"AI service error: {str(e)}")
     except Exception as e:
-        logger.error(f"❌ Medical chat error: {str(e)}")
+        logger.error(f"❌ Enhanced medical chat error: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
 
 @router.post("/medical/stream")
 async def medical_chat_stream(request: ChatRequest):
     """
-    Streaming medical chat endpoint
+    Enhanced streaming medical chat endpoint with hybrid context
     
-    Returns server-sent events for real-time chat experience
+    Returns server-sent events for real-time chat experience with context metadata
     """
     try:
-        logger.info(f"🌊 Streaming medical chat request")
+        logger.info(f"🌊 Streaming enhanced medical chat request - patient_id: {request.patient_id}")
         
         # Ensure services are initialized
         await ensure_services_initialized()
         
-        # Get patient context if needed
-        patient_context = None
+        # Legacy context for backward compatibility
+        legacy_context = None
         if request.patient_id and request.include_context:
             try:
-                patient_context = await chroma_service.get_patient_context(
+                legacy_context = await chroma_service.get_patient_context(
                     request.patient_id
                 )
             except ChromaError as e:
-                logger.warning(f"⚠️ Could not retrieve patient context: {str(e)}")
+                logger.warning(f"⚠️ Could not retrieve legacy patient context: {str(e)}")
         
-        async def generate_stream():
+        # Determine context strategy
+        context_strategy = None
+        if hasattr(request, 'context_strategy') and request.context_strategy:
             try:
-                logger.info("🌊 Starting stream generation")
+                context_strategy = ContextStrategy(request.context_strategy)
+            except ValueError:
+                logger.warning(f"⚠️ Invalid context strategy: {request.context_strategy}")
+        
+        async def generate_enhanced_stream():
+            try:
+                logger.info("🌊 Starting enhanced stream generation")
                 chunk_count = 0
+                context_sent = False
+                
+                # Stream the response
                 async for chunk in coordinator_agent.process_request_stream(
                     messages=request.messages,
-                    patient_context=patient_context,
+                    patient_context=legacy_context,
+                    patient_id=int(request.patient_id) if request.patient_id else None,
                     model_type=request.model_type,
                     temperature=request.temperature,
-                    max_tokens=request.max_tokens
+                    max_tokens=request.max_tokens,
+                    context_strategy=context_strategy
                 ):
                     chunk_count += 1
-                    logger.info(f"📦 Yielding chunk {chunk_count}: '{chunk}'")
-                    yield f"data: {json.dumps({'content': chunk, 'is_complete': False})}\\n\\n"
+                    
+                    # Send context metadata with the first chunk
+                    if not context_sent and chunk_count == 1:
+                        context_info = {
+                            "type": "context_info",
+                            "patient_id": request.patient_id,
+                            "enhanced_context_available": request.patient_id is not None,
+                            "context_strategy": context_strategy.value if context_strategy else "default"
+                        }
+                        yield f"data: {json.dumps(context_info)}\\n\\n"
+                        context_sent = True
+                    
+                    logger.info(f"📦 Yielding enhanced chunk {chunk_count}: '{chunk[:50]}...'")
+                    yield f"data: {json.dumps({'content': chunk, 'is_complete': False, 'chunk_id': chunk_count})}\\n\\n"
                 
-                # Send completion signal
-                logger.info(f"✅ Stream generation completed, sent {chunk_count} chunks")
-                yield f"data: {json.dumps({'content': '', 'is_complete': True})}\\n\\n"
+                # Send completion signal with metadata
+                completion_data = {
+                    'content': '', 
+                    'is_complete': True, 
+                    'total_chunks': chunk_count,
+                    'enhanced_processing': True
+                }
+                logger.info(f"✅ Enhanced stream generation completed, sent {chunk_count} chunks")
+                yield f"data: {json.dumps(completion_data)}\\n\\n"
                 
             except Exception as e:
-                logger.error(f"❌ Streaming error: {str(e)}")
-                yield f"data: {json.dumps({'error': str(e)})}\\n\\n"
+                logger.error(f"❌ Enhanced streaming error: {str(e)}")
+                yield f"data: {json.dumps({'error': str(e), 'enhanced_processing': True})}\\n\\n"
         
         return StreamingResponse(
-            generate_stream(),
+            generate_enhanced_stream(),
             media_type="text/plain",
             headers={
                 "Cache-Control": "no-cache",
                 "Connection": "keep-alive",
-                "Content-Type": "text/event-stream"
+                "Content-Type": "text/event-stream",
+                "X-Enhanced-Context": "true"
             }
         )
         
     except Exception as e:
-        logger.error(f"❌ Streaming chat error: {str(e)}")
+        logger.error(f"❌ Enhanced streaming chat error: {str(e)}")
         raise HTTPException(status_code=500, detail="Streaming error")
+
+@router.post("/medical/context-preview")
+async def preview_patient_context(
+    patient_id: int,
+    query: str,
+    context_strategy: str = "hybrid_smart"
+) -> Dict[str, Any]:
+    """
+    Preview what context would be retrieved for a patient query
+    Useful for debugging and optimizing context strategies
+    """
+    try:
+        logger.info(f"🔍 Context preview for patient {patient_id}")
+        
+        # Validate context strategy
+        try:
+            strategy = ContextStrategy(context_strategy)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid context strategy: {context_strategy}")
+        
+        # Get enhanced context preview
+        from app.core.database import get_db
+        from app.services.enhanced_document_service import enhanced_document_service
+        
+        db = next(get_db())
+        enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
+            patient_id=patient_id,
+            query=query,
+            strategy=strategy,
+            db=db,
+            include_recent=True,
+            include_critical=True
+        )
+        
+        # Prepare preview response
+        preview = {
+            "patient_id": patient_id,
+            "query": query,
+            "strategy_used": enhanced_context.strategy_used.value,
+            "total_documents": enhanced_context.total_documents,
+            "total_tokens": enhanced_context.total_tokens,
+            "confidence": enhanced_context.confidence,
+            "processing_time_ms": enhanced_context.processing_time_ms,
+            "context_summary": enhanced_context.context_summary,
+            "recommendations": enhanced_context.recommendations,
+            "vector_results_count": len(enhanced_context.vector_results),
+            "full_documents_count": len(enhanced_context.full_documents),
+            "document_breakdown": {},
+            "relevance_distribution": {}
+        }
+        
+        # Document type breakdown
+        for doc in enhanced_context.full_documents:
+            doc_type = doc.document_type.value
+            if doc_type not in preview["document_breakdown"]:
+                preview["document_breakdown"][doc_type] = 0
+            preview["document_breakdown"][doc_type] += 1
+        
+        # Relevance distribution
+        for doc in enhanced_context.full_documents:
+            relevance = doc.relevance_level.value
+            if relevance not in preview["relevance_distribution"]:
+                preview["relevance_distribution"][relevance] = 0
+            preview["relevance_distribution"][relevance] += 1
+        
+        # Sample documents (without full content for preview)
+        preview["sample_documents"] = [
+            {
+                "document_id": doc.document_id,
+                "title": doc.title,
+                "document_type": doc.document_type.value,
+                "relevance_score": doc.relevance_score,
+                "relevance_level": doc.relevance_level.value,
+                "source": doc.source,
+                "content_length": len(doc.content),
+                "has_summary": doc.summary is not None,
+                "key_points_count": len(doc.key_points) if doc.key_points else 0
+            }
+            for doc in enhanced_context.full_documents[:5]  # Show first 5 documents
+        ]
+        
+        return preview
+        
+    except Exception as e:
+        logger.error(f"❌ Context preview error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Context preview failed: {str(e)}")
+
+@router.get("/medical/context-strategies")
+async def get_context_strategies() -> Dict[str, Any]:
+    """Get available context strategies and their descriptions"""
+    return {
+        "strategies": [
+            {
+                "name": "vectors_only",
+                "title": "Vectores Semánticos Únicamente",
+                "description": "Usa solo búsqueda semántica en vectores para respuestas rápidas",
+                "best_for": ["Preguntas rápidas", "Información general médica", "Definiciones"],
+                "performance": "Muy rápido",
+                "context_depth": "Moderado"
+            },
+            {
+                "name": "full_docs_only", 
+                "title": "Documentos Completos Únicamente",
+                "description": "Usa solo documentos médicos completos para análisis detallado",
+                "best_for": ["Análisis detallado", "Diagnósticos complejos", "Revisión exhaustiva"],
+                "performance": "Más lento",
+                "context_depth": "Muy alto"
+            },
+            {
+                "name": "hybrid_smart",
+                "title": "Híbrido Inteligente",
+                "description": "Combinación inteligente de vectores y documentos según la consulta",
+                "best_for": ["Mayoría de consultas", "Balance óptimo", "Casos generales"],
+                "performance": "Balanceado",
+                "context_depth": "Alto"
+            },
+            {
+                "name": "hybrid_priority_vectors",
+                "title": "Híbrido con Prioridad en Vectores",
+                "description": "Prioriza vectores semánticos con documentos como respaldo",
+                "best_for": ["Consultas con tiempo limitado", "Información específica", "Seguimiento"],
+                "performance": "Rápido",
+                "context_depth": "Moderado-Alto"
+            },
+            {
+                "name": "hybrid_priority_full",
+                "title": "Híbrido con Prioridad en Documentos",
+                "description": "Prioriza documentos completos con vectores como complemento",
+                "best_for": ["Diagnósticos complejos", "Análisis críticos", "Casos urgentes"],
+                "performance": "Moderado",
+                "context_depth": "Muy alto"
+            }
+        ],
+        "default_strategy": "hybrid_smart",
+        "recommendations": {
+            "quick_questions": "vectors_only",
+            "diagnostic_queries": "hybrid_priority_full",
+            "document_analysis": "full_docs_only",
+            "general_consultation": "hybrid_smart",
+            "urgent_cases": "hybrid_priority_full"
+        }
+    }
 
 @router.post("/quick", response_model=ChatResponse)
 async def quick_medical_query(
     request: ChatRequest
 ) -> ChatResponse:
     """
-    Quick medical query endpoint using GPT-4o-mini
+    Quick medical query endpoint using optimized context strategy
     
-    Optimized for fast responses to simple medical questions
+    Automatically uses vectors-only strategy for faster responses
     """
     try:
         logger.info(f"⚡ Quick medical query")
@@ -175,16 +368,28 @@ async def quick_medical_query(
         # Ensure services are initialized
         await ensure_services_initialized()
         
-        # Force GPT-4o for quick responses
+        # Force optimized settings for quick responses
         request.model_type = ModelType.GPT4O
         request.max_tokens = min(request.max_tokens or 1024, 1024)
         
-        response = await azure_openai_service.chat_completion(
-            messages=request.messages,
-            model_type=request.model_type,
-            temperature=request.temperature,
-            max_tokens=request.max_tokens
-        )
+        # Use enhanced coordinator with vectors-only strategy for speed
+        if request.patient_id:
+            response = await coordinator_agent.process_request(
+                messages=request.messages,
+                patient_id=int(request.patient_id),
+                model_type=request.model_type,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens,
+                context_strategy=ContextStrategy.VECTORS_ONLY  # Fast strategy
+            )
+        else:
+            # No patient context - direct AI call
+            response = await azure_openai_service.chat_completion(
+                messages=request.messages,
+                model_type=request.model_type,
+                temperature=request.temperature,
+                max_tokens=request.max_tokens
+            )
         
         return response
         
@@ -200,12 +405,12 @@ async def analyze_medical_case(
     request: ChatRequest
 ) -> ChatResponse:
     """
-    Deep medical case analysis using GPT-4o
+    Deep medical case analysis using enhanced full document context
     
-    For complex medical cases requiring detailed analysis
+    Automatically uses full documents strategy for comprehensive analysis
     """
     try:
-        logger.info(f"🔬 Medical case analysis")
+        logger.info(f"🔬 Enhanced medical case analysis")
         
         # Ensure services are initialized
         await ensure_services_initialized()
@@ -216,26 +421,39 @@ async def analyze_medical_case(
         # Add specialized system prompt for analysis
         analysis_prompt = ChatMessage(
             role="system",
-            content="""Eres un especialista en análisis de casos médicos complejos. 
+            content="""Eres un especialista en análisis de casos médicos complejos con acceso a expedientes completos. 
             Proporciona un análisis detallado que incluya:
-            1. Resumen del caso
-            2. Diagnósticos diferenciales
-            3. Estudios recomendados
-            4. Plan de tratamiento sugerido
-            5. Consideraciones especiales
+            1. Resumen del caso y contexto del expediente
+            2. Diagnósticos diferenciales basados en historial completo
+            3. Estudios recomendados considerando estudios previos
+            4. Plan de tratamiento integrado con medicaciones actuales
+            5. Consideraciones especiales del paciente
             
+            Utiliza toda la información disponible en el expediente médico completo.
             Mantén siempre el enfoque médico profesional y recuerda que tus 
             recomendaciones requieren validación por un médico especialista."""
         )
         
         messages_with_prompt = [analysis_prompt] + request.messages
         
-        response = await azure_openai_service.chat_completion(
-            messages=messages_with_prompt,
-            model_type=request.model_type,
-            temperature=0.1,  # Lower temperature for more consistent analysis
-            max_tokens=request.max_tokens
-        )
+        # Use enhanced coordinator with full documents priority for comprehensive analysis
+        if request.patient_id:
+            response = await coordinator_agent.process_request(
+                messages=messages_with_prompt,
+                patient_id=int(request.patient_id),
+                model_type=request.model_type,
+                temperature=0.1,  # Lower temperature for more consistent analysis
+                max_tokens=request.max_tokens,
+                context_strategy=ContextStrategy.HYBRID_PRIORITY_FULL  # Comprehensive strategy
+            )
+        else:
+            # No patient context - direct AI call with analysis prompt
+            response = await azure_openai_service.chat_completion(
+                messages=messages_with_prompt,
+                model_type=request.model_type,
+                temperature=0.1,
+                max_tokens=request.max_tokens
+            )
         
         return response
         
@@ -273,42 +491,75 @@ async def test_basic_chat(request: ChatRequest) -> ChatResponse:
 
 @router.get("/models")
 async def get_available_models() -> Dict[str, Any]:
-    """Get information about available AI models"""
+    """Get information about available AI models and enhanced features"""
     return {
         "models": [
             {
                 "name": "GPT-4o",
                 "type": ModelType.GPT4O,
-                "description": "Advanced model for complex medical analysis",
+                "description": "Advanced model for complex medical analysis with enhanced context",
                 "max_tokens": 4096,
-                "use_cases": ["Complex diagnosis", "Case analysis", "Research"]
+                "use_cases": ["Complex diagnosis", "Case analysis", "Research", "Document analysis"],
+                "enhanced_features": ["Hybrid context", "Full document access", "Multi-agent routing"]
             },
             {
                 "name": "GPT-4o-mini",
                 "type": ModelType.GPT4O_MINI,
-                "description": "Fast model for quick medical queries",
+                "description": "Fast model for quick medical queries with vector context",
                 "max_tokens": 2048,
-                "use_cases": ["Quick questions", "Simple queries", "Real-time chat"]
+                "use_cases": ["Quick questions", "Simple queries", "Real-time chat"],
+                "enhanced_features": ["Vector search", "Fast context retrieval"]
             }
         ],
         "features": {
             "tool_calling": True,
             "streaming": True,
             "patient_context": True,
-            "document_analysis": True
-        }
+            "document_analysis": True,
+            "enhanced_context": True,
+            "hybrid_retrieval": True,
+            "context_strategies": True,
+            "multi_agent_routing": True,
+            "full_document_access": True,
+            "semantic_search": True
+        },
+        "context_strategies": [
+            "vectors_only",
+            "full_docs_only", 
+            "hybrid_smart",
+            "hybrid_priority_vectors",
+            "hybrid_priority_full"
+        ]
     }
 
 async def _log_medical_interaction(
     patient_id: str,
     user_query: str,
-    ai_response: str
+    ai_response: str,
+    metadata: Dict[str, Any] = None
 ) -> None:
-    """Log medical interaction for audit trail"""
+    """Enhanced logging of medical interaction with context metadata"""
     try:
-        # This would typically save to a database
-        logger.info(f"📝 Logged interaction for patient {patient_id}")
-        # TODO: Implement database logging
+        # Extract enhanced metadata
+        context_info = {}
+        if metadata and "coordinator" in metadata:
+            coord_meta = metadata["coordinator"]
+            context_info = {
+                "agent_used": coord_meta.get("agent_used"),
+                "enhanced_context_used": coord_meta.get("enhanced_context_used", False),
+                "context_strategy": coord_meta.get("context_strategy"),
+                "total_context_documents": coord_meta.get("total_context_documents", 0),
+                "total_context_tokens": coord_meta.get("total_context_tokens", 0),
+                "context_confidence": coord_meta.get("context_confidence")
+            }
+        
+        # This would typically save to a database with enhanced metadata
+        logger.info(f"📝 Enhanced interaction logged for patient {patient_id} - "
+                   f"Agent: {context_info.get('agent_used', 'unknown')}, "
+                   f"Context: {context_info.get('total_context_documents', 0)} docs")
+        
+        # TODO: Implement enhanced database logging with context metadata
+        
     except Exception as e:
-        logger.error(f"❌ Failed to log interaction: {str(e)}")
+        logger.error(f"❌ Failed to log enhanced interaction: {str(e)}")
 

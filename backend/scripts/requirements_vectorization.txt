@@ -1,0 +1,17 @@
+# Librerías adicionales para extracción de texto de documentos
+# Instalar con: pip install -r requirements_vectorization.txt
+
+# Extracción de texto de PDFs
+PyPDF2==3.0.1
+pdfplumber==0.9.0
+
+# Extracción de texto de documentos Word
+python-docx==0.8.11
+
+# Procesamiento de texto mejorado
+python-magic==0.4.27
+chardet==5.2.0
+
+# Utilidades opcionales
+tqdm==4.66.1  # Para barras de progreso
+rich==13.7.0  # Para output colorido en terminal 
