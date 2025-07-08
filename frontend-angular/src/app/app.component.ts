@@ -1,47 +1,33 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, ViewChild, ElementRef, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, ViewChild, ElementRef, ChangeDetectorRef, NgZone, CUSTOM_ELEMENTS_SCHEMA, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import { Subject } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, filter } from 'rxjs/operators';
 
-// Core services
-import { MedicalStateService, ApiService, StreamingService } from '@core/services';
-import { Patient, ChatMessage } from '@core/models';
-
-// Bamboo Components
-import { BmbCardComponent } from '@ti-tecnologico-de-monterrey-oficial/ds-ng';
-
-// Pipes
+import { Patient } from './core/models/patient.model';
+import { ChatMessage } from './core/models/chat.model';
+import { MedicalStateService } from './core/services/medical-state.service';
+import { ApiService } from './core/services/api.service';
+import { StreamingService } from './core/services/streaming.service';
 import { MarkdownPipe } from './shared/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    BmbCardComponent,
-    MarkdownPipe
-  ],
-  animations: [
-    trigger('slideInOut', [
-      state('in', style({transform: 'translateX(0)'})),
-      transition('void => *', [
-        style({transform: 'translateX(-100%)'}),
-        animate(300)
-      ])
-    ])
-  ],
+  imports: [CommonModule, FormsModule, MarkdownPipe, RouterOutlet],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="app-container">
       <!-- Sidebar Panel -->
       <div class="sidebar-panel" [class.collapsed]="sidebarCollapsed">
-        <!-- Header -->
+        <!-- Normal Header -->
         <div class="sidebar-header" *ngIf="!sidebarCollapsed">
           <div class="header-content">
             <div class="logo-container">
               <div class="logo">T</div>
-              <div class="brand-info">
+              <div>
                 <h2 class="brand-title">
                   <span class="medical-icon">🩺</span>
                   TecSalud
@@ -64,15 +50,26 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
         
         <!-- Main Content -->
         <div class="sidebar-content" *ngIf="!sidebarCollapsed">
-          <!-- Search -->
+          <!-- Search with Bamboo Tokens -->
           <div class="search-container">
+            <div class="bamboo-search-group">
             <input 
-              class="search-input"
+                class="search-input bamboo-search-input"
               placeholder="Buscar paciente..."
+                name="searchInput"
               [(ngModel)]="searchQuery"
               (ngModelChange)="onSearchChange()"
+                [disabled]="isSearching"
               type="text"
             />
+              <button 
+                *ngIf="searchQuery"
+                class="bamboo-clear-button"
+                (click)="clearSearch()"
+                title="Limpiar búsqueda">
+                ✕
+              </button>
+            </div>
           </div>
           
           <!-- Patients List -->
@@ -103,28 +100,24 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
               </div>
               
               <!-- Patient Cards -->
-              <bmb-card 
+              <div 
                 *ngFor="let patient of patientsToShow; trackBy: trackPatient"
-                class="patient-card"
+                class="patient-card-html"
                 [class.active]="activePatient?.id === patient.id"
-                (click)="selectPatient(patient)"
-                type="normal">
+                (click)="selectPatient(patient)">
                 <div class="patient-content">
                   <div class="patient-avatar">
                     {{getPatientInitials(patient)}}
                   </div>
                   <div class="patient-info">
                     <div class="patient-name">{{patient.name}}</div>
-                                         <div class="patient-meta">
-                       <span class="patient-age">{{patient.age}} años</span>
-                       <span class="patient-gender">{{patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'Otro'}}</span>
+                    <div class="patient-id">{{patient.age}} años • {{patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'Otro'}}</div>
                      </div>
-                   </div>
-                   <div class="patient-status" [class.active]="activePatient?.id === patient.id">
+                  <div class="active-badge" *ngIf="activePatient?.id === patient.id">
                      Activo
                    </div>
                 </div>
-              </bmb-card>
+              </div>
             </div>
           </div>
         </div>
@@ -167,19 +160,109 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
             <p class="main-subtitle">Asistente Virtual TecSalud</p>
           </div>
           <div class="header-actions">
-            <div *ngIf="activePatient" class="patient-indicator">
-              <div class="patient-avatar-small">{{getPatientInitials(activePatient)}}</div>
-              <div class="patient-info-small">
-                <div class="name">{{activePatient.name}}</div>
-                <div class="context">Contexto activo</div>
+            <div *ngIf="activePatient" class="patient-context-horizontal">
+              <div class="patient-avatar-small">{{getPatientInitials(activePatient!)}}</div>
+              <span class="patient-name">{{activePatient!.name}}</span>
+              <span class="patient-separator">•</span>
+              <span class="patient-context">Contexto activo</span>
+              </div>
+            
+            <!-- ⚙️ NAVIGATION DROPDOWN - USANDO CLASES CSS CON TOKENS BAMBOO -->
+            <div class="nav-dropdown-container">
+              <button class="nav-dropdown-toggle" 
+                      (click)="toggleNavDropdown()"
+                      title="Menú de navegación">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-icon">
+                  <defs>
+                    <linearGradient id="gearGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#0066cc;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#004499;stop-opacity:1" />
+                    </linearGradient>
+                    <filter id="gearShadow">
+                      <feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+                      <feOffset dx="0" dy="1" result="offsetblur"/>
+                      <feFlood flood-color="rgba(0,0,0,0.2)"/>
+                      <feComposite in2="offsetblur" operator="in"/>
+                      <feMerge>
+                        <feMergeNode/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  <path d="M12 8C9.79 8 8 9.79 8 12C8 14.21 9.79 16 12 16C14.21 16 16 14.21 16 12C16 9.79 14.21 8 12 8ZM12 14C10.9 14 10 13.1 10 12C10 10.9 10.9 10 12 10C13.1 10 14 10.9 14 12C14 13.1 13.1 14 12 14Z" fill="url(#gearGradient)" filter="url(#gearShadow)"/>
+                  <path d="M19.43 12.98C19.47 12.66 19.5 12.34 19.5 12C19.5 11.66 19.47 11.34 19.43 11.02L21.54 9.37C21.73 9.22 21.78 8.95 21.66 8.73L19.66 5.27C19.54 5.05 19.27 4.97 19.05 5.05L16.56 6.05C16.04 5.65 15.48 5.32 14.87 5.07L14.49 2.42C14.46 2.18 14.25 2 14 2H10C9.75 2 9.54 2.18 9.51 2.42L9.13 5.07C8.52 5.32 7.96 5.66 7.44 6.05L4.95 5.05C4.72 4.96 4.46 5.05 4.34 5.27L2.34 8.73C2.21 8.95 2.27 9.22 2.46 9.37L4.57 11.02C4.53 11.34 4.5 11.67 4.5 12C4.5 12.33 4.53 12.66 4.57 12.98L2.46 14.63C2.27 14.78 2.21 15.05 2.34 15.27L4.34 18.73C4.46 18.95 4.73 19.03 4.95 18.95L7.44 17.95C7.96 18.35 8.52 18.68 9.13 18.93L9.51 21.58C9.54 21.82 9.75 22 10 22H14C14.25 22 14.46 21.82 14.49 21.58L14.87 18.93C15.48 18.68 16.04 18.34 16.56 17.95L19.05 18.95C19.28 19.04 19.54 18.95 19.66 18.73L21.66 15.27C21.78 15.05 21.73 14.78 21.54 14.63L19.43 12.98Z" fill="url(#gearGradient)" filter="url(#gearShadow)"/>
+                </svg>
+              </button>
+              
+              <!-- 📋 DROPDOWN MENU SIMPLE -->
+              <div *ngIf="isNavDropdownOpen" class="simple-dropdown" (click)="closeNavDropdown()">
+                <div class="dropdown-content" (click)="$event.stopPropagation()">
+                  <div class="dropdown-header">
+                    <h3>Navegación</h3>
+            </div>
+                  
+                  <button class="dropdown-item" (click)="navigateTo('/chat')">
+                    <span class="dropdown-icon">🩺</span>
+                    <div class="dropdown-text">
+                      <div class="dropdown-title">Copiloto Médico</div>
+                      <div class="dropdown-subtitle">Asistente inteligente</div>
+          </div>
+                  </button>
+                  
+                  <button class="dropdown-item" (click)="navigateTo('/dashboard')">
+                    <span class="dropdown-icon">📊</span>
+                    <div class="dropdown-text">
+                      <div class="dropdown-title">Dashboard</div>
+                      <div class="dropdown-subtitle">Panel de control</div>
+        </div>
+                  </button>
+                  
+                  <button class="dropdown-item" (click)="navigateTo('/patients')">
+                    <span class="dropdown-icon">👥</span>
+                    <div class="dropdown-text">
+                      <div class="dropdown-title">Gestión Pacientes</div>
+                      <div class="dropdown-subtitle">Base de datos</div>
+                    </div>
+                  </button>
+                  
+                  <button class="dropdown-item" (click)="navigateTo('/test-bamboo')">
+                    <span class="dropdown-icon">🧪</span>
+                    <div class="dropdown-text">
+                      <div class="dropdown-title">Test Bamboo</div>
+                      <div class="dropdown-subtitle">Pruebas de componentes</div>
+                    </div>
+                  </button>
+                  
+                  <div class="dropdown-separator"></div>
+                  
+                  <button class="dropdown-item" (click)="navigateTo('/documents')">
+                    <span class="dropdown-icon">📄</span>
+                    <div class="dropdown-text">
+                      <div class="dropdown-title">Subir Documentos</div>
+                      <div class="dropdown-subtitle">Vectorización automática</div>
+                    </div>
+                  </button>
+                  
+                  <button class="dropdown-item" (click)="navigateTo('/documents/list')">
+                    <span class="dropdown-icon">📋</span>
+                    <div class="dropdown-text">
+                      <div class="dropdown-title">Gestión Documentos</div>
+                      <div class="dropdown-subtitle">Ver documentos vectorizados</div>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Chat Content -->
+        <!-- Chat Content / Router Outlet -->
         <div class="chat-container">
-          <div class="chat-area">
+          
+          <!-- 🎯 ROUTER OUTLET PARA PÁGINAS DE NAVEGACIÓN -->
+          <router-outlet *ngIf="shouldShowRouterOutlet"></router-outlet>
+          
+          <div class="chat-area" *ngIf="!shouldShowRouterOutlet">
             <!-- Messages Area -->
             <div class="messages-area" #messagesArea>
               <!-- Welcome Message -->
@@ -223,7 +306,18 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                   </div>
                                      <div class="message-content">
                      <div class="message-bubble">
-                       <div class="streaming-text" [title]="'Length: ' + streamingMessage.length">{{ streamingMessage }}<span *ngIf="streamingMessage.length === 0">Pensando...</span></div>
+                      <div class="streaming-text" [title]="'Length: ' + streamingMessage.length">
+                        {{ streamingMessage }}
+                        <span *ngIf="streamingMessage.length === 0" class="thinking-text">
+                          <span class="thinking-icon">🧠</span>
+                          Pensando
+                          <span class="thinking-dots">
+                            <span class="thinking-dot">.</span>
+                            <span class="thinking-dot">.</span>
+                            <span class="thinking-dot">.</span>
+                          </span>
+                        </span>
+                      </div>
                        <span class="cursor-blink">|</span>
                      </div>
                    </div>
@@ -246,6 +340,7 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
               <div class="input-container">
                 <input
                   #messageInput
+                  name="messageInput"
                   [(ngModel)]="inputMessage"
                   (keypress)="onKeyPress($event)"
                   [disabled]="isLoading || !activePatient"
@@ -256,10 +351,63 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                 <button
                   (click)="sendMessage()"
                   [disabled]="!inputMessage.trim() || !activePatient || isLoading"
-                  class="send-button"
+                  class="send-button-premium"
                   [class.loading]="isLoading">
-                  <span *ngIf="!isLoading">Enviar</span>
-                  <span *ngIf="isLoading">Enviando...</span>
+                  <div class="btn-content-premium">
+                    <!-- ✈️ ÍCONO VECTORIAL DEL AVIÓN -->
+                    <svg *ngIf="!isLoading" class="airplane-icon" viewBox="0 0 32 32" fill="none">
+                      <defs>
+                        <!-- Gradiente premium para el avión -->
+                        <linearGradient id="planeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" style="stop-color:rgba(255,255,255,0.9);stop-opacity:1" />
+                          <stop offset="100%" style="stop-color:rgba(255,255,255,0.7);stop-opacity:1" />
+                        </linearGradient>
+                        <!-- Sombra difuminada -->
+                        <filter id="planeShadow">
+                          <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+                          <feOffset dx="1" dy="1" result="offsetblur"/>
+                          <feFlood flood-color="rgba(0,0,0,0.3)"/>
+                          <feComposite in2="offsetblur" operator="in"/>
+                          <feMerge>
+                            <feMergeNode/>
+                            <feMergeNode in="SourceGraphic"/>
+                          </feMerge>
+                        </filter>
+                      </defs>
+                      
+                      <!-- Estelas animadas de fondo -->
+                      <g class="plane-trails">
+                        <path d="M2 8L8 10" stroke="url(#planeGradient)" stroke-width="3" stroke-linecap="round" opacity="0.3" class="trail-1"/>
+                        <path d="M3 12L10 14" stroke="url(#planeGradient)" stroke-width="2.5" stroke-linecap="round" opacity="0.4" class="trail-2"/>
+                        <path d="M5 16L12 17" stroke="url(#planeGradient)" stroke-width="2" stroke-linecap="round" opacity="0.5" class="trail-3"/>
+                      </g>
+                      
+                      <!-- Cuerpo principal del avión con sombra -->
+                      <path d="M28 3L3 13L11 16L18 9L13 23L18 26L28 3Z" 
+                            fill="url(#planeGradient)" 
+                            stroke="rgba(255,255,255,1)" 
+                            stroke-width="1.5"
+                            stroke-linejoin="round"
+                            filter="url(#planeShadow)"
+                            class="plane-body"/>
+                      
+                      <!-- Detalles premium -->
+                      <circle cx="20" cy="7" r="1.5" fill="rgba(255,255,255,1)" opacity="0.9" class="window-1"/>
+                      <circle cx="17" cy="9" r="1" fill="rgba(255,255,255,1)" opacity="0.8" class="window-2"/>
+                      
+                      <!-- Brillo del fuselaje -->
+                      <path d="M15 8L22 5" stroke="rgba(255,255,255,0.6)" stroke-width="1" stroke-linecap="round" class="shine"/>
+                    </svg>
+                    
+                    <!-- 🔄 ÍCONO DE CARGA PREMIUM -->
+                    <div *ngIf="isLoading" class="loading-airplane">
+                      <div class="rotating-plane">✈️</div>
+                    </div>
+                    
+                    <span class="premium-btn-text">
+                      {{ isLoading ? 'Volando...' : 'Enviar' }}
+                    </span>
+                  </div>
                 </button>
               </div>
             </div>
@@ -268,692 +416,7 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
       </div>
     </div>
   `,
-  styles: [`
-    .app-container {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      height: 100vh;
-      overflow: hidden;
-      transition: grid-template-columns 0.3s ease;
-    }
-    
-    .app-container:has(.sidebar-panel.collapsed) {
-      grid-template-columns: 60px 1fr;
-    }
-    
-    /* Sidebar Styles */
-    .sidebar-panel {
-      background: #ffffff;
-      border-right: 1px solid #e5e7eb;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    .sidebar-header {
-      padding: 16px;
-      border-bottom: 1px solid #e5e7eb;
-      background: #ffffff;
-    }
-    
-    .header-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-    }
-    
-    .logo {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: #0066cc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 16px;
-    }
-    
-    .brand-title {
-      color: #111827;
-      font-size: 18px;
-      font-weight: 600;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    
-    .brand-subtitle {
-      color: #6b7280;
-      font-size: 14px;
-      margin: 0;
-    }
-    
-    .medical-icon {
-      font-size: 16px;
-    }
-    
-    .collapse-btn {
-      background: transparent;
-      border: none;
-      color: #6b7280;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-    
-    .collapse-btn:hover {
-      background: #f3f4f6;
-    }
-    
-    .collapse-btn svg {
-      width: 18px;
-      height: 18px;
-    }
-    
-    .sidebar-header-collapsed {
-      padding: 12px 0;
-      border-bottom: 1px solid #e5e7eb;
-      background: #ffffff;
-      display: flex;
-      justify-content: center;
-    }
-    
-    .expand-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 18px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
-      transition: all 0.2s ease;
-    }
-    
-    .expand-btn:hover {
-      transform: scale(1.05);
-    }
-    
-    .sidebar-content {
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .search-container {
-      padding: 12px 16px 0;
-      border-bottom: 1px solid #e5e7eb;
-    }
-    
-    .search-input {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s ease;
-      margin-bottom: 12px;
-    }
-    
-    .search-input:focus {
-      border-color: #0066cc;
-      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-    }
-    
-    .patients-container {
-      padding: 12px 8px;
-      flex: 1;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .patients-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #111827;
-      margin: 0 0 16px 0;
-      padding: 0 8px;
-    }
-    
-    .patients-list {
-      flex: 1;
-      overflow: auto;
-      padding-bottom: 12px;
-    }
-    
-    .patient-card {
-      margin-bottom: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .patient-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
-    }
-    
-    .patient-card.active {
-      border-color: #0066cc;
-      background-color: #f0f7ff;
-      box-shadow: 0 2px 8px rgba(0, 102, 204, 0.2);
-    }
-    
-    .patient-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px;
-    }
-    
-    .patient-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #0066cc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-    
-    .patient-info {
-      flex: 1;
-    }
-    
-    .patient-name {
-      font-weight: 600;
-      color: #111827;
-      margin-bottom: 4px;
-    }
-    
-    .patient-meta {
-      display: flex;
-      gap: 8px;
-      font-size: 12px;
-      color: #6b7280;
-    }
-    
-    .patient-status {
-      font-size: 12px;
-      padding: 4px 8px;
-      border-radius: 12px;
-      background: #f3f4f6;
-      color: #6b7280;
-    }
-    
-    .patient-status.active {
-      background: #dcfce7;
-      color: #16a34a;
-    }
-    
-    .loading-state, .error-state, .no-results {
-      text-align: center;
-      padding: 40px 16px;
-      color: #6b7280;
-    }
-    
-    .loading-spinner {
-      width: 24px;
-      height: 24px;
-      border: 2px solid #e5e7eb;
-      border-top: 2px solid #0066cc;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 12px;
-    }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    .no-results svg {
-      width: 32px;
-      height: 32px;
-      margin-bottom: 12px;
-    }
-    
-    .sidebar-collapsed-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
-    }
-    
-    .collapsed-search {
-      padding: 12px;
-      display: flex;
-      justify-content: center;
-    }
-    
-    .search-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: 12px;
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #6b7280;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease;
-    }
-    
-    .search-btn:hover {
-      transform: scale(1.05);
-    }
-    
-    .search-btn svg {
-      width: 16px;
-      height: 16px;
-    }
-    
-    .collapsed-patients {
-      flex: 1;
-      padding: 0 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      align-items: center;
-    }
-    
-    .collapsed-patient {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      padding: 8px;
-      cursor: pointer;
-    }
-    
-    .collapsed-avatar {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
-      background: #ffffff;
-      border: 2px solid #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #0066cc;
-      font-weight: 600;
-      font-size: 14px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-    }
-    
-    .collapsed-patient.active .collapsed-avatar {
-      background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-      color: white;
-      border: none;
-      box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
-    }
-    
-    .active-indicator {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #10b981;
-      border: 2px solid #ffffff;
-      box-shadow: 0 2px 4px rgba(16, 185, 129, 0.4);
-    }
-    
-    /* Main Panel Styles */
-    .main-panel {
-      background: #f9fafb;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    
-    .main-header {
-      padding: 16px;
-      background: #ffffff;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    
-    .main-title {
-      font-size: 24px;
-      font-weight: 600;
-      color: #111827;
-      margin: 0;
-    }
-    
-    .main-subtitle {
-      color: #6b7280;
-      font-size: 14px;
-      margin: 0;
-    }
-    
-    .patient-indicator {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 12px;
-      background: #f0f7ff;
-      border-radius: 8px;
-    }
-    
-    .patient-avatar-small {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: #0066cc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 12px;
-    }
-    
-    .patient-info-small .name {
-      font-weight: 600;
-      color: #111827;
-      font-size: 14px;
-    }
-    
-    .patient-info-small .context {
-      color: #0066cc;
-      font-size: 12px;
-    }
-    
-    .chat-container {
-      flex: 1;
-      padding: 16px;
-      overflow: hidden;
-    }
-    
-    .chat-area {
-      background: #ffffff;
-      border-radius: 12px;
-      height: 100%;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid #e5e7eb;
-    }
-    
-    .messages-area {
-      flex: 1;
-      overflow-y: auto;
-      padding: 16px;
-    }
-    
-    .welcome-message {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-      background: #f0f7ff;
-      border-radius: 8px;
-      margin-bottom: 16px;
-    }
-    
-    .welcome-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 18px;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
-    }
-    
-    .welcome-title {
-      font-weight: 600;
-      color: #0052a3;
-      margin-bottom: 4px;
-    }
-    
-    .welcome-status {
-      font-size: 12px;
-      color: #6b7280;
-      margin-bottom: 8px;
-    }
-    
-    .welcome-text {
-      color: #111827;
-      line-height: 1.5;
-    }
-    
-    .message-wrapper {
-      margin-bottom: 16px;
-    }
-    
-    .message {
-      display: flex;
-      gap: 12px;
-    }
-    
-    .message.user {
-      flex-direction: row-reverse;
-    }
-    
-    .message-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-    
-    .message.user .message-avatar {
-      background: #e5e7eb;
-      color: #111827;
-    }
-    
-    .message.assistant .message-avatar {
-      background: #0066cc;
-      color: white;
-    }
-    
-    .message-content {
-      flex: 1;
-      max-width: 70%;
-    }
-    
-    .message-bubble {
-      padding: 12px;
-      border-radius: 8px;
-      color: #111827;
-    }
-    
-    .message.user .message-bubble {
-      background: #f0f7ff;
-    }
-    
-    .message.assistant .message-bubble {
-      background: #f9fafb;
-    }
-    
-    .streaming-text {
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      line-height: 1.6;
-      color: #111827;
-    }
-    
-    .cursor-blink {
-      display: inline-block;
-      width: 8px;
-      height: 1em;
-      background: #0066cc;
-      animation: blink 1s infinite;
-      margin-left: 2px;
-    }
-    
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-    
-    .loading-message {
-      text-align: center;
-      padding: 20px;
-      color: #6b7280;
-    }
-    
-    .loading-dots {
-      display: flex;
-      justify-content: center;
-      gap: 4px;
-      margin-bottom: 8px;
-    }
-    
-    .dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #0066cc;
-      animation: dot-pulse 1.5s infinite;
-    }
-    
-    .dot:nth-child(2) {
-      animation-delay: 0.2s;
-    }
-    
-    .dot:nth-child(3) {
-      animation-delay: 0.4s;
-    }
-    
-    @keyframes dot-pulse {
-      0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-      40% { transform: scale(1.2); opacity: 1; }
-    }
-    
-    .input-area {
-      padding: 16px;
-      border-top: 1px solid #e5e7eb;
-      background: #ffffff;
-    }
-    
-    .input-container {
-      display: flex;
-      gap: 12px;
-    }
-    
-    .message-input {
-      flex: 1;
-      padding: 12px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s ease;
-    }
-    
-    .message-input:focus {
-      border-color: #0066cc;
-      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-    }
-    
-    .message-input:disabled {
-      background: #f9fafb;
-      color: #9ca3af;
-      cursor: not-allowed;
-    }
-    
-    .send-button {
-      padding: 12px 24px;
-      background: #0066cc;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    
-    .send-button:hover:not(:disabled) {
-      background: #0052a3;
-      transform: translateY(-1px);
-    }
-    
-    .send-button:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-      transform: none;
-    }
-    
-    .send-button.loading {
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .send-button.loading::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      animation: loading-shine 1.5s infinite;
-    }
-    
-    @keyframes loading-shine {
-      0% { left: -100%; }
-      100% { left: 100%; }
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-      .app-container {
-        grid-template-columns: 1fr;
-      }
-      
-      .sidebar-panel {
-        display: none;
-      }
-      
-      .message-content {
-        max-width: 85%;
-      }
-    }
-  `]
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesArea') messagesArea!: ElementRef;
@@ -968,6 +431,9 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   searchResults: Patient[] = [];
   isSearching = false;
   searchError: string | null = null;
+  
+  // Window reference for TypeScript
+  window = window;
   
   // Chat State
   inputMessage = '';
@@ -986,7 +452,9 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     private apiService: ApiService,
     private streamingService: StreamingService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private router: Router,
+    @Inject(DOCUMENT) private document: Document
   ) {}
   
   ngOnInit() {
@@ -1034,9 +502,18 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.currentChat = messages;
         this.shouldScrollToBottom = true;
       });
-
-    // Remove all streaming message subscriptions - manage completely locally
-    // this.medicalStateService.streamingMessage$.subscribe(...);
+    
+    // 🎯 Router Events - Control Router Outlet Visibility
+    this.router.events
+      .pipe(
+        filter(event => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event: NavigationEnd) => {
+        // Show router-outlet for specific routes, hide for chat
+        const showRouterOutletRoutes = ['/documents', '/documents/list', '/dashboard', '/patients', '/test-bamboo'];
+        this.shouldShowRouterOutlet = showRouterOutletRoutes.some(route => event.url.startsWith(route));
+      });
   }
   
   private setupSearchDebounce() {
@@ -1057,6 +534,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   
   onSearchChange() {
     (this as any).searchSubject.next(this.searchQuery);
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.onSearchChange();
   }
   
   private async performSearch(query: string) {
@@ -1142,9 +624,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
         ...this.currentChat.slice(-5),
         userMessage
       ];
-
-
-
+      
       // Set component flag immediately
       this.isStreaming = true;
       this.streamingMessage = '';
@@ -1261,5 +741,23 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     return `${index}-${message.role}-${message.content.substring(0, 10)}`;
   }
   
+  // 🎯 NAVIGATION DROPDOWN - SIMPLE BOOLEAN STATE
+  isNavDropdownOpen = false;
+  
+  // 🎯 ROUTER OUTLET CONTROL
+  shouldShowRouterOutlet = false;
+  
+  toggleNavDropdown(): void {
+    this.isNavDropdownOpen = !this.isNavDropdownOpen;
+  }
+  
+  closeNavDropdown(): void {
+    this.isNavDropdownOpen = false;
+  }
+
+  navigateTo(route: string): void {
+    this.closeNavDropdown();
+    this.router.navigate([route]);
+  }
 
 }

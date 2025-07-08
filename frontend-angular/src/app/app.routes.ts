@@ -19,6 +19,14 @@ export const routes: Routes = [
     loadComponent: () => import('./features/patient-management/patient-management.component').then(m => m.PatientManagementComponent)
   },
   {
+    path: 'documents',
+    loadComponent: () => import('./features/document-viewer/document-upload.component').then(m => m.DocumentUploadComponent)
+  },
+  {
+    path: 'documents/list',
+    loadComponent: () => import('./features/document-viewer/document-list.component').then(m => m.DocumentListComponent)
+  },
+  {
     path: 'test-bamboo',
     loadComponent: () => import('./shared/components/test-bamboo/test-bamboo.component').then(m => m.TestBambooComponent)
   },

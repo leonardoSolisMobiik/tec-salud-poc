@@ -1,0 +1,1377 @@
+/* 🎯 APP COMPONENT STYLES - BAMBOO DESIGN SYSTEM INTEGRATION */
+
+/* Import Bamboo tokens - they're already available from global styles.scss */
+
+/* 📱 APP CONTAINER - LAYOUT BASE */
+.app-container {
+  display: grid !important;
+  grid-template-columns: 320px 1fr !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  transition: grid-template-columns 0.3s ease !important;
+}
+
+.app-container:has(.sidebar-panel.collapsed) {
+  grid-template-columns: 60px 1fr !important;
+}
+
+/* ✅ BAMBOO DS TOKENS - Sidebar Panel Premium */
+.sidebar-panel {
+  background: linear-gradient(180deg, 
+    var(--general_contrasts-input-background, #ffffff) 0%, 
+    rgba(var(--color-mariner-50, 224, 242, 254), 0.05) 100%
+  ) !important;
+  border-right: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 
+    inset -1px 0 0 rgba(255, 255, 255, 0.1),
+    2px 0 10px rgba(0, 0, 0, 0.05) !important;
+  position: relative !important;
+}
+
+/* ✅ BAMBOO DS TOKENS - Sidebar Header Premium */
+.sidebar-header {
+  padding: var(--bmb-spacing-m, 1rem) !important;
+  border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  background: linear-gradient(135deg, 
+    var(--general_contrasts-input-background, #ffffff) 0%, 
+    rgba(var(--color-mariner-50, 224, 242, 254), 0.1) 100%
+  ) !important;
+  backdrop-filter: blur(10px) !important;
+  position: relative !important;
+}
+
+.header-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+}
+
+.logo-container {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+  flex: 1 !important;
+}
+
+/* ✅ BAMBOO DS TOKENS - Logo Premium */
+.logo {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: var(--bmb-radius-s, 0.5rem) !important;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.8) 100%
+  ) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1.125rem !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  box-shadow: 
+    0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* ✅ BAMBOO DS TOKENS - Brand Premium */
+.brand-title {
+  color: var(--general_contrasts-100, #1f2937) !important;
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  margin: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-xs, 0.5rem) !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  line-height: 1.2 !important;
+  transition: color 0.3s ease !important;
+}
+
+.brand-subtitle {
+  color: var(--general_contrasts-75, #6b7280) !important;
+  font-size: 0.875rem !important;
+  margin: 0 !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  font-weight: 500 !important;
+}
+
+/* ✅ BAMBOO DS TOKENS - Main Panel */
+.main-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
+/* ✅ BAMBOO DS TOKENS - Main Header */
+.main-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  flex-wrap: nowrap !important;
+  min-height: 80px !important;
+  padding: var(--bmb-spacing-m, 1rem) var(--bmb-spacing-l, 1.5rem) !important;
+  background: var(--general_contrasts-input-background, #ffffff) !important;
+  border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+}
+
+.header-info {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+.main-title {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: var(--general_contrasts-100, #1f2937) !important;
+  margin: 0 !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+}
+
+.main-subtitle {
+  font-size: 0.875rem !important;
+  color: var(--general_contrasts-75, #6b7280) !important;
+  margin: 4px 0 0 0 !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+}
+
+/* 📱 CHAT CONTAINER */
+.chat-container {
+  flex: 1 !important;
+  padding: var(--bmb-spacing-m, 1rem) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.chat-area {
+  background: var(--general_contrasts-input-background, #ffffff) !important;
+  border-radius: var(--bmb-radius-m, 1rem) !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 📝 MESSAGES AREA */
+.messages-area {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: var(--bmb-spacing-m, 1rem) !important;
+}
+
+/* 💬 WELCOME MESSAGE */
+.welcome-message {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+  padding: var(--bmb-spacing-l, 1.5rem) !important;
+  background: linear-gradient(135deg, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.05) 0%, 
+    rgba(var(--color-mariner-50, 224, 242, 254), 0.1) 100%
+  ) !important;
+  border-radius: var(--bmb-radius-m, 1rem) !important;
+  margin-bottom: var(--bmb-spacing-m, 1rem) !important;
+  border: 1px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.1) !important;
+}
+
+.welcome-avatar {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: var(--bmb-radius-full, 50%) !important;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.8) 100%
+  ) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: white !important;
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  flex-shrink: 0 !important;
+  box-shadow: 
+    0 6px 20px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
+    0 3px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.welcome-content {
+  flex: 1 !important;
+}
+
+.welcome-title {
+  font-weight: 700 !important;
+  color: rgb(var(--color-blue-tec, 0, 57, 166)) !important;
+  margin-bottom: var(--bmb-spacing-xs, 0.5rem) !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  font-size: 1.125rem !important;
+}
+
+.welcome-status {
+  font-size: 0.875rem !important;
+  color: #10b981 !important;
+  margin-bottom: var(--bmb-spacing-s, 0.75rem) !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  font-weight: 600 !important;
+}
+
+.welcome-text {
+  color: var(--general_contrasts-100, #1f2937) !important;
+  line-height: 1.6 !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+}
+
+/* 🔽 INPUT AREA */
+.input-area {
+  padding: var(--bmb-spacing-m, 1rem) !important;
+  border-top: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  background: var(--general_contrasts-input-background, #ffffff) !important;
+}
+
+.input-container {
+  display: flex !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+}
+
+.message-input {
+  flex: 1 !important;
+  padding: var(--bmb-spacing-m, 1rem) !important;
+  border: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  border-radius: var(--bmb-radius-s, 0.5rem) !important;
+  font-size: 0.875rem !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  outline: none !important;
+  transition: border-color 0.2s ease !important;
+  background: var(--general_contrasts-input-background, #ffffff) !important;
+  color: var(--general_contrasts-100, #1f2937) !important;
+}
+
+.message-input:focus {
+  border-color: rgb(var(--color-blue-tec, 0, 57, 166)) !important;
+  box-shadow: 0 0 0 2px rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
+}
+
+/* 🚀 SEND BUTTON */
+.send-button-premium {
+  position: relative !important;
+  min-width: 100px !important;
+  height: 40px !important;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.9) 100%
+  ) !important;
+  border: none !important;
+  border-radius: var(--bmb-radius-m, 1rem) !important;
+  padding: 0 var(--bmb-spacing-m, 1rem) !important;
+  cursor: pointer !important;
+  overflow: hidden !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 
+    0 2px 8px rgba(var(--color-blue-tec, 0, 57, 166), 0.2),
+    0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-content-premium {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: var(--bmb-spacing-xs, 0.5rem) !important;
+  position: relative !important;
+  z-index: 2 !important;
+  height: 100% !important;
+}
+
+.premium-btn-text {
+  color: white !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+}
+
+.airplane-icon {
+  width: 18px !important;
+  height: 18px !important;
+  transition: all 0.3s ease !important;
+}
+
+/* 🌟 CSS ANIMATIONS FOR SMOOTH TRANSITIONS */
+@keyframes nav-dropdown-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nav-dropdown-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes nav-backdrop-fade-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px);
+  }
+}
+
+/* 🔧 NAVIGATION DROPDOWN - USANDO TOKENS BAMBOO */
+.nav-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.nav-dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, rgba(var(--color-blue-tec, 0, 57, 166), 0.08) 0%, rgba(var(--color-blue-tec, 0, 57, 166), 0.04) 100%);
+  border: 1px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.15);
+  border-radius: var(--bmb-radius-m, 1rem);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  
+  /* Efecto de brillo sutil */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    transform: scale(0);
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover {
+    background: linear-gradient(135deg, rgba(var(--color-blue-tec, 0, 57, 166), 0.12) 0%, rgba(var(--color-blue-tec, 0, 57, 166), 0.06) 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 
+      0 8px 20px rgba(var(--color-blue-tec, 0, 57, 166), 0.15),
+      0 4px 8px rgba(0, 0, 0, 0.08);
+    border-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.25);
+  }
+  
+  &:hover::before {
+    transform: scale(1);
+  }
+  
+  &:focus {
+    outline: 2px solid var(--color-blue-tec, #0066cc);
+    outline-offset: 2px;
+  }
+  
+  /* Rotación suave del engranaje al hover */
+  .gear-icon {
+    transition: transform 0.3s ease;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  }
+  
+  &:hover .gear-icon {
+    transform: rotate(45deg);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  }
+}
+
+/* 🎯 SIMPLE DROPDOWN - COMO EL EJEMPLO DE LA IMAGEN */
+.simple-dropdown {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 999999 !important;
+  background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.dropdown-content {
+  position: absolute !important;
+  top: 80px !important;
+  right: 30px !important;
+  background: white !important;
+  border: 1px solid #e0e0e0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  min-width: 280px !important;
+  padding: 0 !important;
+  animation: dropdown-appear 0.2s ease-out !important;
+  z-index: 999999 !important;
+}
+
+.dropdown-header {
+  padding: 16px 20px 12px 20px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  
+  h3 {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+  }
+}
+
+.dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 12px 20px !important;
+  border: none !important;
+  background: white !important;
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  text-align: left !important;
+  
+  &:hover {
+    background: #f5f5f5 !important;
+  }
+  
+  &:first-of-type {
+    border-top: none !important;
+  }
+}
+
+.dropdown-icon {
+  font-size: 18px !important;
+  margin-right: 12px !important;
+  width: 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.dropdown-text {
+  flex: 1 !important;
+}
+
+.dropdown-title {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #333 !important;
+  margin-bottom: 2px !important;
+}
+
+.dropdown-subtitle {
+  font-size: 12px !important;
+  color: #666 !important;
+}
+
+  .dropdown-separator {
+    height: 1px !important;
+    background: #f0f0f0 !important;
+    margin: 8px 0 !important;
+  }
+
+
+
+
+
+/* 🎨 PATIENT CONTEXT STYLES - USANDO TOKENS BAMBOO */
+.patient-context-horizontal {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-s, 0.75rem) !important;
+  padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem) !important;
+  background: linear-gradient(135deg, rgba(var(--color-blue-tec, 0, 57, 166), 0.08) 0%, rgba(var(--color-blue-tec, 0, 57, 166), 0.04) 100%) !important;
+  border-radius: var(--bmb-radius-m, 1rem) !important;
+  color: var(--color-blue-tec, #0066cc) !important;
+  font-weight: 500 !important;
+  font-size: 0.9rem !important;
+  border: 1px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.15) !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 
+    0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.08),
+    0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  white-space: nowrap !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  
+  &:hover {
+    background: linear-gradient(135deg, rgba(var(--color-blue-tec, 0, 57, 166), 0.12) 0%, rgba(var(--color-blue-tec, 0, 57, 166), 0.06) 100%) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 
+      0 6px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.12),
+      0 3px 6px rgba(0, 0, 0, 0.08) !important;
+    border-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
+  }
+  
+  .patient-avatar-small {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: var(--bmb-radius-full, 50%) !important;
+    background: linear-gradient(135deg, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.08) 0%, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.15) 100%
+    ) !important;
+    border: 2px solid var(--color-blue-tec, #0066cc) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--color-blue-tec, #0066cc) !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    flex-shrink: 0 !important;
+    box-shadow: 
+      0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.2),
+      0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease !important;
+    letter-spacing: 0.5px !important;
+  }
+  
+  .patient-name {
+    font-weight: 600 !important;
+    color: var(--color-blue-tec, #0066cc) !important;
+    font-size: 1rem !important;
+    white-space: nowrap !important;
+  }
+  
+  .patient-separator {
+    color: rgba(var(--color-blue-tec, 0, 57, 166), 0.5) !important;
+    font-weight: 400 !important;
+    margin: 0 2px !important;
+  }
+  
+  .patient-context {
+    font-size: 0.9rem !important;
+    color: rgba(var(--color-blue-tec, 0, 57, 166), 0.7) !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* 🚀 HEADER LAYOUT - USANDO TOKENS BAMBOO */
+.main-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  flex-wrap: nowrap !important;
+  min-height: 80px !important;
+  padding: var(--bmb-spacing-m, 1rem) var(--bmb-spacing-l, 1.5rem) !important;
+  
+  .header-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  
+  .header-actions {
+    flex-shrink: 0 !important;
+    margin-left: auto !important;
+  }
+}
+
+.header-patient-section {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+}
+
+.header-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+  position: relative !important;
+  z-index: 999999 !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  flex-direction: row !important;
+}
+
+/* 🔧 FORCE CORRECT LAYOUT WITH ::ng-deep */
+::ng-deep .header-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+
+::ng-deep .patient-context-horizontal {
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+
+::ng-deep .nav-dropdown-container {
+  display: inline-block !important;
+  vertical-align: top !important;
+}
+
+/* 📱 RESPONSIVE DESIGN CON TOKENS BAMBOO */
+@media (max-width: 768px) {
+  .main-header {
+    padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem);
+    min-height: 70px;
+    
+    .header-info {
+      .main-title {
+        font-size: 1.2rem;
+      }
+      
+      .main-subtitle {
+        font-size: 0.8rem;
+      }
+    }
+  }
+  
+  .nav-dropdown-menu {
+    right: var(--bmb-spacing-s, 0.75rem);
+    left: var(--bmb-spacing-s, 0.75rem);
+    top: 60px;
+    width: auto;
+    min-width: auto;
+    max-width: none;
+    padding: var(--bmb-spacing-m, 1rem);
+    
+    &::before {
+      right: 20px;
+    }
+  }
+  
+  .nav-dropdown-item {
+    padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem);
+    
+    .nav-dropdown-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 1.2rem;
+    }
+    
+    .nav-dropdown-text {
+      font-size: 1rem;
+    }
+  }
+  
+  .nav-dropdown-toggle {
+    width: 40px;
+    height: 40px;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+  
+  .patient-context-horizontal {
+    font-size: 0.8rem;
+    padding: var(--bmb-spacing-xs, 0.5rem) var(--bmb-spacing-s, 0.75rem);
+    gap: var(--bmb-spacing-xs, 0.5rem);
+    
+    .patient-avatar-small {
+      width: 30px;
+      height: 30px;
+      font-size: 0.75rem;
+    }
+    
+    .patient-name {
+      font-size: 0.85rem;
+    }
+    
+    .patient-context {
+      font-size: 0.75rem;
+    }
+  }
+  
+  .header-actions {
+    gap: var(--bmb-spacing-s, 0.75rem);
+  }
+}
+
+@media (min-width: 1200px) {
+  .nav-dropdown-menu {
+    right: 40px;
+    min-width: 360px;
+  }
+}
+
+/* 🌟 ANIMACIONES PREMIUM CON TOKENS BAMBOO */
+@keyframes bamboo-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bamboo-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes bamboo-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* 🎯 DROPDOWN ANIMATION */
+@keyframes dropdown-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bamboo-fade-in {
+  animation: bamboo-fade-in 0.3s ease-out;
+}
+
+.bamboo-slide-in {
+  animation: bamboo-slide-in 0.3s ease-out;
+}
+
+.bamboo-pulse {
+  animation: bamboo-pulse 2s infinite;
+}
+
+/* 🔧 UTILITY CLASSES CON TOKENS BAMBOO */
+.bamboo-text-primary {
+  color: var(--color-blue-tec, #0066cc);
+}
+
+.bamboo-bg-primary {
+  background: var(--color-blue-tec, #0066cc);
+}
+
+.bamboo-border-primary {
+  border-color: var(--color-blue-tec, #0066cc);
+}
+
+.bamboo-shadow-primary {
+  box-shadow: 0 4px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.2);
+}
+
+.bamboo-hover-primary:hover {
+  background: rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
+}
+
+/* 🎯 BUTTON STYLES CON TOKENS BAMBOO */
+.bamboo-button {
+  background: var(--color-blue-tec, #0066cc);
+  color: white;
+  border: none;
+  padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem);
+  border-radius: var(--bmb-radius-s, 0.5rem);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: rgba(var(--color-blue-tec, 0, 57, 166), 0.9);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.3);
+  }
+  
+  &:focus {
+    outline: 2px solid var(--color-blue-tec, #0066cc);
+    outline-offset: 2px;
+  }
+  
+  &:disabled {
+    background: rgba(var(--color-blue-tec, 0, 57, 166), 0.3);
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+/* 🔄 LOADING STATES CON TOKENS BAMBOO */
+.bamboo-loading {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid transparent;
+    border-top: 2px solid var(--color-blue-tec, #0066cc);
+    border-radius: 50%;
+    animation: bamboo-spin 1s linear infinite;
+  }
+}
+
+@keyframes bamboo-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 🎨 THEME VARIABLES FOR CONSISTENT STYLING */
+:host {
+  --app-primary-color: var(--color-blue-tec, #0066cc);
+  --app-secondary-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.8);
+  --app-light-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
+  --app-border-radius: var(--bmb-radius-s, 0.5rem);
+  --app-spacing: var(--bmb-spacing-m, 1rem);
+  --app-font-family: var(--font-display, 'Poppins', sans-serif);
+}
+
+/* 🔧 OVERRIDE FINAL CON MÁXIMA ESPECIFICIDAD */
+:host ::ng-deep .app-container .main-panel .main-header .header-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+  white-space: nowrap !important;
+  justify-content: flex-end !important;
+}
+
+:host ::ng-deep .app-container .main-panel .main-header .header-actions .patient-context-horizontal {
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+  margin-right: var(--bmb-spacing-m, 1rem) !important;
+}
+
+:host ::ng-deep .app-container .main-panel .main-header .header-actions .nav-dropdown-container {
+  display: inline-block !important;
+  vertical-align: top !important;
+  flex-shrink: 0 !important;
+}
+
+/* 🚨 EMERGENCY OVERRIDE - MAXIMUM SPECIFICITY */
+body .app-container .main-panel .main-header .header-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+  white-space: nowrap !important;
+}
+
+body .app-container .main-panel .main-header .header-actions .patient-context-horizontal {
+  display: flex !important;
+  align-items: center !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  white-space: nowrap !important;
+}
+
+body .app-container .main-panel .main-header .header-actions .nav-dropdown-container {
+  display: inline-block !important;
+  vertical-align: top !important;
+  flex-shrink: 0 !important;
+}
+
+/* 👥 PATIENT CARDS STYLES - USANDO TOKENS BAMBOO */
+.patients-container {
+  padding: var(--bmb-spacing-m, 1rem) !important;
+
+  .section-title {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: var(--general_contrasts-75, #6b7280) !important;
+    margin-bottom: var(--bmb-spacing-m, 1rem) !important;
+    text-transform: uppercase !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .patients-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--bmb-spacing-s, 0.75rem) !important;
+  }
+}
+
+/* 🎯 ESTILOS HTML CARDS - USANDO TOKENS BAMBOO */
+.patient-card-html {
+  padding: var(--bmb-spacing-m, 1rem) !important;
+  border: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  border-radius: var(--bmb-radius-m, 1rem) !important;
+  background: linear-gradient(135deg, 
+    var(--general_contrasts-input-background, #ffffff) 0%, 
+    rgba(var(--color-mariner-50, 224, 242, 254), 0.05) 100%
+  ) !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  margin-bottom: var(--bmb-spacing-s, 0.75rem) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 80px !important;
+
+  &::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 2px !important;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      var(--color-blue-tec, #0066cc) 50%, 
+      transparent 100%
+    ) !important;
+    opacity: 0 !important;
+    transition: opacity 0.3s ease !important;
+  }
+
+  &:hover {
+    transform: translateY(-6px) scale(1.02) !important;
+    box-shadow: 
+      0 12px 40px rgba(var(--color-blue-tec, 0, 57, 166), 0.15),
+      0 6px 20px rgba(var(--color-blue-tec, 0, 57, 166), 0.1),
+      0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    border-color: var(--color-blue-tec, #0066cc) !important;
+    background: linear-gradient(135deg, 
+      var(--general_contrasts-input-background, #ffffff) 0%, 
+      rgba(var(--color-mariner-50, 224, 242, 254), 0.15) 100%
+    ) !important;
+    
+    &::before {
+      opacity: 1 !important;
+    }
+  }
+
+  &.active {
+    border-color: var(--color-blue-tec, #0066cc) !important;
+    background: linear-gradient(135deg, 
+      rgba(var(--color-mariner-50, 224, 242, 254), 0.1) 0%, 
+      rgba(var(--color-mariner-100, 186, 230, 253), 0.2) 100%
+    ) !important;
+    box-shadow: 
+      0 8px 32px rgba(var(--color-blue-tec, 0, 57, 166), 0.2),
+      0 4px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.15) !important;
+    
+    &::before {
+      opacity: 1 !important;
+    }
+  }
+}
+
+.patient-content {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+  position: relative !important;
+  z-index: 1 !important;
+  min-height: 60px !important;
+}
+
+.patient-avatar {
+  width: 48px !important;
+  height: 48px !important;
+  background: linear-gradient(135deg, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.08) 0%, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.15) 100%
+  ) !important;
+  border: 2px solid var(--color-blue-tec, #0066cc) !important;
+  color: var(--color-blue-tec, #0066cc) !important;
+  border-radius: var(--bmb-radius-full, 50%) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  flex-shrink: 0 !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  box-shadow: 
+    0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.2),
+    0 2px 6px rgba(var(--color-blue-tec, 0, 57, 166), 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  letter-spacing: 0.5px !important;
+  
+  /* Premium glow effect */
+  &::after {
+    content: '' !important;
+    position: absolute !important;
+    top: -2px !important;
+    left: -2px !important;
+    right: -2px !important;
+    bottom: -2px !important;
+    background: linear-gradient(135deg, 
+      var(--color-blue-tec, #0066cc) 0%, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.8) 100%
+    ) !important;
+    border-radius: var(--bmb-radius-full, 50%) !important;
+    z-index: -1 !important;
+    opacity: 0 !important;
+    filter: blur(8px) !important;
+    transition: opacity 0.3s !important;
+  }
+}
+
+.patient-card-html:hover .patient-avatar {
+  transform: scale(1.1) !important;
+  background: linear-gradient(135deg, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.15) 0%, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.25) 100%
+  ) !important;
+  border-color: var(--color-blue-tec, #0066cc) !important;
+  box-shadow: 
+    0 6px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
+    0 3px 8px rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
+  
+  &::after {
+    opacity: 0.6 !important;
+  }
+}
+
+.patient-info {
+  flex-grow: 1 !important;
+  min-width: 0 !important;
+
+  .patient-name {
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    color: var(--general_contrasts-100, #1f2937) !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+    line-height: 1.2 !important;
+  }
+
+  .patient-id {
+    font-size: 0.75rem !important;
+    color: var(--general_contrasts-75, #6b7280) !important;
+    margin: 0 !important;
+    margin-top: var(--bmb-spacing-xs, 0.5rem) !important;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace !important;
+    font-weight: 500 !important;
+    opacity: 0.8 !important;
+  }
+}
+
+.active-badge {
+  font-size: 0.75rem !important;
+  padding: var(--bmb-spacing-xs, 0.5rem) var(--bmb-spacing-s, 0.75rem) !important;
+  background: linear-gradient(135deg, 
+    #10b981 0%, 
+    #059669 100%
+  ) !important;
+  color: white !important;
+  border-radius: var(--bmb-radius-s, 0.5rem) !important;
+  font-weight: 600 !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3) !important;
+  transition: all 0.3s !important;
+}
+
+.patient-card-html:hover .active-badge {
+  transform: scale(1.05) !important;
+  box-shadow: 0 3px 8px rgba(76, 175, 80, 0.4) !important;
+}
+
+/* 📋 SEARCH INPUT STYLES - USANDO TOKENS BAMBOO */
+.search-container {
+  padding: var(--bmb-spacing-m, 1rem) !important;
+  border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  background: var(--general_contrasts-input-background, #ffffff) !important;
+}
+
+.search-input-wrapper {
+  position: relative !important;
+}
+
+.search-input {
+  width: 100% !important;
+  padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem) !important;
+  padding-left: 40px !important;
+  border: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  border-radius: var(--bmb-radius-s, 0.5rem) !important;
+  font-size: 0.875rem !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  background: var(--general_contrasts-input-background, #ffffff) !important;
+  color: var(--general_contrasts-100, #1f2937) !important;
+  outline: none !important;
+  transition: all 0.2s ease !important;
+
+  &:focus {
+    border-color: var(--color-blue-tec, #0066cc) !important;
+    box-shadow: 0 0 0 2px rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
+  }
+
+  &::placeholder {
+    color: var(--general_contrasts-75, #6b7280) !important;
+  }
+}
+
+.search-icon {
+  position: absolute !important;
+  left: 12px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  color: var(--general_contrasts-75, #6b7280) !important;
+  font-size: 1rem !important;
+}
+
+/* 📋 EMPTY STATE - USANDO TOKENS BAMBOO */
+.empty-state {
+  text-align: center !important;
+  padding: var(--bmb-spacing-xl, 2rem) var(--bmb-spacing-m, 1rem) !important;
+  border-radius: var(--bmb-radius-m, 1rem) !important;
+  background: linear-gradient(135deg, 
+    var(--general_contrasts-input-background, #ffffff) 0%, 
+    rgba(var(--color-mariner-50, 224, 242, 254), 0.05) 100%
+  ) !important;
+  border: 1px dashed var(--general_contrasts-container-outline, #e5e7eb) !important;
+  margin: var(--bmb-spacing-m, 1rem) !important;
+
+  .empty-icon {
+    font-size: 3rem !important;
+    margin-bottom: var(--bmb-spacing-m, 1rem) !important;
+    opacity: 0.6 !important;
+    filter: grayscale(0.3) !important;
+  }
+
+  p {
+    color: var(--general_contrasts-75, #6b7280) !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    margin-bottom: var(--bmb-spacing-s, 0.75rem) !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  }
+
+  small {
+    color: var(--general_contrasts-50, #9ca3af) !important;
+    font-size: 0.75rem !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  }
+}
+
+/* 📋 SIDEBAR CONTENT - USANDO TOKENS BAMBOO */
+.sidebar-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
+}
+
+.sidebar-body {
+  padding: var(--bmb-spacing-m, 1rem) !important;
+}
+
+/* 📋 LOADING STATES - USANDO TOKENS BAMBOO */
+.loading-state {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: var(--bmb-spacing-l, 1.5rem) !important;
+  gap: var(--bmb-spacing-s, 0.75rem) !important;
+  
+  .loading-spinner {
+    width: 32px !important;
+    height: 32px !important;
+    border: 3px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+    border-top: 3px solid var(--color-blue-tec, #0066cc) !important;
+    border-radius: 50% !important;
+    animation: bamboo-spin 1s linear infinite !important;
+  }
+  
+  p {
+    color: var(--general_contrasts-75, #6b7280) !important;
+    font-size: 0.875rem !important;
+    margin: 0 !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  }
+}
+
+.error-state {
+  text-align: center !important;
+  padding: var(--bmb-spacing-l, 1.5rem) !important;
+  
+  p {
+    color: #ef4444 !important;
+    font-size: 0.875rem !important;
+    margin: 0 !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  }
+}
+
+.no-results {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: var(--bmb-spacing-xl, 2rem) var(--bmb-spacing-m, 1rem) !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+  
+  svg {
+    width: 48px !important;
+    height: 48px !important;
+    color: var(--general_contrasts-75, #6b7280) !important;
+    opacity: 0.6 !important;
+  }
+  
+  p {
+    color: var(--general_contrasts-75, #6b7280) !important;
+    font-size: 0.875rem !important;
+    margin: 0 !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  }
+}
+
+/* 📋 COLLAPSED SIDEBAR - USANDO TOKENS BAMBOO */
+.sidebar-collapsed-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: var(--bmb-spacing-m, 1rem) var(--bmb-spacing-s, 0.75rem) !important;
+  gap: var(--bmb-spacing-m, 1rem) !important;
+}
+
+.collapsed-search {
+  .search-btn {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: var(--bmb-radius-full, 50%) !important;
+    border: 2px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+    background: linear-gradient(135deg, 
+      var(--general_contrasts-input-background, #ffffff) 0%, 
+      rgba(var(--color-mariner-50, 224, 242, 254), 0.05) 100%
+    ) !important;
+    color: var(--general_contrasts-100, #1f2937) !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    svg {
+      width: 20px !important;
+      height: 20px !important;
+    }
+    
+    &:hover {
+      transform: scale(1.1) !important;
+      border-color: var(--color-blue-tec, #0066cc) !important;
+      box-shadow: 0 4px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.25) !important;
+      background: linear-gradient(135deg, 
+        var(--color-blue-tec, #0066cc) 0%, 
+        rgba(var(--color-blue-tec, 0, 57, 166), 0.9) 100%
+      ) !important;
+      color: white !important;
+    }
+  }
+}
+
+.collapsed-patients {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--bmb-spacing-s, 0.75rem) !important;
+  align-items: center !important;
+}
+
+.collapsed-patient {
+  position: relative !important;
+  cursor: pointer !important;
+  
+  .collapsed-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: var(--bmb-radius-full, 50%) !important;
+    border: 2px solid var(--color-blue-tec, #0066cc) !important;
+    background: linear-gradient(135deg, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.08) 0%, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.15) 100%
+    ) !important;
+    color: var(--color-blue-tec, #0066cc) !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 0.875rem !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    letter-spacing: 0.5px !important;
+  }
+  
+  &:hover .collapsed-avatar {
+    transform: scale(1.1) !important;
+    background: linear-gradient(135deg, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.15) 0%, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.25) 100%
+    ) !important;
+    border-color: var(--color-blue-tec, #0066cc) !important;
+    box-shadow: 0 4px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.25) !important;
+  }
+  
+  &.active .collapsed-avatar {
+    background: linear-gradient(135deg, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.2) 0%, 
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.3) 100%
+    ) !important;
+    border-color: var(--color-blue-tec, #0066cc) !important;
+    box-shadow: 0 4px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.3) !important;
+    transform: scale(1.05) !important;
+  }
+  
+  .active-indicator {
+    position: absolute !important;
+    top: -4px !important;
+    right: -4px !important;
+    width: 16px !important;
+    height: 16px !important;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border: 2px solid white !important;
+    border-radius: var(--bmb-radius-full, 50%) !important;
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3) !important;
+  }
+}
