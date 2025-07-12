@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
-import { catchError, map, retry } from 'rxjs/operators';
+import { catchError, map, retry, timeout } from 'rxjs/operators';
 import { environment } from '@environments/environment';
 import {
   Patient,
@@ -23,22 +23,28 @@ export class ApiService {
     'Content-Type': 'application/json'
   });
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.log('ApiService initialized with:', { 
+      apiUrl: this.apiUrl, 
+      environment: environment.production ? 'production' : 'development' 
+    });
+  }
 
   // ========== Patient Management ==========
   
   getPatients(page = 1, perPage = 20): Observable<PatientSearchResult> {
     const url = `${this.apiUrl}/api/v1/patients/?limit=${perPage}&offset=${(page-1)*perPage}`;
-    console.log('ApiService: Making request to:', url);
+    this.log('Making request to:', url);
     
     return this.http.get<PatientSearchResult>(url, { headers: this.headers }).pipe(
+      timeout(environment.apiTimeout || 30000),
       map(result => {
-        console.log('ApiService: getPatients response:', result);
+        this.log('getPatients response:', result);
         return result;
       }),
-      retry(1),
+      retry(environment.retryAttempts || 1),
       catchError(error => {
-        console.error('ApiService: getPatients error:', error);
+        this.log('getPatients error:', error);
         return this.handleError(error);
       })
     );
@@ -171,21 +177,25 @@ export class ApiService {
   // ========== Generic HTTP Methods ==========
   
   get(url: string): Observable<any> {
+    this.log('GET request to:', `${this.apiUrl}${url}`);
     return this.http.get<any>(
       `${this.apiUrl}${url}`,
       { headers: this.headers }
     ).pipe(
-      retry(1),
+      timeout(environment.apiTimeout || 30000),
+      retry(environment.retryAttempts || 1),
       catchError(this.handleError)
     );
   }
 
   post(url: string, data: any): Observable<any> {
+    this.log('POST request to:', { url: `${this.apiUrl}${url}`, data });
     return this.http.post<any>(
       `${this.apiUrl}${url}`,
       data,
       { headers: this.headers }
     ).pipe(
+      timeout(environment.apiTimeout || 30000),
       catchError(this.handleError)
     );
   }
@@ -244,7 +254,15 @@ export class ApiService {
       errorMessage = error.error?.detail || error.error?.error || `Error Code: ${error.status}\nMessage: ${error.message}`;
     }
 
-    console.error('API Error:', errorMessage);
+    this.log('API Error:', errorMessage);
     return throwError(() => new Error(errorMessage));
+  }
+
+  // ========== Logging ==========
+  
+  private log(message: string, data?: any): void {
+    if (environment.debug?.showApiLogs) {
+      console.log(`[ApiService] ${message}`, data || '');
+    }
   }
 }
