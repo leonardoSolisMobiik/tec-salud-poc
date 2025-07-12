@@ -145,38 +145,52 @@ class MedicalCoordinatorAgent:
                         user_query = msg.content
                         break
             
-            # Step 1: Classify the query type with enhanced classification
-            query_classification = await self._classify_query_enhanced(messages)
-            logger.info(f"📊 Enhanced query classified as: {query_classification['query_type']}")
-            
-            # Step 2: Get enhanced patient context if patient_id provided
+            # Step 1: Get enhanced patient context FIRST if patient_id provided
             enhanced_context = None
             if patient_id and self.use_enhanced_context:
-                # Determine context strategy
-                strategy = (
-                    context_strategy or 
-                    ContextStrategy(query_classification.get("context_strategy", self.default_context_strategy))
-                )
-                
-                # Get enhanced context using the new service
                 try:
                     from sqlalchemy.orm import Session
                     db = next(get_db())
+                    # Use default strategy for initial context retrieval
                     enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
                         patient_id=patient_id,
                         query=user_query,
-                        strategy=strategy,
+                        strategy=context_strategy or self.default_context_strategy,
                         db=db,
                         include_recent=True,
-                        include_critical=query_classification.get("urgency", "low") in ["high", "critical"]
+                        include_critical=False  # Don't assume critical yet
                     )
-                    logger.info(f"🔍 Enhanced context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens, {enhanced_context.confidence:.2f} confidence")
+                    logger.info(f"🔍 Pre-classification context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens")
                 except Exception as e:
-                    logger.warning(f"⚠️ Enhanced context failed, falling back to legacy: {str(e)}")
-                    # Fallback to legacy context if available
+                    logger.warning(f"⚠️ Enhanced context failed, classification will proceed without context: {str(e)}")
                     enhanced_context = None
             
-            # Step 3: Route to appropriate agent with enhanced context
+            # Step 2: Classify the query WITH context information available
+            query_classification = await self._classify_query_enhanced(messages, enhanced_context)
+            logger.info(f"📊 Context-aware classification: {query_classification['query_type']} (confidence: {query_classification['confidence']:.2f})")
+            
+            # Step 3: Refine context based on classification if needed
+            if enhanced_context and query_classification.get("context_strategy"):
+                # Update context strategy based on classification
+                refined_strategy = ContextStrategy(query_classification["context_strategy"])
+                if refined_strategy != enhanced_context.strategy_used:
+                    logger.info(f"🔄 Refining context strategy from {enhanced_context.strategy_used.value} to {refined_strategy.value}")
+                    try:
+                        from sqlalchemy.orm import Session
+                        db = next(get_db())
+                        enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
+                            patient_id=patient_id,
+                            query=user_query,
+                            strategy=refined_strategy,
+                            db=db,
+                            include_recent=True,
+                            include_critical=query_classification.get("urgency", "low") in ["high", "critical"]
+                        )
+                        logger.info(f"🔍 Refined context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Context refinement failed, using original context: {str(e)}")
+            
+            # Step 4: Route to appropriate agent with enhanced context
             response = await self._route_to_agent_enhanced(
                 query_classification,
                 messages,
@@ -187,7 +201,7 @@ class MedicalCoordinatorAgent:
                 max_tokens
             )
             
-            # Step 4: Add enhanced coordinator metadata
+            # Step 5: Add enhanced coordinator metadata
             response.metadata = {
                 "coordinator": {
                     "classification": query_classification,
@@ -197,7 +211,8 @@ class MedicalCoordinatorAgent:
                     "context_confidence": enhanced_context.confidence if enhanced_context else None,
                     "total_context_documents": enhanced_context.total_documents if enhanced_context else 0,
                     "total_context_tokens": enhanced_context.total_tokens if enhanced_context else 0,
-                    "legacy_context_used": patient_context is not None
+                    "legacy_context_used": patient_context is not None,
+                    "context_available_for_classification": enhanced_context is not None
                 }
             }
             
@@ -240,32 +255,50 @@ class MedicalCoordinatorAgent:
                         user_query = msg.content
                         break
             
-            # Classify query
-            query_classification = await self._classify_query_enhanced(messages)
-            logger.info(f"🌊 Streaming enhanced {query_classification['query_type']} query")
-            
-            # Get enhanced context if available
+            # Step 1: Get enhanced context FIRST if available
             enhanced_context = None
             if patient_id and self.use_enhanced_context:
                 try:
-                    strategy = context_strategy or ContextStrategy(
-                        query_classification.get("context_strategy", self.default_context_strategy)
-                    )
-                    
                     from sqlalchemy.orm import Session
                     db = next(get_db())
                     enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
                         patient_id=patient_id,
                         query=user_query,
-                        strategy=strategy,
+                        strategy=context_strategy or self.default_context_strategy,
                         db=db,
                         include_recent=True,
-                        include_critical=query_classification.get("urgency", "low") in ["high", "critical"]
+                        include_critical=False  # Don't assume critical yet
                     )
+                    logger.info(f"🔍 Pre-classification streaming context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens")
                 except Exception as e:
                     logger.warning(f"⚠️ Enhanced context failed for streaming: {str(e)}")
+                    enhanced_context = None
             
-            # Route to appropriate agent for streaming
+            # Step 2: Classify query WITH context information
+            query_classification = await self._classify_query_enhanced(messages, enhanced_context)
+            logger.info(f"🌊 Context-aware streaming classification: {query_classification['query_type']} (confidence: {query_classification['confidence']:.2f})")
+            
+            # Step 3: Refine context based on classification if needed
+            if enhanced_context and query_classification.get("context_strategy"):
+                refined_strategy = ContextStrategy(query_classification["context_strategy"])
+                if refined_strategy != enhanced_context.strategy_used:
+                    logger.info(f"🔄 Refining streaming context strategy from {enhanced_context.strategy_used.value} to {refined_strategy.value}")
+                    try:
+                        from sqlalchemy.orm import Session
+                        db = next(get_db())
+                        enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
+                            patient_id=patient_id,
+                            query=user_query,
+                            strategy=refined_strategy,
+                            db=db,
+                            include_recent=True,
+                            include_critical=query_classification.get("urgency", "low") in ["high", "critical"]
+                        )
+                        logger.info(f"🔍 Refined streaming context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Streaming context refinement failed: {str(e)}")
+            
+            # Step 4: Route to appropriate agent for streaming
             async for chunk in self._route_to_agent_stream_enhanced(
                 query_classification,
                 messages,
@@ -281,22 +314,55 @@ class MedicalCoordinatorAgent:
             logger.error(f"❌ Enhanced streaming coordinator error: {str(e)}")
             yield f"Error: {str(e)}"
     
-    async def _classify_query_enhanced(self, messages: List[ChatMessage]) -> Dict[str, Any]:
+    async def _classify_query_enhanced(self, messages: List[ChatMessage], enhanced_context=None) -> Dict[str, Any]:
         """
-        Enhanced query classification that also recommends context strategy
+        Enhanced query classification that considers available patient context
+        
+        Args:
+            messages: Chat messages from user
+            enhanced_context: Available patient context (HybridContext object)
+            
+        Returns:
+            Classification result with context-aware decisions
         """
         try:
-            # Create enhanced classification prompt
+            # Prepare context information for classification
+            context_info = ""
+            if enhanced_context:
+                context_info = f"""
+                
+                CONTEXTO DISPONIBLE DEL PACIENTE:
+                - Documentos disponibles: {enhanced_context.total_documents}
+                - Tokens de contexto: {enhanced_context.total_tokens}
+                - Estrategia usada: {enhanced_context.strategy_used.value}
+                - Confianza del contexto: {enhanced_context.confidence:.2f}
+                - Documentos completos: {len(enhanced_context.full_documents)}
+                - Resultados vectoriales: {len(enhanced_context.vector_results)}
+                
+                IMPORTANTE: Si la consulta pide información específica del paciente y hay documentos disponibles,
+                es muy probable que sea "document_analysis" o "search" en lugar de "general".
+                """
+            else:
+                context_info = """
+                
+                CONTEXTO DEL PACIENTE: No hay documentos disponibles para este paciente.
+                
+                IMPORTANTE: Sin contexto del paciente, las consultas específicas sobre expedientes 
+                deben clasificarse como "general" ya que no hay información para procesar.
+                """
+            
+            # Create enhanced classification prompt with context awareness
             classification_messages = [
                 ChatMessage(
                     role="system",
-                    content="""Eres un clasificador avanzado de consultas médicas. 
+                    content=f"""Eres un clasificador avanzado de consultas médicas con acceso a información del contexto del paciente.
+                    
                     Analiza la consulta y clasifícala según estos tipos:
                     
                     - diagnostic: Consultas sobre síntomas, diagnósticos, diagnósticos diferenciales
-                    - document_analysis: Análisis de documentos médicos, expedientes, estudios  
+                    - document_analysis: Análisis de documentos médicos, expedientes, estudios, resúmenes de historiales, análisis de contenido específico
                     - quick_question: Preguntas rápidas sobre medicina, definiciones, información médica general
-                    - search: Búsqueda de información específica en expedientes
+                    - search: Búsqueda de información específica en expedientes (cuando no requiere análisis profundo)
                     - general: Saludos simples, consultas no médicas, conversación casual
                     
                     También determina la mejor estrategia de contexto:
@@ -306,12 +372,36 @@ class MedicalCoordinatorAgent:
                     - hybrid_priority_vectors: Priorizar vectores con docs de respaldo
                     - hybrid_priority_full: Priorizar docs completos con vectores de apoyo
                     
-                    IMPORTANTE:
-                    - Usa "general" solo para saludos básicos, despedidas, agradecimientos
-                    - Para consultas diagnósticas complejas: hybrid_priority_full
-                    - Para preguntas rápidas: vectors_only o hybrid_priority_vectors
-                    - Para análisis de documentos: full_docs_only o hybrid_priority_full
-                    - Para búsquedas específicas: hybrid_smart"""
+                    REGLAS DE CLASIFICACIÓN CONTEXTUAL:
+                    - Si hay documentos disponibles Y la consulta pide información del paciente → document_analysis
+                    - Si hay documentos disponibles Y la consulta busca datos específicos → search
+                    - Si NO hay documentos disponibles Y se pide información del paciente → general
+                    - Para preguntas médicas generales (sin requerir expediente específico) → quick_question
+                    - Para análisis de síntomas complejos → diagnostic
+                    - Solo usar "general" para saludos básicos, despedidas, agradecimientos
+                    
+                    CRITERIOS ESPECÍFICOS PARA DOCUMENT_ANALYSIS:
+                    - Solicitudes de resúmenes de expedientes
+                    - Preguntas sobre estudios realizados (laboratorios, imágenes, procedimientos)
+                    - Análisis de contenido específico de documentos médicos
+                    - Consultas que requieren interpretar el contenido completo del expediente
+                    - Preguntas como "qué estudios se ha hecho", "cuáles son los resultados", "dame un resumen"
+                    
+                    CRITERIOS ESPECÍFICOS PARA SEARCH:
+                    - Búsqueda de información específica pero sin análisis profundo
+                    - Búsqueda de datos puntuales (fechas, nombres, números)
+                    - Cuando se necesita encontrar información específica sin interpretación
+                    
+                    EJEMPLOS ACTUALIZADOS:
+                    - "dame un resumen del expediente" + documentos disponibles → document_analysis
+                    - "qué estudios se ha hecho pedro" + documentos disponibles → document_analysis
+                    - "cuáles son los resultados de laboratorio" + documentos disponibles → document_analysis
+                    - "busca la fecha de la última consulta" + documentos disponibles → search
+                    - "cuáles son los síntomas de diabetes" → quick_question
+                    - "analiza los síntomas del paciente" + documentos disponibles → diagnostic
+                    - "hola, buenos días" → general{context_info}
+                    
+                )"""
                 )
             ] + messages
             
@@ -334,28 +424,38 @@ class MedicalCoordinatorAgent:
                 if "context_strategy" not in classification:
                     classification["context_strategy"] = self._determine_default_strategy(classification["query_type"])
                 
+                # Add context awareness metadata
+                classification["context_available"] = enhanced_context is not None
+                classification["context_documents"] = enhanced_context.total_documents if enhanced_context else 0
+                
                 return classification
             else:
-                # Fallback classification
+                # Fallback classification with context awareness
+                has_context = enhanced_context is not None and enhanced_context.total_documents > 0
                 return {
-                    "query_type": "general",
+                    "query_type": "document_analysis" if has_context else "general",
                     "confidence": 0.5,
-                    "reasoning": "Could not classify automatically",
-                    "requires_patient_context": False,
+                    "reasoning": "Could not classify automatically, using context-aware fallback",
+                    "requires_patient_context": has_context,
                     "urgency": "low",
-                    "context_strategy": "hybrid_smart"
+                    "context_strategy": "hybrid_smart" if has_context else "vectors_only",
+                    "context_available": has_context,
+                    "context_documents": enhanced_context.total_documents if enhanced_context else 0
                 }
                 
         except Exception as e:
             logger.error(f"❌ Enhanced query classification failed: {str(e)}")
-            # Return safe fallback
+            # Return safe fallback with context awareness
+            has_context = enhanced_context is not None and enhanced_context.total_documents > 0
             return {
-                "query_type": "general",
+                "query_type": "document_analysis" if has_context else "general",
                 "confidence": 0.3,
-                "reasoning": f"Classification error: {str(e)}",
-                "requires_patient_context": False,
+                "reasoning": f"Classification error: {str(e)}, using context-aware fallback",
+                "requires_patient_context": has_context,
                 "urgency": "low",
-                "context_strategy": "hybrid_smart"
+                "context_strategy": "hybrid_smart" if has_context else "vectors_only",
+                "context_available": has_context,
+                "context_documents": enhanced_context.total_documents if enhanced_context else 0
             }
     
     def _determine_default_strategy(self, query_type: str) -> str:
@@ -478,8 +578,12 @@ class MedicalCoordinatorAgent:
         query_type = classification.get("query_type", "general")
         unified_context = self._prepare_unified_context(legacy_context, enhanced_context)
         
+        logger.info(f"🎯 MedicalCoordinator: Routing to {query_type} agent")
+        logger.info(f"🎯 MedicalCoordinator: Unified context prepared with {len(unified_context)} keys")
+        
         try:
             if query_type == "diagnostic":
+                logger.info("🎯 MedicalCoordinator: Calling DiagnosticAgent")
                 async for chunk in self.diagnostic_agent.process_stream(
                     messages=messages,
                     patient_context=unified_context,
@@ -489,7 +593,19 @@ class MedicalCoordinatorAgent:
                 ):
                     yield chunk
             
+            elif query_type == "document_analysis":
+                logger.info("🎯 MedicalCoordinator: Calling DocumentAnalysisAgent")
+                async for chunk in self.document_agent.process_stream(
+                    messages=messages,
+                    patient_context=unified_context,
+                    model_type=ModelType.GPT4O,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                ):
+                    yield chunk
+            
             elif query_type == "quick_question":
+                logger.info("🎯 MedicalCoordinator: Calling QuickResponseAgent")
                 async for chunk in self.quick_agent.process_stream(
                     messages=messages,
                     patient_context=unified_context,
@@ -499,7 +615,19 @@ class MedicalCoordinatorAgent:
                 ):
                     yield chunk
             
-            else:  # general and others
+            elif query_type == "search":
+                logger.info("🎯 MedicalCoordinator: Calling SearchAgent")
+                async for chunk in self.search_agent.process_stream(
+                    messages=messages,
+                    patient_context=unified_context,
+                    model_type=model_type,
+                    temperature=temperature,
+                    max_tokens=max_tokens
+                ):
+                    yield chunk
+            
+            else:  # general
+                logger.info("🎯 MedicalCoordinator: Handling general conversation")
                 # Enhanced general conversation with streaming
                 general_prompt = ChatMessage(
                     role="system",

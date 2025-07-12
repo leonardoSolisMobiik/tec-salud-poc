@@ -240,12 +240,26 @@ class DocumentAnalysisAgent:
         Process document analysis with streaming response
         """
         try:
-            logger.info("🌊 Streaming document analysis")
+            logger.info("🌊 DocumentAnalysisAgent: Starting streaming document analysis")
+            logger.info(f"📄 DocumentAnalysisAgent: Patient context available: {patient_context is not None}")
+            
+            if patient_context:
+                logger.info(f"📄 DocumentAnalysisAgent: Context keys: {list(patient_context.keys())}")
+                
+                # Check for documents in context
+                if "full_documents" in patient_context:
+                    logger.info(f"📄 DocumentAnalysisAgent: Found {len(patient_context['full_documents'])} full documents")
+                elif "documents" in patient_context:
+                    logger.info(f"📄 DocumentAnalysisAgent: Found {len(patient_context['documents'])} legacy documents")
+                else:
+                    logger.warning("📄 DocumentAnalysisAgent: No documents found in context")
             
             # Prepare context
             enhanced_messages = await self._prepare_document_context(
                 messages, patient_context
             )
+            
+            logger.info(f"📄 DocumentAnalysisAgent: Prepared {len(enhanced_messages)} enhanced messages")
             
             # Stream response
             async for chunk in self.azure_openai_service.chat_completion_stream(
@@ -257,7 +271,7 @@ class DocumentAnalysisAgent:
                 yield chunk
                 
         except Exception as e:
-            logger.error(f"❌ Document analysis streaming failed: {str(e)}")
+            logger.error(f"❌ DocumentAnalysisAgent: Streaming failed: {str(e)}")
             yield f"Error en análisis de documento: {str(e)}"
     
     async def _prepare_document_context(
@@ -272,11 +286,18 @@ class DocumentAnalysisAgent:
             ChatMessage(role="system", content=self.system_prompt)
         ]
         
-        # Add document context if available
-        if patient_context and "documents" in patient_context:
-            document_content = self._format_documents_for_analysis(
-                patient_context["documents"]
-            )
+        # Add document context if available (check both 'documents' and 'full_documents')
+        documents = None
+        if patient_context:
+            # First check for 'full_documents' (new enhanced format)
+            if "full_documents" in patient_context:
+                documents = patient_context["full_documents"]
+            # Fallback to 'documents' (legacy format)
+            elif "documents" in patient_context:
+                documents = patient_context["documents"]
+        
+        if documents:
+            document_content = self._format_documents_for_analysis(documents)
             enhanced_messages.append(
                 ChatMessage(
                     role="system",
@@ -300,15 +321,36 @@ class DocumentAnalysisAgent:
         return enhanced_messages
     
     def _format_documents_for_analysis(self, documents: List[Dict[str, Any]]) -> str:
-        """Format documents for analysis"""
+        """Format documents for analysis (supports both legacy and enhanced formats)"""
         formatted_docs = []
         
         for i, doc in enumerate(documents[:5], 1):  # Limit to 5 most recent
             doc_text = f"DOCUMENTO {i}:\\n"
-            doc_text += f"Tipo: {doc.get('type', 'N/A')}\\n"
-            doc_text += f"Fecha: {doc.get('date', 'N/A')}\\n"
-            doc_text += f"Título: {doc.get('title', 'N/A')}\\n"
-            doc_text += f"Contenido:\\n{doc.get('content', 'N/A')}\\n"
+            
+            # Handle both legacy and enhanced document formats
+            doc_type = doc.get('document_type') or doc.get('type', 'N/A')
+            if isinstance(doc_type, str) and '.' in doc_type:
+                # Handle enum values like 'DocumentTypeEnum.GENERAL'
+                doc_type = doc_type.split('.')[-1].replace('_', ' ').title()
+            
+            doc_text += f"Tipo: {doc_type}\\n"
+            
+            # Handle different date formats
+            date = doc.get('created_at') or doc.get('date', 'N/A')
+            doc_text += f"Fecha: {date}\\n"
+            
+            title = doc.get('title', 'N/A')
+            doc_text += f"Título: {title}\\n"
+            
+            # Add additional enhanced format fields if available
+            if doc.get('relevance_score'):
+                doc_text += f"Relevancia: {doc['relevance_score']:.2f}\\n"
+            
+            if doc.get('document_id'):
+                doc_text += f"ID: {doc['document_id']}\\n"
+            
+            content = doc.get('content', 'N/A')
+            doc_text += f"Contenido:\\n{content}\\n"
             doc_text += "---\\n"
             formatted_docs.append(doc_text)
         

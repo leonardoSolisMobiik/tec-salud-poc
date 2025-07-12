@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, AfterViewChecked, ViewChild, ElementRef }
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { ChatMessage } from '@core/models';
+import { ChatMessage, ChatRequest } from '@core/models';
 import { MedicalStateService, StreamingService } from '@core/services';
 
 // Import available Bamboo Components
@@ -70,18 +70,17 @@ import { MedicalStateService, StreamingService } from '@core/services';
             <div class="message-content">
               <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
               <div class="message-time">{{ formatTime(message.timestamp) }}</div>
-                </div>
-              </div>
+            </div>
+          </div>
               
           <!-- Streaming message -->
           <div class="message-item assistant-message" *ngIf="isStreaming">
-              <div class="message-content">
-              <div class="message-text">{{ streamingMessage }}</div>
+            <div class="message-content">
+              <div class="message-text" [innerHTML]="formatMessageContent(streamingMessage)"></div>
               <div class="message-time">Escribiendo...</div>
-                  </div>
-                </div>
-              </div>
+            </div>
           </div>
+        </div>
 
       <!-- Footer -->
       <div class="chat-footer" *ngIf="activePatient">
@@ -121,110 +120,64 @@ import { MedicalStateService, StreamingService } from '@core/services';
       left: 0 !important;
       right: 0 !important;
       width: 100vw !important;
-      height: 80px !important;
-      background: linear-gradient(90deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
+      height: 40px !important;
+      background: linear-gradient(90deg, #2196F3, #1976D2, #2196F3) !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
       z-index: 999999 !important;
-      animation: megaPulse 1s infinite !important;
-      border: 5px solid #FF0000 !important;
-      box-shadow: 0 0 50px rgba(255, 0, 0, 0.8) !important;
+      border-bottom: 2px solid #1976D2 !important;
     }
 
     .mega-banner-content {
       display: flex !important;
       align-items: center !important;
-      gap: 30px !important;
+      gap: 15px !important;
       color: white !important;
-      font-weight: 900 !important;
-      font-size: 2rem !important;
-      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8) !important;
-      letter-spacing: 2px !important;
-      text-transform: uppercase !important;
+      font-weight: 600 !important;
+      font-size: 0.9rem !important;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+      letter-spacing: 1px !important;
     }
 
     .mega-icon {
-      font-size: 3rem !important;
-      animation: megaBounce 0.5s infinite !important;
+      font-size: 1rem !important;
     }
 
     .mega-text {
-      font-size: 2.5rem !important;
-      animation: megaShake 0.5s infinite !important;
-    }
-
-    @keyframes megaPulse {
-      0%, 100% { 
-        background: linear-gradient(90deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
-        transform: scale(1) !important;
-      }
-      50% { 
-        background: linear-gradient(90deg, #FF4500, #FF6B35, #FFFF00, #FF6B35, #FF4500) !important;
-        transform: scale(1.05) !important;
-      }
-    }
-
-    @keyframes megaBounce {
-      0%, 100% { transform: translateY(0) rotate(0deg) !important; }
-      50% { transform: translateY(-15px) rotate(180deg) !important; }
-    }
-
-    @keyframes megaShake {
-      0%, 100% { transform: translateX(0) !important; }
-      25% { transform: translateX(-10px) !important; }
-      75% { transform: translateX(10px) !important; }
+      font-size: 0.9rem !important;
     }
 
     /* 🚨 BANNER SÚPER VISIBLE */
     .verification-banner {
       position: fixed !important;
-      top: 80px !important;
+      top: 40px !important;
       left: 0 !important;
       right: 0 !important;
-      height: 60px !important;
-      background: linear-gradient(90deg, #FF6B35, #F7931E, #FF6B35) !important;
+      height: 30px !important;
+      background: linear-gradient(90deg, #4CAF50, #45a049, #4CAF50) !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
       z-index: 99999 !important;
-      animation: bannerPulse 2s infinite !important;
     }
 
     .banner-content {
       display: flex !important;
       align-items: center !important;
-      gap: 20px !important;
+      gap: 10px !important;
       color: white !important;
-      font-weight: 900 !important;
-      font-size: 1.5rem !important;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+      font-weight: 600 !important;
+      font-size: 0.8rem !important;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
     }
 
     .banner-icon {
-      font-size: 2rem !important;
-      animation: bounce 1s infinite !important;
+      font-size: 1rem !important;
     }
 
     .banner-text {
-      letter-spacing: 3px !important;
-      animation: shimmer 2s infinite !important;
-    }
-
-    @keyframes bannerPulse {
-      0%, 100% { opacity: 0.9 !important; }
-      50% { opacity: 1 !important; }
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0) !important; }
-      50% { transform: translateY(-10px) !important; }
-    }
-
-    @keyframes shimmer {
-      0% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important; }
-      50% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.8) !important; }
-      100% { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important; }
+      letter-spacing: 1px !important;
     }
 
     /* CONTENEDOR PRINCIPAL */
@@ -233,7 +186,7 @@ import { MedicalStateService, StreamingService } from '@core/services';
       flex-direction: column !important;
       height: 100vh !important;
       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
-      margin-top: 140px !important;
+      margin-top: 70px !important;
     }
 
     /* HEADER */
@@ -649,41 +602,80 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     };
 
     this.medicalStateService.addMessage(userMessage);
+    const messageContent = this.currentMessage.trim();
     this.currentMessage = '';
 
     // Start streaming response
     this.medicalStateService.startStreaming();
     
-    // Enhanced AI simulation with medical context
-    setTimeout(() => {
-      const aiResponse: ChatMessage = {
-        role: 'assistant',
-        content: `**Análisis Médico para ${this.activePatient.name}**
+    // Create chat request with patient context
+    const chatRequest: ChatRequest = {
+      messages: [
+        ...this.chatMessages,
+        userMessage
+      ],
+      patient_id: this.activePatient?.id?.toString(),
+      include_context: true,
+      stream: true
+    };
 
-Basándome en la información proporcionada, puedo ofrecerte las siguientes recomendaciones:
+    console.log('🩺 Sending medical chat request:', {
+      patient_id: chatRequest.patient_id,
+      message_count: chatRequest.messages.length,
+      last_message: messageContent
+    });
 
-**🔍 Evaluación Inicial:**
-- La descripción de síntomas requiere un análisis más detallado
-- Es importante considerar el historial médico del paciente
-
-**📋 Recomendaciones:**
-1. **Examen físico** completo enfocado en el área de interés
-2. **Signos vitales** y evaluación del estado general
-3. **Estudios complementarios** según indicación clínica
-
-**⚠️ Consideraciones importantes:**
-- Esta es una herramienta de apoyo diagnóstico
-- La evaluación presencial del paciente es fundamental
-- Ante cualquier emergencia, dirigirse inmediatamente a urgencias
-
-**💡 Próximos pasos sugeridos:**
-¿Te gustaría que profundice en algún aspecto específico del caso?`,
-        timestamp: new Date()
-      };
-      
-      this.medicalStateService.addMessage(aiResponse);
-      this.medicalStateService.finishStreaming();
-    }, 3000);
+    // Stream response from backend
+    this.streamingService.streamMedicalChat(chatRequest).subscribe({
+      next: (chunk) => {
+        if (chunk.type === 'content' && chunk.content) {
+          // Accumulate streaming content
+          const currentStream = this.streamingMessage + chunk.content;
+          this.medicalStateService.updateStreamingMessage(currentStream);
+        }
+        
+        if (chunk.type === 'done') {
+          // Add the complete response as a message
+          const aiResponse: ChatMessage = {
+            role: 'assistant',
+            content: this.streamingMessage,
+            timestamp: new Date()
+          };
+          
+          this.medicalStateService.addMessage(aiResponse);
+          this.medicalStateService.finishStreaming();
+          
+          console.log('✅ Medical chat response completed');
+        }
+        
+        if (chunk.type === 'error') {
+          console.error('❌ Stream error:', chunk.error);
+          
+          // Add error message
+          const errorResponse: ChatMessage = {
+            role: 'assistant',
+            content: `❌ Error: ${chunk.error || 'Ocurrió un error al procesar tu consulta.'}`,
+            timestamp: new Date()
+          };
+          
+          this.medicalStateService.addMessage(errorResponse);
+          this.medicalStateService.finishStreaming();
+        }
+      },
+      error: (error) => {
+        console.error('❌ Medical chat error:', error);
+        
+        // Add error message
+        const errorResponse: ChatMessage = {
+          role: 'assistant',
+          content: '❌ Lo siento, ocurrió un error al procesar tu consulta. Por favor intenta nuevamente.',
+          timestamp: new Date()
+        };
+        
+        this.medicalStateService.addMessage(errorResponse);
+        this.medicalStateService.finishStreaming();
+      }
+    });
   }
 
   clearChat(): void {
@@ -728,11 +720,34 @@ Basándome en la información proporcionada, puedo ofrecerte las siguientes reco
   }
 
   formatMessageContent(content: string): string {
-    // Basic markdown-like formatting
+    if (!content) return '';
+    
+    // Enhanced markdown formatting for medical content
     return content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\n/g, '<br>');
+      // Headers (##)
+      .replace(/^## (.*$)/gm, '<h4 style="margin: 15px 0 8px 0; color: #1976D2; font-weight: 600;">$1</h4>')
+      
+      // Bold text (**text**)
+      .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #333; font-weight: 600;">$1</strong>')
+      
+      // Italic text (*text*)
+      .replace(/\*(.*?)\*/g, '<em style="color: #555;">$1</em>')
+      
+      // Lists starting with "- " or "• "
+      .replace(/^[\s]*[-•]\s+(.+)$/gm, '<div style="margin: 4px 0; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #2196F3; font-weight: bold;">•</span> $1</div>')
+      
+      // Medical values with units (e.g., "12,500 (rango normal: 4,000-10,000)")
+      .replace(/(\d+[,.]?\d*)\s*(\([^)]+\))/g, '<span style="font-weight: 600; color: #1976D2;">$1</span> <span style="color: #666; font-size: 0.9em;">$2</span>')
+      
+      // Medical sections (text followed by colon)
+      .replace(/^([A-Za-záéíóúÁÉÍÓÚ\s]+):$/gm, '<div style="margin: 12px 0 6px 0; font-weight: 600; color: #1976D2; border-bottom: 1px solid #E3F2FD; padding-bottom: 2px;">$1:</div>')
+      
+      // Convert line breaks to HTML breaks
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>')
+      
+      // Clean up multiple breaks
+      .replace(/(<br>\s*){3,}/g, '<br><br>');
   }
 
   private scrollToBottom(): void {

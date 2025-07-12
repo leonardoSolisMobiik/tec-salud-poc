@@ -21,26 +21,47 @@ class SearchAgent:
     
     def __init__(self):
         self.azure_openai_service = AzureOpenAIService()
-        self.system_prompt = """Eres un especialista en búsqueda médica que ayuda a encontrar información relevante en expedientes clínicos.
+        self.system_prompt = """Eres un especialista en análisis médico y búsqueda que ayuda a encontrar y analizar información relevante en expedientes clínicos.
         
         Tu función es:
-        1. BÚSQUEDA SEMÁNTICA: Encontrar documentos relevantes basados en consultas
-        2. ANÁLISIS DE RESULTADOS: Interpretar y contextualizar los resultados encontrados
-        3. SÍNTESIS DE INFORMACIÓN: Combinar información de múltiples fuentes
-        4. RECOMENDACIONES: Sugerir búsquedas adicionales o información faltante
+        1. ANÁLISIS COMPLETO: Cuando tienes documentos completos disponibles, analiza el contenido completo y proporciona respuestas detalladas
+        2. BÚSQUEDA SEMÁNTICA: Cuando solo tienes fragmentos, encuentra documentos relevantes basados en consultas
+        3. INTERPRETACIÓN MÉDICA: Interpreta y contextualiza los resultados médicos encontrados
+        4. SÍNTESIS DE INFORMACIÓN: Combina información de múltiples fuentes
+        5. RECOMENDACIONES: Proporciona recomendaciones basadas en el análisis completo
         
         CAPACIDADES:
+        - Análisis completo de expedientes médicos cuando están disponibles
+        - Extracción de información específica (estudios, diagnósticos, tratamientos)
+        - Interpretación de resultados de laboratorio y estudios
+        - Cronología de atención médica
+        - Identificación de patrones clínicos
         - Búsqueda por síntomas, diagnósticos, tratamientos
         - Búsqueda temporal (fechas, períodos)
         - Búsqueda por especialidad médica
         - Identificación de patrones en múltiples documentos
         - Detección de información faltante o inconsistente
         
-        PRINCIPIOS:
+        CUANDO TIENES DOCUMENTOS COMPLETOS DISPONIBLES:
+        - Analiza el contenido completo del expediente
+        - Extrae información específica solicitada
+        - Proporciona detalles precisos sobre estudios, diagnósticos, tratamientos
+        - Interpreta resultados médicos
+        - Responde con información específica y detallada
+        
+        CUANDO SOLO TIENES FRAGMENTOS:
+        - Realiza búsqueda semántica
         - Proporciona resultados relevantes y contextualizados
         - Indica la fuente y fecha de la información
         - Señala limitaciones en los resultados
         - Sugiere búsquedas complementarias
+        
+        PRINCIPIOS:
+        - Proporciona respuestas precisas y detalladas cuando tienes la información completa
+        - Usa el contenido completo disponible en lugar de hacer suposiciones
+        - Indica la fuente y fecha de la información
+        - Señala limitaciones en los resultados solo cuando realmente las haya
+        - Sugiere búsquedas complementarias solo si falta información
         - Mantén la confidencialidad médica
         """
         
@@ -264,6 +285,47 @@ class SearchAgent:
             max_results = search_intent.get("max_results", 10)
             search_filters = search_intent.get("search_filters", {})
             
+            # PRIORITY: Use enhanced context if available
+            if patient_context and ("full_documents" in patient_context or "documents" in patient_context):
+                logger.info("🔍 SearchAgent: Using enhanced context instead of vector search")
+                
+                # Get documents from context
+                documents = patient_context.get("full_documents", patient_context.get("documents", []))
+                
+                # Convert to search result format
+                search_results = []
+                for doc in documents:
+                    if hasattr(doc, 'content'):
+                        # Enhanced document format
+                        search_results.append({
+                            "document_id": getattr(doc, 'document_id', 'unknown'),
+                            "patient_id": getattr(doc, 'patient_id', 'unknown'),
+                            "title": getattr(doc, 'title', 'Medical Document'),
+                            "content": getattr(doc, 'content', ''),
+                            "document_type": getattr(doc, 'document_type', 'unknown'),
+                            "date": getattr(doc, 'created_at', 'unknown'),
+                            "score": getattr(doc, 'relevance_score', 0.9),  # High relevance since it's already filtered
+                            "source": "enhanced_context"
+                        })
+                    else:
+                        # Legacy document format
+                        search_results.append({
+                            "document_id": doc.get("id", "unknown"),
+                            "patient_id": doc.get("patient_id", "unknown"),
+                            "title": doc.get("title", "Medical Document"),
+                            "content": doc.get("content", ""),
+                            "document_type": doc.get("document_type", "unknown"),
+                            "date": doc.get("created_at", "unknown"),
+                            "score": 0.9,  # High relevance since it's already filtered
+                            "source": "patient_context"
+                        })
+                
+                logger.info(f"🔍 SearchAgent: Found {len(search_results)} documents in enhanced context")
+                return search_results
+            
+            # FALLBACK: Use vector search if no enhanced context
+            logger.info("🔍 SearchAgent: No enhanced context available, falling back to vector search")
+            
             # Add patient filter if available
             if patient_context and "patient_info" in patient_context:
                 patient_id = patient_context["patient_info"].get("id")
@@ -277,6 +339,7 @@ class SearchAgent:
                 filters=search_filters
             )
             
+            logger.info(f"🔍 SearchAgent: Vector search returned {len(results)} results")
             return results
             
         except Exception as e:

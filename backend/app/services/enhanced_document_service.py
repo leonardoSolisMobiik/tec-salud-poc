@@ -80,6 +80,11 @@ class EnhancedDocumentService:
         self.max_context_tokens = 32000  # Maximum total context tokens
         self.recent_documents_days = 30  # Consider documents from last N days as recent
         
+    async def _ensure_azure_openai_initialized(self):
+        """Ensure Azure OpenAI service is initialized"""
+        if not self.azure_openai_service.is_initialized:
+            await self.azure_openai_service.initialize()
+            
     async def get_enhanced_patient_context(
         self,
         patient_id: int,
@@ -108,6 +113,9 @@ class EnhancedDocumentService:
         start_time = datetime.now()
         
         try:
+            # Ensure Azure OpenAI service is initialized
+            await self._ensure_azure_openai_initialized()
+            
             logger.info(f"🔍 Getting enhanced context for patient {patient_id} with strategy {strategy}")
             
             # Initialize collections
@@ -295,16 +303,16 @@ class EnhancedDocumentService:
             vector_results = []
             full_documents = []
             
-            if query_analysis["needs_specific_details"]:
-                # For specific details, prioritize full documents
+            if query_analysis["requires_full_documents"]:
+                # For full documents, prioritize recent and critical
                 full_documents = await self._get_full_document_context(
                     patient_id, query, db, max_docs or 4
                 )
                 vector_results = await self._get_vector_context(patient_id, query)
                 vector_results = vector_results[:10]  # Limit vector results
                 
-            elif query_analysis["needs_broad_overview"]:
-                # For broad overview, prioritize vectors with some full docs
+            elif query_analysis["requires_semantic_search"]:
+                # For semantic search, prioritize vectors with some full docs
                 vector_results = await self._get_vector_context(patient_id, query)
                 full_documents = await self._get_full_document_context(
                     patient_id, query, db, max_docs or 2
@@ -426,6 +434,9 @@ class EnhancedDocumentService:
     async def _calculate_document_relevance(self, document: MedicalDocument, query: str) -> float:
         """Calculate document relevance to query using AI"""
         try:
+            # Ensure Azure OpenAI service is initialized
+            await self._ensure_azure_openai_initialized()
+            
             # Use AI to score relevance
             prompt = f"""Analyze how relevant this medical document is to the query.
             
@@ -445,6 +456,8 @@ Rate relevance from 0.0 to 1.0:
 
 Return only the score as a number."""
 
+            logger.info(f"🔍 Calculating relevance for query: '{query}' against document: '{document.title}'")
+            
             response = await self.azure_openai_service.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
                 model_type="gpt-4o-mini",
@@ -454,10 +467,15 @@ Return only the score as a number."""
             
             # Extract score
             score_text = response.content.strip()
+            logger.info(f"🤖 Azure OpenAI response for relevance: '{score_text}'")
+            
             try:
                 score = float(score_text)
-                return max(0.0, min(1.0, score))  # Clamp to 0-1 range
-            except ValueError:
+                clamped_score = max(0.0, min(1.0, score))
+                logger.info(f"📊 Parsed score: {score} -> Clamped score: {clamped_score}")
+                return clamped_score
+            except ValueError as e:
+                logger.warning(f"⚠️ Failed to parse relevance score '{score_text}': {str(e)}")
                 return 0.5  # Default score if parsing fails
                 
         except Exception as e:
@@ -477,20 +495,26 @@ Return only the score as a number."""
         else:
             return DocumentRelevance.MINIMAL
     
-    async def _analyze_query_context_needs(self, query: str) -> Dict[str, bool]:
-        """Analyze query to determine what type of context is needed"""
+    async def _analyze_query_context_needs(self, query: str) -> Dict[str, Any]:
+        """Analyze query to determine optimal context strategy"""
         try:
-            prompt = f"""Analyze this medical query to determine context needs:
-
+            # Ensure Azure OpenAI service is initialized
+            await self._ensure_azure_openai_initialized()
+            
+            # Use AI to analyze query context needs
+            prompt = f"""Analyze this medical query to determine optimal context strategy.
+            
 Query: {query}
 
 Determine:
-1. needs_specific_details: Does this query need specific, detailed information from complete documents?
-2. needs_broad_overview: Does this query need a broad overview from multiple sources?
-3. is_urgent: Is this an urgent medical query?
-4. is_diagnostic: Is this a diagnostic query?
+1. requires_full_documents: Does this need complete document content? (true/false)
+2. requires_semantic_search: Does this need semantic vector search? (true/false)
+3. priority_recent: Should recent documents be prioritized? (true/false)
+4. priority_critical: Should critical documents be prioritized? (true/false)
+5. max_documents: How many documents needed? (1-10)
+6. urgency_level: Medical urgency (low/medium/high/critical)
 
-Return as JSON with boolean values."""
+Return as JSON format only."""
 
             response = await self.azure_openai_service.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
@@ -499,16 +523,33 @@ Return as JSON with boolean values."""
                 max_tokens=200
             )
             
+            # Parse JSON response
             import json
             try:
-                analysis = json.loads(response.content)
+                analysis = json.loads(response.content.strip())
                 return analysis
             except json.JSONDecodeError:
-                return {"needs_specific_details": False, "needs_broad_overview": True, "is_urgent": False, "is_diagnostic": False}
+                # Return safe defaults
+                return {
+                    "requires_full_documents": True,
+                    "requires_semantic_search": True,
+                    "priority_recent": True,
+                    "priority_critical": False,
+                    "max_documents": 3,
+                    "urgency_level": "medium"
+                }
                 
         except Exception as e:
             logger.error(f"❌ Query analysis failed: {str(e)}")
-            return {"needs_specific_details": False, "needs_broad_overview": True, "is_urgent": False, "is_diagnostic": False}
+            # Return safe defaults
+            return {
+                "requires_full_documents": True,
+                "requires_semantic_search": True,
+                "priority_recent": True,
+                "priority_critical": False,
+                "max_documents": 3,
+                "urgency_level": "medium"
+            }
     
     def _calculate_context_tokens(self, vector_results: List[Dict], full_documents: List[DocumentContext]) -> int:
         """Estimate total tokens in context"""
