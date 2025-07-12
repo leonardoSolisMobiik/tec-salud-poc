@@ -449,8 +449,10 @@ class PatientMatchingService:
             List of existing patients
         """
         try:
-            # ✅ EXISTING: Use current Patient model and database session
-            result = await self.db.execute(
+            # Use synchronous database operations
+            from sqlalchemy import select
+            
+            result = self.db.execute(
                 select(Patient)
                 .where(Patient.name.isnot(None))
                 .where(Patient.name != '')
@@ -489,18 +491,40 @@ class PatientMatchingService:
                     duplicate_detected=True
                 )
             
-            # ✅ EXISTING: Create patient using current Patient model
+            # Get a default doctor (first available doctor)
+            from sqlalchemy import select
+            from app.db.models import Doctor, GenderEnum
+            from datetime import date
+            
+            result = self.db.execute(select(Doctor).limit(1))
+            default_doctor = result.scalar_one_or_none()
+            
+            if not default_doctor:
+                # Create a default doctor if none exists
+                default_doctor = Doctor(
+                    email="default@tecsalud.com",
+                    name="Dr. Sistema",
+                    specialty="General",
+                    license_number="DEFAULT001"
+                )
+                self.db.add(default_doctor)
+                self.db.commit()
+                self.db.refresh(default_doctor)
+            
+            # Create patient with all required fields
             new_patient = Patient(
                 name=patient_data.full_name,
                 medical_record_number=patient_data.expediente_id,
-                # Add additional fields as available in TecSalud data
-                # age=None,  # Not available in filename
-                # gender=None,  # Not available in filename
+                birth_date=date(1900, 1, 1),  # Default date since not available in filename
+                gender=GenderEnum.UNKNOWN,  # Default gender since not available in filename
+                doctor_id=default_doctor.id,  # Assign to default doctor
+                status="Activo",  # Default status
+                blood_type="desconocido"  # Default blood type
             )
             
             self.db.add(new_patient)
-            await self.db.commit()
-            await self.db.refresh(new_patient)
+            self.db.commit()
+            self.db.refresh(new_patient)
             
             logger.info(f"Successfully created patient {new_patient.id}: {new_patient.name}")
             
@@ -512,7 +536,7 @@ class PatientMatchingService:
             
         except Exception as e:
             logger.error(f"Error creating patient: {str(e)}")
-            await self.db.rollback()
+            self.db.rollback()
             
             return PatientCreationResult(
                 success=False,

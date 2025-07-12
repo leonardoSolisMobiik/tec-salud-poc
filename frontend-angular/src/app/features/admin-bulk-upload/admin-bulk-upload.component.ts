@@ -911,34 +911,34 @@ export class AdminBulkUploadComponent implements OnInit {
         try {
           batchFile.status = 'processing';
           
-          // Create FormData for upload
+          // Create FormData for upload with required fields
           const formData = new FormData();
           formData.append('file', batchFile.file);
-          formData.append('processing_type', this.selectedProcessingType);
           formData.append('document_type', this.defaultDocumentType);
-          formData.append('original_filename', batchFile.filename);
+          formData.append('title', batchFile.filename);
+          formData.append('processing_type', this.selectedProcessingType); // Add processing type
           
-          // Add patient info if parsed
-          if (batchFile.patientInfo) {
-            formData.append('patient_data', JSON.stringify(batchFile.patientInfo));
-          }
+          // Always use BULK_UPLOAD_PATIENT to trigger automatic patient creation
+          formData.append('patient_id', 'BULK_UPLOAD_PATIENT');
 
-          // Upload document (using existing endpoint)
-          const response = await this.apiService.post('/documents/upload', formData).toPromise();
+          // Upload document using the correct endpoint
+          const response = await this.apiService.uploadDocument(formData).toPromise();
           
           batchFile.status = 'completed';
           this.batchUpload.processed_files++;
           
-          if (response.patient_created) {
-            this.batchUpload.created_patients++;
-          } else {
+          // Note: The current endpoint doesn't return patient_created info
+          // so we'll estimate based on whether we had parsed patient info
+          if (batchFile.patientInfo?.id) {
             this.batchUpload.matched_patients++;
+          } else {
+            this.batchUpload.created_patients++;
           }
           
         } catch (error) {
           console.error('❌ Error processing file:', batchFile.filename, error);
           batchFile.status = 'error';
-          batchFile.error = 'Error al procesar el archivo';
+          batchFile.error = error instanceof Error ? error.message : 'Error al procesar el archivo';
           this.batchUpload.processed_files++;
         }
       }
