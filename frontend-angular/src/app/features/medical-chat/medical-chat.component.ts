@@ -16,24 +16,6 @@ import { MedicalStateService, StreamingService } from '@core/services';
     FormsModule,
   ],
   template: `
-    <!-- 🚨 BANNER ULTRA MEGA VISIBLE -->
-    <div class="mega-banner" id="bamboo-banner">
-      <div class="mega-banner-content">
-        <span class="mega-icon">🚨</span>
-        <span class="mega-text">¡¡¡ BAMBOO TOKENS FUNCIONANDO !!!</span>
-        <span class="mega-icon">🚨</span>
-            </div>
-          </div>
-          
-    <!-- 🚨 BANNER SÚPER VISIBLE -->
-    <div class="verification-banner">
-      <div class="banner-content">
-        <span class="banner-icon">🎯</span>
-        <span class="banner-text">BAMBOO TOKENS ACTIVADOS</span>
-        <span class="banner-icon">✨</span>
-            </div>
-            </div>
-
     <!-- Main chat container -->
     <div class="chat-container">
       <!-- Header -->
@@ -41,16 +23,16 @@ import { MedicalStateService, StreamingService } from '@core/services';
         <div class="patient-info" *ngIf="activePatient">
           <div class="patient-avatar">
             {{ activePatient.name.charAt(0) }}
-            </div>
+          </div>
           <div class="patient-details">
             <h3>{{ activePatient.name }}</h3>
             <p>ID: {{ activePatient.id }}</p>
-              </div>
-              </div>
+          </div>
+        </div>
         <div class="no-patient" *ngIf="!activePatient">
           Selecciona un paciente para comenzar
-              </div>
-          </div>
+        </div>
+      </div>
 
       <!-- Messages area -->
       <div class="chat-main" #messagesContainer>
@@ -58,16 +40,18 @@ import { MedicalStateService, StreamingService } from '@core/services';
           <div class="hero-content">
             <h2>Asistente Médico IA</h2>
             <p>Selecciona un paciente para comenzar la consulta</p>
-              </div>
+          </div>
         </div>
 
         <!-- Messages -->
         <div class="messages-list" *ngIf="activePatient">
           <div 
             *ngFor="let message of chatMessages; trackBy: trackMessage"
-            [class]="'message-item ' + (message.role === 'user' ? 'user-message' : 'assistant-message')"
+            class="message-item"
+            [class.user-message]="message.role === 'user'"
+            [class.assistant-message]="message.role === 'assistant'"
           >
-            <div class="message-content">
+            <div class="message-bubble">
               <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
               <div class="message-time">{{ formatTime(message.timestamp) }}</div>
             </div>
@@ -75,12 +59,13 @@ import { MedicalStateService, StreamingService } from '@core/services';
               
           <!-- Streaming message -->
           <div class="message-item assistant-message" *ngIf="isStreaming">
-            <div class="message-content">
+            <div class="message-bubble">
               <div class="message-text" [innerHTML]="formatMessageContent(streamingMessage)"></div>
               <div class="message-time">Escribiendo...</div>
             </div>
           </div>
         </div>
+      </div>
 
       <!-- Footer -->
       <div class="chat-footer" *ngIf="activePatient">
@@ -102,9 +87,9 @@ import { MedicalStateService, StreamingService } from '@core/services';
               <button
                 (click)="sendMessage()"
                 [disabled]="!canSendMessage"
-                class="send-btn-premium"
+                class="send-button"
               >
-                <span class="premium-text">ENVIAR</span>
+                Enviar
               </button>
             </div>
           </div>
@@ -113,327 +98,232 @@ import { MedicalStateService, StreamingService } from '@core/services';
     </div>
   `,
   styles: [`
-    /* 🚨 MEGA BANNER ULTRA VISIBLE */
-    .mega-banner {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100vw !important;
-      height: 40px !important;
-      background: linear-gradient(90deg, #2196F3, #1976D2, #2196F3) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      z-index: 999999 !important;
-      border-bottom: 2px solid #1976D2 !important;
-    }
-
-    .mega-banner-content {
-      display: flex !important;
-      align-items: center !important;
-      gap: 15px !important;
-      color: white !important;
-      font-weight: 600 !important;
-      font-size: 0.9rem !important;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
-      letter-spacing: 1px !important;
-    }
-
-    .mega-icon {
-      font-size: 1rem !important;
-    }
-
-    .mega-text {
-      font-size: 0.9rem !important;
-    }
-
-    /* 🚨 BANNER SÚPER VISIBLE */
-    .verification-banner {
-      position: fixed !important;
-      top: 40px !important;
-      left: 0 !important;
-      right: 0 !important;
-      height: 30px !important;
-      background: linear-gradient(90deg, #4CAF50, #45a049, #4CAF50) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      z-index: 99999 !important;
-    }
-
-    .banner-content {
-      display: flex !important;
-      align-items: center !important;
-      gap: 10px !important;
-      color: white !important;
-      font-weight: 600 !important;
-      font-size: 0.8rem !important;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
-    }
-
-    .banner-icon {
-      font-size: 1rem !important;
-    }
-
-    .banner-text {
-      letter-spacing: 1px !important;
-    }
-
-    /* CONTENEDOR PRINCIPAL */
     .chat-container {
-      display: flex !important;
-      flex-direction: column !important;
-      height: 100vh !important;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
-      margin-top: 70px !important;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #f5f7fa;
     }
 
     /* HEADER */
     .chat-header {
-      padding: 20px !important;
-      background: white !important;
-      border-bottom: 1px solid #e0e0e0 !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+      padding: 20px;
+      background: white;
+      border-bottom: 1px solid #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .patient-info {
-      display: flex !important;
-      align-items: center !important;
-      gap: 15px !important;
+      display: flex;
+      align-items: center;
+      gap: 15px;
     }
 
     .patient-avatar {
-      width: 50px !important;
-      height: 50px !important;
-      border-radius: 50% !important;
-      background: #2196F3 !important;
-      color: white !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      font-size: 1.2rem !important;
-      font-weight: bold !important;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: #2196F3;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      font-weight: bold;
     }
 
     .patient-details h3 {
-      margin: 0 !important;
-      color: #333 !important;
+      margin: 0;
+      color: #333;
     }
 
     .patient-details p {
-      margin: 5px 0 0 0 !important;
-      color: #666 !important;
-      font-size: 0.9rem !important;
+      margin: 5px 0 0 0;
+      color: #666;
+      font-size: 0.9rem;
     }
 
-    /* ÁREA DE MENSAJES */
+    .no-patient {
+      text-align: center;
+      color: #666;
+      font-size: 1.1rem;
+    }
+
+    /* MAIN CHAT AREA */
     .chat-main {
-      flex: 1 !important;
-      overflow-y: auto !important;
-      padding: 20px !important;
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
     }
 
     .welcome-section {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      height: 100% !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
     }
 
     .hero-content {
-      text-align: center !important;
-      background: white !important;
-      padding: 40px !important;
-      border-radius: 20px !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+      text-align: center;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .hero-content h2 {
-      color: #333 !important;
-      margin-bottom: 10px !important;
+      color: #333;
+      margin-bottom: 10px;
     }
 
     .hero-content p {
-      color: #666 !important;
+      color: #666;
     }
 
-    /* MENSAJES */
+    /* MESSAGES */
     .messages-list {
-      max-width: 800px !important;
-      margin: 0 auto !important;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     .message-item {
-      margin-bottom: 20px !important;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: flex-start;
     }
 
     .user-message {
-      display: flex !important;
-      justify-content: flex-end !important;
+      justify-content: flex-end;
     }
 
     .assistant-message {
-      display: flex !important;
-      justify-content: flex-start !important;
+      justify-content: flex-start;
     }
 
-    .message-content {
-      max-width: 70% !important;
-      padding: 15px 20px !important;
-      border-radius: 20px !important;
-      background: white !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    .message-bubble {
+      max-width: 70%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e0e0e0;
     }
 
-    .user-message .message-content {
-      background: #2196F3 !important;
-      color: white !important;
+    .user-message .message-bubble {
+      background: #2196F3;
+      color: white;
+      border: 1px solid #1976D2;
+    }
+
+    .assistant-message .message-bubble {
+      background: white;
+      color: #333;
+      border: 1px solid #e0e0e0;
     }
 
     .message-text {
-      line-height: 1.5 !important;
+      line-height: 1.5;
+      word-wrap: break-word;
     }
 
     .message-time {
-      font-size: 0.75rem !important;
-      opacity: 0.7 !important;
-      margin-top: 5px !important;
+      font-size: 0.75rem;
+      opacity: 0.7;
+      margin-top: 5px;
+    }
+
+    .user-message .message-time {
+      color: rgba(255, 255, 255, 0.8);
     }
 
     /* FOOTER */
     .chat-footer {
-      padding: 20px !important;
-      background: white !important;
-      border-top: 1px solid #e0e0e0 !important;
+      padding: 20px;
+      background: white;
+      border-top: 1px solid #e0e0e0;
     }
 
     .input-section {
-      max-width: 800px !important;
-      margin: 0 auto !important;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     .input-container {
-      border: 2px solid #e0e0e0 !important;
-      border-radius: 15px !important;
-      background: white !important;
-      transition: all 0.3s ease !important;
+      border: 2px solid #e0e0e0;
+      border-radius: 15px;
+      background: white;
+      transition: all 0.3s ease;
     }
 
     .input-container:focus-within {
-      border-color: #2196F3 !important;
-      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1) !important;
+      border-color: #2196F3;
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
     }
 
     .message-input {
-      width: 100% !important;
-      border: none !important;
-      outline: none !important;
-      padding: 15px !important;
-      font-size: 1rem !important;
-      resize: none !important;
-      background: transparent !important;
+      width: 100%;
+      border: none;
+      outline: none;
+      padding: 15px;
+      font-size: 1rem;
+      resize: none;
+      background: transparent;
+      font-family: inherit;
     }
 
     .message-input::placeholder {
-      color: #999 !important;
+      color: #999;
     }
 
     .input-footer {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      padding: 10px 15px !important;
-      border-top: 1px solid #f0f0f0 !important;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      border-top: 1px solid #f0f0f0;
     }
 
     .char-count {
-      color: #666 !important;
-      font-size: 0.8rem !important;
+      color: #666;
+      font-size: 0.8rem;
     }
 
-    /* 🚀 BOTÓN MEGA ULTRA VISIBLE */
-    .send-btn-premium {
-      min-width: 160px !important;
-      height: 60px !important;
-      background: linear-gradient(45deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
-      border: 4px solid #FF0000 !important;
-      border-radius: 30px !important;
-      cursor: pointer !important;
-      transition: all 0.3s ease !important;
-      box-shadow: 0 0 30px rgba(255, 0, 0, 0.8) !important;
-      animation: buttonMegaPulse 1s infinite !important;
-      transform: scale(1.3) !important;
-      position: relative !important;
-      z-index: 9999 !important;
+    .send-button {
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
     }
 
-    .send-btn-premium:hover {
-      transform: scale(1.5) !important;
-      box-shadow: 0 0 50px rgba(255, 0, 0, 1) !important;
+    .send-button:hover:not(:disabled) {
+      background: #1976D2;
     }
 
-    .send-btn-premium:disabled {
-      opacity: 0.5 !important;
-      cursor: not-allowed !important;
-      transform: scale(1) !important;
-      animation: none !important;
-    }
-
-    .premium-text {
-      color: white !important;
-      font-size: 1.2rem !important;
-      font-weight: 900 !important;
-      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8) !important;
-      letter-spacing: 2px !important;
-      text-transform: uppercase !important;
-    }
-
-    @keyframes buttonMegaPulse {
-      0%, 100% {
-        box-shadow: 0 0 30px rgba(255, 0, 0, 0.8) !important;
-        background: linear-gradient(45deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
-      }
-      50% {
-        box-shadow: 0 0 50px rgba(255, 0, 0, 1) !important;
-        background: linear-gradient(45deg, #FF4500, #FF6B35, #FFFF00, #FF6B35, #FF4500) !important;
-      }
+    .send-button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
     }
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
-      .chat-container {
-        margin-top: 120px !important;
+      .message-bubble {
+        max-width: 85%;
       }
       
-      .mega-banner {
-        height: 60px !important;
+      .chat-header {
+        padding: 15px;
       }
       
-      .verification-banner {
-        height: 50px !important;
-        top: 60px !important;
+      .chat-main {
+        padding: 15px;
       }
       
-      .mega-banner-content {
-        font-size: 1.5rem !important;
-      }
-      
-      .banner-content {
-        font-size: 1.2rem !important;
-      }
-      
-      .banner-icon {
-        font-size: 1.5rem !important;
-      }
-      
-      .message-content {
-        max-width: 85% !important;
-      }
-      
-      .send-btn-premium {
-        min-width: 140px !important;
-        height: 50px !important;
+      .chat-footer {
+        padding: 15px;
       }
     }
   `]
