@@ -513,3 +513,7 @@ fastapi.exceptions.ResponseValidationError: 1 validation errors:
 2025-07-12 17:01:58 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
 2025-07-12 17:01:58 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
 2025-07-12 17:01:58 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:06:04 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:06:04 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:06:04 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:06:04 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'

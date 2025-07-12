@@ -17,93 +17,315 @@ import { MedicalStateService, StreamingService } from '@core/services';
   ],
   encapsulation: ViewEncapsulation.None,
   template: `
-    <div style="display: flex; flex-direction: column; height: 100vh; background: #f5f7fa; font-family: Arial, sans-serif;">
-      <!-- Header fijo -->
-      <div style="padding: 20px; background: white; border-bottom: 1px solid #e0e0e0; flex-shrink: 0;">
-        <div *ngIf="activePatient" style="display: flex; align-items: center; gap: 15px;">
-          <div style="width: 50px; height: 50px; border-radius: 50%; background: #2196F3; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold;">
-            {{ activePatient.name.charAt(0) }}
-          </div>
-          <div>
-            <h3 style="margin: 0; color: #333; font-size: 1.1rem; font-weight: 600;">{{ activePatient.name }}</h3>
-            <p style="margin: 5px 0 0 0; color: #666; font-size: 0.9rem;">ID: {{ activePatient.id }}</p>
+    <div class="medical-chat-container">
+      <!-- Header -->
+      <div class="medical-chat-header">
+        <div *ngIf="activePatient" class="patient-info-display">
+          <div class="patient-avatar-circle">{{ activePatient.name.charAt(0) }}</div>
+          <div class="patient-details-text">
+            <h3>{{ activePatient.name }}</h3>
+            <p>ID: {{ activePatient.id }}</p>
           </div>
         </div>
-        <div *ngIf="!activePatient" style="text-align: center; color: #666; font-size: 1.1rem;">
+        <div *ngIf="!activePatient" class="no-patient-message">
           Selecciona un paciente para comenzar
         </div>
       </div>
 
-      <!-- Área de mensajes -->
-      <div #messagesContainer style="flex: 1; overflow-y: auto; padding: 20px; background: #f5f7fa;">
-        <div *ngIf="!activePatient" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;">
-          <h2 style="color: #333; margin: 0 0 10px 0; font-size: 1.5rem;">Asistente Médico IA</h2>
-          <p style="color: #666; margin: 0;">Selecciona un paciente para comenzar</p>
+      <!-- Messages Area -->
+      <div #messagesContainer class="messages-scroll-area">
+        <div *ngIf="!activePatient" class="welcome-screen">
+          <h2>Asistente Médico IA</h2>
+          <p>Selecciona un paciente para comenzar</p>
         </div>
 
-        <div *ngIf="activePatient" style="max-width: 800px; margin: 0 auto;">
-          <!-- Mensajes existentes -->
+        <div *ngIf="activePatient" class="messages-container">
+          <!-- Existing Messages -->
           <div *ngFor="let message of chatMessages; trackBy: trackMessage" 
-               style="margin-bottom: 15px; display: flex; width: 100%; clear: both;"
-               [style.justify-content]="message.role === 'user' ? 'flex-end' : 'flex-start'">
-            <div [style.background]="message.role === 'user' ? '#2196F3' : 'white'"
-                 [style.color]="message.role === 'user' ? 'white' : '#333'"
-                 [style.border]="message.role === 'user' ? '1px solid #1976D2' : '1px solid #e0e0e0'"
-                 [style.margin-left]="message.role === 'user' ? 'auto' : '0'"
-                 [style.margin-right]="message.role === 'user' ? '0' : 'auto'"
-                 style="max-width: 70%; min-width: 100px; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; display: block; position: relative; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); opacity: 1; visibility: visible; z-index: 100;">
-              <div style="line-height: 1.4; word-wrap: break-word; margin: 0; font-size: 0.95rem;" [innerHTML]="formatMessageContent(message.content)"></div>
-              <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 5px; text-align: right;"
-                   [style.color]="message.role === 'user' ? 'rgba(255, 255, 255, 0.8)' : '#666'">
-                {{ formatTime(message.timestamp) }}
-              </div>
+               class="message-wrapper"
+               [class.user-message-wrapper]="message.role === 'user'"
+               [class.assistant-message-wrapper]="message.role === 'assistant'">
+            <div class="message-bubble"
+                 [class.user-bubble]="message.role === 'user'"
+                 [class.assistant-bubble]="message.role === 'assistant'">
+              <div class="message-content" [innerHTML]="formatMessageContent(message.content)"></div>
+              <div class="message-timestamp">{{ formatTime(message.timestamp) }}</div>
             </div>
           </div>
               
-          <!-- Mensaje en streaming -->
-          <div *ngIf="isStreaming" style="margin-bottom: 15px; display: flex; width: 100%; clear: both; justify-content: flex-start;">
-            <div style="background: white; color: #333; border: 1px solid #4CAF50; margin-right: auto; max-width: 70%; min-width: 100px; padding: 12px 16px; border-radius: 18px; word-wrap: break-word; display: block; position: relative; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); opacity: 1; visibility: visible; z-index: 100; animation: pulse-animation 1.5s infinite;">
-              <div style="line-height: 1.4; word-wrap: break-word; margin: 0; font-size: 0.95rem;" [innerHTML]="formatMessageContent(streamingMessage)"></div>
-              <div style="font-size: 0.75rem; opacity: 0.7; margin-top: 5px; text-align: right; color: #666;">Escribiendo...</div>
+          <!-- Streaming Message -->
+          <div *ngIf="isStreaming" class="message-wrapper assistant-message-wrapper">
+            <div class="message-bubble assistant-bubble streaming-bubble">
+              <div class="message-content" [innerHTML]="formatMessageContent(streamingMessage)"></div>
+              <div class="message-timestamp">Escribiendo...</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Input área -->
-      <div *ngIf="activePatient" style="padding: 20px; background: white; border-top: 1px solid #e0e0e0; flex-shrink: 0;">
-        <div style="max-width: 800px; margin: 0 auto; display: flex; gap: 10px; align-items: flex-end;">
+      <!-- Input Area -->
+      <div *ngIf="activePatient" class="chat-input-area">
+        <div class="input-container">
           <textarea
             [(ngModel)]="currentMessage"
             (keydown.enter)="onEnterPressed($event)"
             placeholder="Escribe tu mensaje..."
             [disabled]="isStreaming"
-            style="flex: 1; border: 1px solid #e0e0e0; border-radius: 10px; padding: 12px; font-size: 1rem; resize: none; min-height: 20px; max-height: 120px; background: white; color: #333; outline: none; font-family: inherit;">
+            class="message-input">
           </textarea>
           <button
             (click)="sendMessage()"
             [disabled]="!canSendMessage"
-            [style.background]="!canSendMessage ? '#ccc' : '#2196F3'"
-            [style.cursor]="!canSendMessage ? 'not-allowed' : 'pointer'"
-            style="color: white; border: none; border-radius: 10px; padding: 12px 20px; font-size: 0.9rem; transition: all 0.3s ease;">
+            class="send-button">
             Enviar
           </button>
         </div>
       </div>
     </div>
-
-    <style>
-      @keyframes pulse-animation {
-        0%, 100% { 
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        50% { 
-          box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-        }
-      }
-    </style>
   `,
-  styles: []
+  styles: [`
+    /* CONTENEDOR PRINCIPAL */
+    .medical-chat-container {
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100vh !important;
+      background: #f5f7fa !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      position: relative !important;
+      overflow: hidden !important;
+    }
+
+    /* HEADER */
+    .medical-chat-header {
+      padding: 20px !important;
+      background: white !important;
+      border-bottom: 1px solid #e0e0e0 !important;
+      flex-shrink: 0 !important;
+    }
+
+    .patient-info-display {
+      display: flex !important;
+      align-items: center !important;
+      gap: 15px !important;
+    }
+
+    .patient-avatar-circle {
+      width: 50px !important;
+      height: 50px !important;
+      border-radius: 50% !important;
+      background: #2196F3 !important;
+      color: white !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 1.2rem !important;
+      font-weight: bold !important;
+    }
+
+    .patient-details-text h3 {
+      margin: 0 !important;
+      color: #333 !important;
+      font-size: 1.1rem !important;
+      font-weight: 600 !important;
+    }
+
+    .patient-details-text p {
+      margin: 5px 0 0 0 !important;
+      color: #666 !important;
+      font-size: 0.9rem !important;
+    }
+
+    .no-patient-message {
+      text-align: center !important;
+      color: #666 !important;
+      font-size: 1.1rem !important;
+    }
+
+    /* ÁREA DE MENSAJES */
+    .messages-scroll-area {
+      flex: 1 !important;
+      overflow-y: auto !important;
+      padding: 20px !important;
+      background: #f5f7fa !important;
+    }
+
+    .welcome-screen {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 100% !important;
+      text-align: center !important;
+    }
+
+    .welcome-screen h2 {
+      color: #333 !important;
+      margin: 0 0 10px 0 !important;
+      font-size: 1.5rem !important;
+    }
+
+    .welcome-screen p {
+      color: #666 !important;
+      margin: 0 !important;
+    }
+
+    .messages-container {
+      max-width: 800px !important;
+      margin: 0 auto !important;
+    }
+
+    /* WRAPPERS DE MENSAJES */
+    .message-wrapper {
+      margin-bottom: 15px !important;
+      display: flex !important;
+      width: 100% !important;
+      clear: both !important;
+    }
+
+    .user-message-wrapper {
+      justify-content: flex-end !important;
+    }
+
+    .assistant-message-wrapper {
+      justify-content: flex-start !important;
+    }
+
+    /* BUBBLES DE MENSAJES - MUY ESPECÍFICOS */
+    .message-bubble {
+      max-width: 70% !important;
+      min-width: 100px !important;
+      padding: 12px 16px !important;
+      border-radius: 18px !important;
+      word-wrap: break-word !important;
+      display: block !important;
+      position: relative !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      z-index: 100 !important;
+    }
+
+    .user-bubble {
+      background: #2196F3 !important;
+      color: white !important;
+      border: 1px solid #1976D2 !important;
+      margin-left: auto !important;
+      margin-right: 0 !important;
+    }
+
+    .assistant-bubble {
+      background: white !important;
+      color: #333 !important;
+      border: 1px solid #e0e0e0 !important;
+      margin-left: 0 !important;
+      margin-right: auto !important;
+    }
+
+    .streaming-bubble {
+      border-color: #4CAF50 !important;
+      animation: pulse-bubble 1.5s infinite !important;
+    }
+
+    @keyframes pulse-bubble {
+      0%, 100% { 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      }
+      50% { 
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+      }
+    }
+
+    .message-content {
+      line-height: 1.4 !important;
+      word-wrap: break-word !important;
+      margin: 0 !important;
+      font-size: 0.95rem !important;
+    }
+
+    .message-timestamp {
+      font-size: 0.75rem !important;
+      opacity: 0.7 !important;
+      margin-top: 5px !important;
+      text-align: right !important;
+    }
+
+    .user-bubble .message-timestamp {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    .assistant-bubble .message-timestamp {
+      color: #666 !important;
+    }
+
+    /* ÁREA DE INPUT */
+    .chat-input-area {
+      padding: 20px !important;
+      background: white !important;
+      border-top: 1px solid #e0e0e0 !important;
+      flex-shrink: 0 !important;
+    }
+
+    .input-container {
+      max-width: 800px !important;
+      margin: 0 auto !important;
+      display: flex !important;
+      gap: 10px !important;
+      align-items: flex-end !important;
+    }
+
+    .message-input {
+      flex: 1 !important;
+      border: 1px solid #e0e0e0 !important;
+      border-radius: 10px !important;
+      padding: 12px !important;
+      font-size: 1rem !important;
+      resize: none !important;
+      min-height: 20px !important;
+      max-height: 120px !important;
+      background: white !important;
+      color: #333 !important;
+      outline: none !important;
+      font-family: inherit !important;
+    }
+
+    .message-input:focus {
+      border-color: #2196F3 !important;
+      box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1) !important;
+    }
+
+    .send-button {
+      background: #2196F3 !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 10px !important;
+      padding: 12px 20px !important;
+      font-size: 0.9rem !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+    }
+
+    .send-button:hover:not(:disabled) {
+      background: #1976D2 !important;
+    }
+
+    .send-button:disabled {
+      background: #ccc !important;
+      cursor: not-allowed !important;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .message-bubble {
+        max-width: 90% !important;
+      }
+      
+      .medical-chat-header,
+      .messages-scroll-area,
+      .chat-input-area {
+        padding: 15px !important;
+      }
+    }
+  `]
 })
 export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;

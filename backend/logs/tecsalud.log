@@ -24655,3 +24655,68 @@ patients.0.birth_date
 2025-07-12 17:02:01 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 29: 'irte...'
 2025-07-12 17:02:01 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 30: '....'
 2025-07-12 17:02:01 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:192 - ✅ Enhanced stream generation completed, sent 30 chunks
+2025-07-12 17:05:54 - app.api.endpoints.patients_db - INFO - patients_db - get_patients:66 - 👥 Getting patients list (limit: 10, offset: 0)
+2025-07-12 17:05:58 - app.api.endpoints.patients_db - INFO - patients_db - get_patients:66 - 👥 Getting patients list (limit: 10, offset: 0)
+2025-07-12 17:06:00 - app.api.endpoints.patients_db - INFO - patients_db - record_patient_interaction:363 - 📝 Recording interaction for patient 2
+2025-07-12 17:06:00 - app.api.endpoints.patients_db - INFO - patients_db - record_patient_interaction:363 - 📝 Recording interaction for patient 2
+2025-07-12 17:06:03 - app.api.endpoints.chat - INFO - chat - medical_chat_stream:130 - 🌊 Streaming enhanced medical chat request - patient_id: 2
+2025-07-12 17:06:04 - app.services.chroma_service - INFO - chroma_service - search_documents:188 - 🔍 Search returned 0 results for: historial médico completo...
+2025-07-12 17:06:04 - app.services.chroma_service - INFO - chroma_service - get_patient_context:239 - 📋 Retrieved context for patient 2: 0 documents
+2025-07-12 17:06:04 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:155 - 🌊 Starting enhanced stream generation
+2025-07-12 17:06:04 - app.services.enhanced_document_service - INFO - enhanced_document_service - get_enhanced_patient_context:119 - 🔍 Getting enhanced context for patient 2 with strategy ContextStrategy.HYBRID_SMART
+2025-07-12 17:06:04 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:06:04 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:06:04 - app.services.enhanced_document_service - INFO - enhanced_document_service - _calculate_document_relevance:459 - 🔍 Calculating relevance for query: 'hola' against document: 'Expediente TecSalud ALANIS'
+2025-07-12 17:06:04 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:06:04 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:06:04 - app.services.enhanced_document_service - INFO - enhanced_document_service - _get_full_document_context:284 - 📋 Retrieved 1 full documents
+2025-07-12 17:06:04 - app.services.chroma_service - INFO - chroma_service - search_documents:188 - 🔍 Search returned 0 results for: hola...
+2025-07-12 17:06:04 - app.services.enhanced_document_service - INFO - enhanced_document_service - _get_vector_context:227 - 🎯 Vector search returned 0 results
+2025-07-12 17:06:04 - app.services.enhanced_document_service - INFO - enhanced_document_service - _get_smart_hybrid_context:329 - 🧠 Smart hybrid: 1 full docs, 0 vectors
+2025-07-12 17:06:04 - app.services.enhanced_document_service - INFO - enhanced_document_service - _get_recent_documents:377 - 📅 Retrieved 0 recent documents
+2025-07-12 17:06:04 - app.services.enhanced_document_service - INFO - enhanced_document_service - get_enhanced_patient_context:208 - ✅ Enhanced context retrieved: 1 full docs, 0 vector results, 456 tokens
+2025-07-12 17:06:04 - app.agents.medical_coordinator - INFO - medical_coordinator - process_request_stream:272 - 🔍 Pre-classification streaming context: 1 docs, 456 tokens
+2025-07-12 17:06:04 - app.services.azure_openai_service - INFO - azure_openai_service - chat_completion:124 - 🤖 Generating completion with gpt-4o
+2025-07-12 17:06:04 - app.agents.medical_coordinator - INFO - medical_coordinator - process_request_stream:279 - 🌊 Context-aware streaming classification: general (confidence: 0.95)
+2025-07-12 17:06:04 - app.agents.medical_coordinator - INFO - medical_coordinator - process_request_stream:285 - 🔄 Refining streaming context strategy from hybrid_smart to vectors_only
+2025-07-12 17:06:04 - app.services.enhanced_document_service - INFO - enhanced_document_service - get_enhanced_patient_context:119 - 🔍 Getting enhanced context for patient 2 with strategy ContextStrategy.VECTORS_ONLY
+2025-07-12 17:06:05 - app.services.chroma_service - INFO - chroma_service - search_documents:188 - 🔍 Search returned 0 results for: hola...
+2025-07-12 17:06:05 - app.services.enhanced_document_service - INFO - enhanced_document_service - _get_vector_context:227 - 🎯 Vector search returned 0 results
+2025-07-12 17:06:05 - app.services.enhanced_document_service - INFO - enhanced_document_service - _get_recent_documents:377 - 📅 Retrieved 1 recent documents
+2025-07-12 17:06:05 - app.services.enhanced_document_service - INFO - enhanced_document_service - get_enhanced_patient_context:208 - ✅ Enhanced context retrieved: 1 full docs, 0 vector results, 250 tokens
+2025-07-12 17:06:05 - app.agents.medical_coordinator - INFO - medical_coordinator - process_request_stream:297 - 🔍 Refined streaming context: 1 docs, 250 tokens
+2025-07-12 17:06:05 - app.agents.medical_coordinator - INFO - medical_coordinator - _route_to_agent_stream_enhanced:581 - 🎯 MedicalCoordinator: Routing to general agent
+2025-07-12 17:06:05 - app.agents.medical_coordinator - INFO - medical_coordinator - _route_to_agent_stream_enhanced:582 - 🎯 MedicalCoordinator: Unified context prepared with 19 keys
+2025-07-12 17:06:05 - app.agents.medical_coordinator - INFO - medical_coordinator - _route_to_agent_stream_enhanced:630 - 🎯 MedicalCoordinator: Handling general conversation
+2025-07-12 17:06:05 - app.services.azure_openai_service - INFO - azure_openai_service - chat_completion_stream:196 - 🌊 Streaming completion with gpt-4o-mini
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 1: '¡...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 2: 'Hola...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 3: '!...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 4: ' ¿...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 5: 'Cómo...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 6: ' puedo...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 7: ' ayudarte...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 8: ' hoy...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 9: '?...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 10: ' Si...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 11: ' tienes...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 12: ' alguna...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 13: ' pregunta...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 14: ' sobre...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 15: ' tu...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 16: ' salud...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 17: ' o...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 18: ' necesitas...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 19: ' información...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 20: ' sobre...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 21: ' algún...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 22: ' tema...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 23: ' médico...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 24: ',...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 25: ' estoy...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 26: ' aquí...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 27: ' para...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 28: ' asist...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 29: 'irte...'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:182 - 📦 Yielding enhanced chunk 30: '....'
+2025-07-12 17:06:05 - app.api.endpoints.chat - INFO - chat - generate_enhanced_stream:192 - ✅ Enhanced stream generation completed, sent 30 chunks
