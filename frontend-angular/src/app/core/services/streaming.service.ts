@@ -49,6 +49,7 @@ export class StreamingService {
               if (done) {
                 console.log('📡 Reader done, breaking loop');
                 this.zone.run(() => {
+                  observer.next({ type: 'done' });
                   observer.complete();
                 });
                 break;
@@ -69,6 +70,17 @@ export class StreamingService {
                   const parsed = JSON.parse(data);
                   console.log('✅ Parsed:', parsed);
                   
+                  // Check if backend indicates completion
+                  if (parsed.is_complete === true) {
+                    console.log('✅ Backend indicates streaming complete');
+                    this.zone.run(() => {
+                      observer.next({ type: 'done' });
+                    });
+                    streamComplete = true;
+                    break;
+                  }
+                  
+                  // Handle content chunks
                   if (parsed.content !== undefined && parsed.content !== '') {
                     console.log('✅ Emitting chunk:', parsed.content);
                     this.zone.run(() => {
@@ -77,13 +89,6 @@ export class StreamingService {
                         content: parsed.content
                       });
                     });
-                  } else if (parsed.is_complete) {
-                    console.log('✅ Streaming complete');
-                    this.zone.run(() => {
-                      observer.next({ type: 'done' });
-                    });
-                    streamComplete = true;
-                    break;
                   }
                 } catch (e) {
                   console.error('❌ Parse error:', e);
@@ -115,8 +120,4 @@ export class StreamingService {
       };
     });
   }
-
-
-
-
 }

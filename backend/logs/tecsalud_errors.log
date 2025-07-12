@@ -296,3 +296,220 @@ Traceback (most recent call last):
 fastapi.exceptions.ResponseValidationError: 1 validation errors:
   {'type': 'missing', 'loc': ('response', 'patients', 0, 'birth_date'), 'msg': 'Field required', 'input': {'id': '1', 'name': 'Andrea Pérez García', 'age': 24, 'gender': 'femenino', 'medical_record_number': 'EXP-2024000', 'phone': '524447242529', 'email': 'andrea.pérez.garcía@yahoo.com', 'conditions': ['Reflujo gastroesofágico'], 'last_visit': '2025-06-24T00:15:21'}}
 
+2025-07-07 17:57:19 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:57:19 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:57:36 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:57:36 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:57:44 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:57:44 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:58:11 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:58:11 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:58:29 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:58:29 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:59:56 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 17:59:56 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 19:20:13 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 19:20:13 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:01:57 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:01:57 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:33:09 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:33:09 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:33:47 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:33:47 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:35:05 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:35:05 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:41:39 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:41:39 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:41:52 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:41:52 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:47:37 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:47:37 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:54:08 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:54:08 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:54:09 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-07 21:54:09 - app.api.endpoints.documents - ERROR - documents - list_documents:317 - ❌ Failed to list documents: Chroma service not initialized
+2025-07-12 15:00:54 - app.api.endpoints.documents - ERROR - documents - upload_document:104 - ❌ Document upload failed: Chroma service not initialized
+2025-07-12 15:00:54 - app.api.endpoints.documents - ERROR - documents - upload_document:104 - ❌ Document upload failed: Chroma service not initialized
+2025-07-12 15:00:54 - app.api.endpoints.documents - ERROR - documents - upload_document:104 - ❌ Document upload failed: Chroma service not initialized
+2025-07-12 15:16:47 - app.api.endpoints.documents - ERROR - documents - upload_document:141 - ❌ Vectorization failed: Chroma service not initialized
+2025-07-12 15:16:47 - app.api.endpoints.documents - ERROR - documents - upload_document:169 - ❌ Complete storage failed: 'status' is an invalid keyword argument for MedicalDocument
+2025-07-12 15:17:11 - app.api.endpoints.documents - ERROR - documents - upload_document:169 - ❌ Complete storage failed: 'status' is an invalid keyword argument for MedicalDocument
+2025-07-12 15:19:45 - app.api.endpoints.documents - ERROR - documents - upload_document:169 - ❌ Complete storage failed: 'status' is an invalid keyword argument for MedicalDocument
+2025-07-12 15:20:10 - app.api.endpoints.documents - ERROR - documents - upload_document:185 - ❌ Complete storage failed: (sqlite3.IntegrityError) NOT NULL constraint failed: medical_documents.patient_id
+[SQL: INSERT INTO medical_documents (patient_id, document_type, title, content, file_path, file_size, created_by, updated_at, processing_type, original_filename, vectorization_status, chunks_count, content_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, created_at]
+[parameters: (None, 'OTHER', 'Test Document', 'Test document content for medical upload\n', 'uploads/test_document.txt', 41, 'admin', None, 'COMPLETE', 'test_document.txt', 'PENDING', 0, 'c746a6942e762c94b11ff36945eb2664a40d1decf01fa76214f5b08745929f82')]
+(Background on this error at: https://sqlalche.me/e/20/gkpj)
+2025-07-12 15:22:33 - app.api.endpoints.documents - ERROR - documents - upload_document:202 - ❌ Vectorization failed: Chroma service not initialized
+2025-07-12 15:27:13 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:510 - ❌ Query analysis failed: Azure OpenAI service not initialized
+2025-07-12 15:27:13 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:464 - ❌ Document relevance calculation failed: Azure OpenAI service not initialized
+2025-07-12 15:39:13 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:510 - ❌ Query analysis failed: Azure OpenAI service not initialized
+2025-07-12 15:39:13 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:464 - ❌ Document relevance calculation failed: Azure OpenAI service not initialized
+2025-07-12 15:46:58 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:464 - ❌ Document relevance calculation failed: Azure OpenAI service not initialized
+2025-07-12 15:49:45 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:510 - ❌ Query analysis failed: Azure OpenAI service not initialized
+2025-07-12 15:49:45 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:464 - ❌ Document relevance calculation failed: Azure OpenAI service not initialized
+2025-07-12 15:53:44 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:510 - ❌ Query analysis failed: Azure OpenAI service not initialized
+2025-07-12 15:53:44 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:464 - ❌ Document relevance calculation failed: Azure OpenAI service not initialized
+2025-07-12 15:56:37 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:510 - ❌ Query analysis failed: Azure OpenAI service not initialized
+2025-07-12 15:56:37 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:464 - ❌ Document relevance calculation failed: Azure OpenAI service not initialized
+2025-07-12 16:01:13 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:510 - ❌ Query analysis failed: Azure OpenAI service not initialized
+2025-07-12 16:01:13 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:464 - ❌ Document relevance calculation failed: Azure OpenAI service not initialized
+2025-07-12 16:01:14 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:464 - ❌ Document relevance calculation failed: Azure OpenAI service not initialized
+2025-07-12 16:03:40 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:03:40 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:521 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:03:40 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:03:40 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:03:42 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:03:42 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:05:55 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:05:55 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:536 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:05:55 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:05:55 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:05:56 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:05:56 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:14:00 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:14:00 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:536 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:14:00 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:14:00 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:14:01 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:14:01 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:16:22 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:16:22 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:536 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:16:22 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:16:22 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:16:23 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:16:23 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:17:58 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:17:58 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:536 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:17:58 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:17:58 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:17:59 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:17:59 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:18:48 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:18:48 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:536 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:18:48 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:18:48 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:20:50 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:20:50 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:536 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:20:50 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:20:50 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:20:51 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:20:51 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:21:57 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:21:57 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:536 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:21:57 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:21:57 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:23:11 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:23:11 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:536 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:23:11 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:23:11 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:475 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:25:06 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:25:06 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:25:06 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:25:06 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:26:34 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:26:34 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:26:34 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:26:34 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:27:59 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:27:59 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:27:59 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:27:59 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:28:00 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:28:00 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:31 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:31 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:31 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:31 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:32 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:32 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:45 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:45 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:45 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:45 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:47 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:29:47 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:32:24 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:32:24 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:32:24 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:32:24 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:32:28 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:32:28 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:33:00 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:33:00 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:33:00 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:33:00 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:08 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:08 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:08 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:08 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:10 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:10 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:16 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:16 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:16 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:16 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:41 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:41 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:41 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:36:41 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:39:29 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:39:29 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:39:29 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:39:29 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:49:50 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:49:50 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:49:50 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:49:50 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:50:45 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:50:45 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:50:45 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:50:45 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:51:08 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:51:08 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:51:08 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:51:08 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:52:33 - app.api.endpoints.documents - ERROR - documents - _extract_text_from_file:627 - ❌ PyPDF2 extraction failed: No module named 'PyPDF2'
+2025-07-12 16:53:00 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:53:00 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:53:00 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:53:00 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:54:33 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:54:33 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:54:33 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:54:33 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:54:46 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:54:46 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:54:46 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:54:46 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:55:03 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:55:03 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:55:03 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:55:03 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:55:30 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:55:30 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:55:30 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:55:30 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:23 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:23 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:23 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:23 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:24 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:24 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:57 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:57 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:57 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:57 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:58 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:56:58 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:59:14 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:59:14 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:59:14 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 16:59:14 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:01:42 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:01:42 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:01:42 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:01:42 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:01:58 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:01:58 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _analyze_query_context_needs:543 - ❌ Query analysis failed: Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:01:58 - app.services.azure_openai_service - ERROR - azure_openai_service - chat_completion:129 - ❌ Chat completion failed: 'dict' object has no attribute 'role'
+2025-07-12 17:01:58 - app.services.enhanced_document_service - ERROR - enhanced_document_service - _calculate_document_relevance:482 - ❌ Document relevance calculation failed: Chat completion failed: 'dict' object has no attribute 'role'
