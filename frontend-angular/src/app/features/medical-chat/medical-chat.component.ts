@@ -15,128 +15,108 @@ import { MedicalStateService, StreamingService } from '@core/services';
     CommonModule,
     FormsModule,
   ],
-  encapsulation: ViewEncapsulation.None, // Permite que nuestros estilos sobrescriban los globales
+  encapsulation: ViewEncapsulation.None,
   template: `
-    <!-- Main chat container with unique class -->
-    <div class="tecsalud-medical-chat-container">
+    <div class="chat-container-main">
       <!-- Header -->
-      <div class="tecsalud-chat-header">
-        <div class="tecsalud-patient-info" *ngIf="activePatient">
-          <div class="tecsalud-patient-avatar">
-            {{ activePatient.name.charAt(0) }}
-          </div>
-          <div class="tecsalud-patient-details">
+      <div class="chat-header-main">
+        <div class="patient-info-main" *ngIf="activePatient">
+          <div class="patient-avatar-main">{{ activePatient.name.charAt(0) }}</div>
+          <div class="patient-details-main">
             <h3>{{ activePatient.name }}</h3>
             <p>ID: {{ activePatient.id }}</p>
           </div>
         </div>
-        <div class="tecsalud-no-patient" *ngIf="!activePatient">
+        <div class="no-patient-main" *ngIf="!activePatient">
           Selecciona un paciente para comenzar
         </div>
       </div>
 
-      <!-- Messages area -->
-      <div class="tecsalud-chat-main" #messagesContainer>
-        <div class="tecsalud-welcome-section" *ngIf="!activePatient">
-          <div class="tecsalud-hero-content">
-            <h2>Asistente Médico IA</h2>
-            <p>Selecciona un paciente para comenzar la consulta</p>
-          </div>
+      <!-- Messages -->
+      <div class="chat-main-area" #messagesContainer>
+        <div class="welcome-section-main" *ngIf="!activePatient">
+          <h2>Asistente Médico IA</h2>
+          <p>Selecciona un paciente para comenzar</p>
         </div>
 
-        <!-- Messages -->
-        <div class="tecsalud-messages-list" *ngIf="activePatient">
+        <div class="messages-container-main" *ngIf="activePatient">
           <div 
             *ngFor="let message of chatMessages; trackBy: trackMessage"
-            class="tecsalud-message-wrapper"
-            [class.tecsalud-user-message-wrapper]="message.role === 'user'"
-            [class.tecsalud-assistant-message-wrapper]="message.role === 'assistant'"
+            class="message-item-main"
+            [class.user-message-main]="message.role === 'user'"
+            [class.assistant-message-main]="message.role === 'assistant'"
           >
-            <div class="tecsalud-message-bubble"
-                 [class.tecsalud-user-bubble]="message.role === 'user'"
-                 [class.tecsalud-assistant-bubble]="message.role === 'assistant'">
-              <div class="tecsalud-message-text" [innerHTML]="formatMessageContent(message.content)"></div>
-              <div class="tecsalud-message-time">{{ formatTime(message.timestamp) }}</div>
+            <div class="bubble-main"
+                 [class.user-bubble-main]="message.role === 'user'"
+                 [class.assistant-bubble-main]="message.role === 'assistant'">
+              <div class="bubble-content-main" [innerHTML]="formatMessageContent(message.content)"></div>
+              <div class="bubble-time-main">{{ formatTime(message.timestamp) }}</div>
             </div>
           </div>
               
-          <!-- Streaming message -->
-          <div class="tecsalud-message-wrapper tecsalud-assistant-message-wrapper" *ngIf="isStreaming">
-            <div class="tecsalud-message-bubble tecsalud-assistant-bubble tecsalud-streaming">
-              <div class="tecsalud-message-text" [innerHTML]="formatMessageContent(streamingMessage)"></div>
-              <div class="tecsalud-message-time">Escribiendo...</div>
+          <div class="message-item-main assistant-message-main" *ngIf="isStreaming">
+            <div class="bubble-main assistant-bubble-main streaming-bubble-main">
+              <div class="bubble-content-main" [innerHTML]="formatMessageContent(streamingMessage)"></div>
+              <div class="bubble-time-main">Escribiendo...</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="tecsalud-chat-footer" *ngIf="activePatient">
-        <div class="tecsalud-input-section">
-          <div class="tecsalud-input-container">
-            <textarea
-              [(ngModel)]="currentMessage"
-              (keydown.enter)="onEnterPressed($event)"
-              (input)="onInputChange($event)"
-              placeholder="Describe los síntomas o haz una pregunta médica..."
-              class="tecsalud-message-input"
-              rows="3"
-              [disabled]="isStreaming"
-            ></textarea>
-            <div class="tecsalud-input-footer">
-              <div class="tecsalud-char-count">
-                {{ currentMessage.length }}/1000
-              </div>
-              <button
-                (click)="sendMessage()"
-                [disabled]="!canSendMessage"
-                class="tecsalud-send-button"
-              >
-                Enviar
-              </button>
-            </div>
-          </div>
+      <!-- Input -->
+      <div class="chat-footer-main" *ngIf="activePatient">
+        <div class="input-container-main">
+          <textarea
+            [(ngModel)]="currentMessage"
+            (keydown.enter)="onEnterPressed($event)"
+            placeholder="Escribe tu mensaje..."
+            class="message-input-main"
+            [disabled]="isStreaming"
+          ></textarea>
+          <button
+            (click)="sendMessage()"
+            [disabled]="!canSendMessage"
+            class="send-button-main"
+          >
+            Enviar
+          </button>
         </div>
       </div>
     </div>
   `,
   styles: [`
-    /* RESET COMPLETO PARA EL CONTENEDOR PRINCIPAL */
-    .tecsalud-medical-chat-container {
+    /* RESET TOTAL */
+    .chat-container-main {
       all: initial !important;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
       display: flex !important;
       flex-direction: column !important;
       height: 100vh !important;
-      max-height: 100vh !important;
       background: #f5f7fa !important;
       position: relative !important;
       overflow: hidden !important;
       box-sizing: border-box !important;
     }
 
-    /* RESET PARA TODOS LOS ELEMENTOS DENTRO */
-    .tecsalud-medical-chat-container * {
+    .chat-container-main * {
       box-sizing: border-box !important;
     }
 
     /* HEADER */
-    .tecsalud-chat-header {
-      flex-shrink: 0 !important;
+    .chat-header-main {
       padding: 20px !important;
       background: white !important;
       border-bottom: 1px solid #e0e0e0 !important;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
-      z-index: 10 !important;
+      flex-shrink: 0 !important;
     }
 
-    .tecsalud-patient-info {
+    .patient-info-main {
       display: flex !important;
       align-items: center !important;
       gap: 15px !important;
     }
 
-    .tecsalud-patient-avatar {
+    .patient-avatar-main {
       width: 50px !important;
       height: 50px !important;
       border-radius: 50% !important;
@@ -147,125 +127,111 @@ import { MedicalStateService, StreamingService } from '@core/services';
       justify-content: center !important;
       font-size: 1.2rem !important;
       font-weight: bold !important;
-      flex-shrink: 0 !important;
     }
 
-    .tecsalud-patient-details h3 {
+    .patient-details-main h3 {
       margin: 0 !important;
       color: #333 !important;
       font-size: 1.1rem !important;
       font-weight: 600 !important;
     }
 
-    .tecsalud-patient-details p {
+    .patient-details-main p {
       margin: 5px 0 0 0 !important;
       color: #666 !important;
       font-size: 0.9rem !important;
     }
 
-    .tecsalud-no-patient {
+    .no-patient-main {
       text-align: center !important;
       color: #666 !important;
       font-size: 1.1rem !important;
     }
 
-    /* MAIN CHAT AREA */
-    .tecsalud-chat-main {
+    /* CHAT AREA */
+    .chat-main-area {
       flex: 1 !important;
       overflow-y: auto !important;
-      overflow-x: hidden !important;
       padding: 20px !important;
       background: #f5f7fa !important;
-      position: relative !important;
     }
 
-    .tecsalud-welcome-section {
+    .welcome-section-main {
       display: flex !important;
+      flex-direction: column !important;
       align-items: center !important;
       justify-content: center !important;
       height: 100% !important;
-    }
-
-    .tecsalud-hero-content {
       text-align: center !important;
-      background: white !important;
-      padding: 40px !important;
-      border-radius: 20px !important;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
     }
 
-    .tecsalud-hero-content h2 {
+    .welcome-section-main h2 {
       color: #333 !important;
       margin: 0 0 10px 0 !important;
       font-size: 1.5rem !important;
     }
 
-    .tecsalud-hero-content p {
+    .welcome-section-main p {
       color: #666 !important;
       margin: 0 !important;
     }
 
-    /* MENSAJES - ESTRUCTURA ESPECÍFICA */
-    .tecsalud-messages-list {
+    /* MESSAGES */
+    .messages-container-main {
       max-width: 800px !important;
       margin: 0 auto !important;
-      padding: 0 !important;
     }
 
-    .tecsalud-message-wrapper {
-      margin-bottom: 20px !important;
+    .message-item-main {
+      margin-bottom: 15px !important;
       display: flex !important;
-      align-items: flex-start !important;
-      clear: both !important;
       width: 100% !important;
+      clear: both !important;
     }
 
-    .tecsalud-user-message-wrapper {
+    .user-message-main {
       justify-content: flex-end !important;
-      flex-direction: row !important;
     }
 
-    .tecsalud-assistant-message-wrapper {
+    .assistant-message-main {
       justify-content: flex-start !important;
-      flex-direction: row !important;
     }
 
-    /* CHAT BUBBLES - MUY ESPECÍFICOS */
-    .tecsalud-message-bubble {
+    /* BUBBLES - FORZAR VISIBILIDAD */
+    .bubble-main {
       max-width: 70% !important;
       min-width: 100px !important;
       padding: 12px 16px !important;
       border-radius: 18px !important;
       word-wrap: break-word !important;
-      overflow-wrap: break-word !important;
-      position: relative !important;
       display: block !important;
-      clear: both !important;
+      position: relative !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      z-index: 100 !important;
     }
 
-    .tecsalud-user-bubble {
+    .user-bubble-main {
       background: #2196F3 !important;
       color: white !important;
-      border: 2px solid #1976D2 !important;
+      border: 1px solid #1976D2 !important;
       margin-left: auto !important;
-      margin-right: 0 !important;
     }
 
-    .tecsalud-assistant-bubble {
+    .assistant-bubble-main {
       background: white !important;
       color: #333 !important;
-      border: 2px solid #e0e0e0 !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-      margin-left: 0 !important;
+      border: 1px solid #e0e0e0 !important;
       margin-right: auto !important;
     }
 
-    .tecsalud-streaming {
+    .streaming-bubble-main {
       border-color: #4CAF50 !important;
-      animation: tecsalud-pulse 1.5s infinite !important;
+      animation: pulse-animation 1.5s infinite !important;
     }
 
-    @keyframes tecsalud-pulse {
+    @keyframes pulse-animation {
       0%, 100% { 
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
       }
@@ -274,146 +240,102 @@ import { MedicalStateService, StreamingService } from '@core/services';
       }
     }
 
-    .tecsalud-message-text {
-      line-height: 1.5 !important;
+    .bubble-content-main {
+      line-height: 1.4 !important;
       word-wrap: break-word !important;
       margin: 0 !important;
       font-size: 0.95rem !important;
     }
 
-    .tecsalud-message-time {
+    .bubble-time-main {
       font-size: 0.75rem !important;
       opacity: 0.7 !important;
-      margin-top: 8px !important;
+      margin-top: 5px !important;
       text-align: right !important;
     }
 
-    .tecsalud-user-bubble .tecsalud-message-time {
+    .user-bubble-main .bubble-time-main {
       color: rgba(255, 255, 255, 0.8) !important;
     }
 
-    .tecsalud-assistant-bubble .tecsalud-message-time {
+    .assistant-bubble-main .bubble-time-main {
       color: #666 !important;
     }
 
     /* FOOTER */
-    .tecsalud-chat-footer {
-      flex-shrink: 0 !important;
+    .chat-footer-main {
       padding: 20px !important;
       background: white !important;
       border-top: 1px solid #e0e0e0 !important;
-      z-index: 10 !important;
+      flex-shrink: 0 !important;
     }
 
-    .tecsalud-input-section {
+    .input-container-main {
       max-width: 800px !important;
       margin: 0 auto !important;
+      display: flex !important;
+      gap: 10px !important;
+      align-items: flex-end !important;
     }
 
-    .tecsalud-input-container {
-      border: 2px solid #e0e0e0 !important;
-      border-radius: 15px !important;
-      background: white !important;
-      transition: all 0.3s ease !important;
-      overflow: hidden !important;
-    }
-
-    .tecsalud-input-container:focus-within {
-      border-color: #2196F3 !important;
-      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1) !important;
-    }
-
-    .tecsalud-message-input {
-      width: 100% !important;
-      border: none !important;
-      outline: none !important;
-      padding: 15px !important;
+    .message-input-main {
+      flex: 1 !important;
+      border: 1px solid #e0e0e0 !important;
+      border-radius: 10px !important;
+      padding: 12px !important;
       font-size: 1rem !important;
       resize: none !important;
-      background: transparent !important;
-      font-family: inherit !important;
+      min-height: 20px !important;
+      max-height: 120px !important;
+      background: white !important;
       color: #333 !important;
-      line-height: 1.4 !important;
+      outline: none !important;
     }
 
-    .tecsalud-message-input::placeholder {
-      color: #999 !important;
+    .message-input-main:focus {
+      border-color: #2196F3 !important;
+      box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1) !important;
     }
 
-    .tecsalud-input-footer {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      padding: 10px 15px !important;
-      border-top: 1px solid #f0f0f0 !important;
-      background: #fafafa !important;
-    }
-
-    .tecsalud-char-count {
-      color: #666 !important;
-      font-size: 0.8rem !important;
-    }
-
-    .tecsalud-send-button {
+    .send-button-main {
       background: #2196F3 !important;
       color: white !important;
       border: none !important;
-      border-radius: 8px !important;
-      padding: 10px 20px !important;
+      border-radius: 10px !important;
+      padding: 12px 20px !important;
       font-size: 0.9rem !important;
-      font-weight: 500 !important;
       cursor: pointer !important;
       transition: all 0.3s ease !important;
-      min-width: 80px !important;
     }
 
-    .tecsalud-send-button:hover:not(:disabled) {
+    .send-button-main:hover:not(:disabled) {
       background: #1976D2 !important;
-      transform: translateY(-1px) !important;
-      box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3) !important;
     }
 
-    .tecsalud-send-button:disabled {
+    .send-button-main:disabled {
       background: #ccc !important;
       cursor: not-allowed !important;
-      transform: none !important;
-      box-shadow: none !important;
     }
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
-      .tecsalud-message-bubble {
-        max-width: 85% !important;
+      .bubble-main {
+        max-width: 90% !important;
       }
       
-      .tecsalud-chat-header {
-        padding: 15px !important;
-      }
-      
-      .tecsalud-chat-main {
-        padding: 15px !important;
-      }
-      
-      .tecsalud-chat-footer {
+      .chat-header-main,
+      .chat-main-area,
+      .chat-footer-main {
         padding: 15px !important;
       }
     }
 
-    /* OVERRIDE PARA ESTILOS GLOBALES PROBLEMÁTICOS */
-    .tecsalud-medical-chat-container .send-btn-premium {
-      all: unset !important;
-    }
-
-    .tecsalud-medical-chat-container .premium-card {
-      all: unset !important;
-    }
-
-    /* ASEGURAR QUE LOS BUBBLES SEAN VISIBLES */
-    .tecsalud-message-bubble {
-      opacity: 1 !important;
-      visibility: visible !important;
-      display: block !important;
-      z-index: 1 !important;
+    /* OVERRIDE GLOBAL STYLES */
+    .chat-container-main .send-btn-premium,
+    .chat-container-main .premium-card,
+    .chat-container-main .banner,
+    .chat-container-main .notification {
+      display: none !important;
     }
   `]
 })
