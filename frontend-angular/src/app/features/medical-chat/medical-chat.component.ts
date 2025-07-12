@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
@@ -15,79 +15,82 @@ import { MedicalStateService, StreamingService } from '@core/services';
     CommonModule,
     FormsModule,
   ],
+  encapsulation: ViewEncapsulation.None, // Permite que nuestros estilos sobrescriban los globales
   template: `
-    <!-- Main chat container -->
-    <div class="chat-container">
+    <!-- Main chat container with unique class -->
+    <div class="tecsalud-medical-chat-container">
       <!-- Header -->
-      <div class="chat-header">
-        <div class="patient-info" *ngIf="activePatient">
-          <div class="patient-avatar">
+      <div class="tecsalud-chat-header">
+        <div class="tecsalud-patient-info" *ngIf="activePatient">
+          <div class="tecsalud-patient-avatar">
             {{ activePatient.name.charAt(0) }}
           </div>
-          <div class="patient-details">
+          <div class="tecsalud-patient-details">
             <h3>{{ activePatient.name }}</h3>
             <p>ID: {{ activePatient.id }}</p>
           </div>
         </div>
-        <div class="no-patient" *ngIf="!activePatient">
+        <div class="tecsalud-no-patient" *ngIf="!activePatient">
           Selecciona un paciente para comenzar
         </div>
       </div>
 
       <!-- Messages area -->
-      <div class="chat-main" #messagesContainer>
-        <div class="welcome-section" *ngIf="!activePatient">
-          <div class="hero-content">
+      <div class="tecsalud-chat-main" #messagesContainer>
+        <div class="tecsalud-welcome-section" *ngIf="!activePatient">
+          <div class="tecsalud-hero-content">
             <h2>Asistente Médico IA</h2>
             <p>Selecciona un paciente para comenzar la consulta</p>
           </div>
         </div>
 
         <!-- Messages -->
-        <div class="messages-list" *ngIf="activePatient">
+        <div class="tecsalud-messages-list" *ngIf="activePatient">
           <div 
             *ngFor="let message of chatMessages; trackBy: trackMessage"
-            class="message-item"
-            [class.user-message]="message.role === 'user'"
-            [class.assistant-message]="message.role === 'assistant'"
+            class="tecsalud-message-wrapper"
+            [class.tecsalud-user-message-wrapper]="message.role === 'user'"
+            [class.tecsalud-assistant-message-wrapper]="message.role === 'assistant'"
           >
-            <div class="message-bubble">
-              <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
-              <div class="message-time">{{ formatTime(message.timestamp) }}</div>
+            <div class="tecsalud-message-bubble"
+                 [class.tecsalud-user-bubble]="message.role === 'user'"
+                 [class.tecsalud-assistant-bubble]="message.role === 'assistant'">
+              <div class="tecsalud-message-text" [innerHTML]="formatMessageContent(message.content)"></div>
+              <div class="tecsalud-message-time">{{ formatTime(message.timestamp) }}</div>
             </div>
           </div>
               
           <!-- Streaming message -->
-          <div class="message-item assistant-message" *ngIf="isStreaming">
-            <div class="message-bubble">
-              <div class="message-text" [innerHTML]="formatMessageContent(streamingMessage)"></div>
-              <div class="message-time">Escribiendo...</div>
+          <div class="tecsalud-message-wrapper tecsalud-assistant-message-wrapper" *ngIf="isStreaming">
+            <div class="tecsalud-message-bubble tecsalud-assistant-bubble tecsalud-streaming">
+              <div class="tecsalud-message-text" [innerHTML]="formatMessageContent(streamingMessage)"></div>
+              <div class="tecsalud-message-time">Escribiendo...</div>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Footer -->
-      <div class="chat-footer" *ngIf="activePatient">
-        <div class="input-section">
-          <div class="input-container">
+      <div class="tecsalud-chat-footer" *ngIf="activePatient">
+        <div class="tecsalud-input-section">
+          <div class="tecsalud-input-container">
             <textarea
               [(ngModel)]="currentMessage"
               (keydown.enter)="onEnterPressed($event)"
               (input)="onInputChange($event)"
               placeholder="Describe los síntomas o haz una pregunta médica..."
-              class="message-input"
+              class="tecsalud-message-input"
               rows="3"
               [disabled]="isStreaming"
             ></textarea>
-            <div class="input-footer">
-              <div class="char-count">
+            <div class="tecsalud-input-footer">
+              <div class="tecsalud-char-count">
                 {{ currentMessage.length }}/1000
               </div>
               <button
                 (click)="sendMessage()"
                 [disabled]="!canSendMessage"
-                class="send-button"
+                class="tecsalud-send-button"
               >
                 Enviar
               </button>
@@ -98,233 +101,319 @@ import { MedicalStateService, StreamingService } from '@core/services';
     </div>
   `,
   styles: [`
-    .chat-container {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      background: #f5f7fa;
+    /* RESET COMPLETO PARA EL CONTENEDOR PRINCIPAL */
+    .tecsalud-medical-chat-container {
+      all: initial !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+      display: flex !important;
+      flex-direction: column !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      background: #f5f7fa !important;
+      position: relative !important;
+      overflow: hidden !important;
+      box-sizing: border-box !important;
+    }
+
+    /* RESET PARA TODOS LOS ELEMENTOS DENTRO */
+    .tecsalud-medical-chat-container * {
+      box-sizing: border-box !important;
     }
 
     /* HEADER */
-    .chat-header {
-      padding: 20px;
-      background: white;
-      border-bottom: 1px solid #e0e0e0;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    .tecsalud-chat-header {
+      flex-shrink: 0 !important;
+      padding: 20px !important;
+      background: white !important;
+      border-bottom: 1px solid #e0e0e0 !important;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+      z-index: 10 !important;
     }
 
-    .patient-info {
-      display: flex;
-      align-items: center;
-      gap: 15px;
+    .tecsalud-patient-info {
+      display: flex !important;
+      align-items: center !important;
+      gap: 15px !important;
     }
 
-    .patient-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: #2196F3;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      font-weight: bold;
+    .tecsalud-patient-avatar {
+      width: 50px !important;
+      height: 50px !important;
+      border-radius: 50% !important;
+      background: #2196F3 !important;
+      color: white !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 1.2rem !important;
+      font-weight: bold !important;
+      flex-shrink: 0 !important;
     }
 
-    .patient-details h3 {
-      margin: 0;
-      color: #333;
+    .tecsalud-patient-details h3 {
+      margin: 0 !important;
+      color: #333 !important;
+      font-size: 1.1rem !important;
+      font-weight: 600 !important;
     }
 
-    .patient-details p {
-      margin: 5px 0 0 0;
-      color: #666;
-      font-size: 0.9rem;
+    .tecsalud-patient-details p {
+      margin: 5px 0 0 0 !important;
+      color: #666 !important;
+      font-size: 0.9rem !important;
     }
 
-    .no-patient {
-      text-align: center;
-      color: #666;
-      font-size: 1.1rem;
+    .tecsalud-no-patient {
+      text-align: center !important;
+      color: #666 !important;
+      font-size: 1.1rem !important;
     }
 
     /* MAIN CHAT AREA */
-    .chat-main {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
+    .tecsalud-chat-main {
+      flex: 1 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      padding: 20px !important;
+      background: #f5f7fa !important;
+      position: relative !important;
     }
 
-    .welcome-section {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
+    .tecsalud-welcome-section {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 100% !important;
     }
 
-    .hero-content {
-      text-align: center;
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    .tecsalud-hero-content {
+      text-align: center !important;
+      background: white !important;
+      padding: 40px !important;
+      border-radius: 20px !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
     }
 
-    .hero-content h2 {
-      color: #333;
-      margin-bottom: 10px;
+    .tecsalud-hero-content h2 {
+      color: #333 !important;
+      margin: 0 0 10px 0 !important;
+      font-size: 1.5rem !important;
     }
 
-    .hero-content p {
-      color: #666;
+    .tecsalud-hero-content p {
+      color: #666 !important;
+      margin: 0 !important;
     }
 
-    /* MESSAGES */
-    .messages-list {
-      max-width: 800px;
-      margin: 0 auto;
+    /* MENSAJES - ESTRUCTURA ESPECÍFICA */
+    .tecsalud-messages-list {
+      max-width: 800px !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
     }
 
-    .message-item {
-      margin-bottom: 15px;
-      display: flex;
-      align-items: flex-start;
+    .tecsalud-message-wrapper {
+      margin-bottom: 20px !important;
+      display: flex !important;
+      align-items: flex-start !important;
+      clear: both !important;
+      width: 100% !important;
     }
 
-    .user-message {
-      justify-content: flex-end;
+    .tecsalud-user-message-wrapper {
+      justify-content: flex-end !important;
+      flex-direction: row !important;
     }
 
-    .assistant-message {
-      justify-content: flex-start;
+    .tecsalud-assistant-message-wrapper {
+      justify-content: flex-start !important;
+      flex-direction: row !important;
     }
 
-    .message-bubble {
-      max-width: 70%;
-      padding: 12px 16px;
-      border-radius: 18px;
-      background: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      border: 1px solid #e0e0e0;
+    /* CHAT BUBBLES - MUY ESPECÍFICOS */
+    .tecsalud-message-bubble {
+      max-width: 70% !important;
+      min-width: 100px !important;
+      padding: 12px 16px !important;
+      border-radius: 18px !important;
+      word-wrap: break-word !important;
+      overflow-wrap: break-word !important;
+      position: relative !important;
+      display: block !important;
+      clear: both !important;
     }
 
-    .user-message .message-bubble {
-      background: #2196F3;
-      color: white;
-      border: 1px solid #1976D2;
+    .tecsalud-user-bubble {
+      background: #2196F3 !important;
+      color: white !important;
+      border: 2px solid #1976D2 !important;
+      margin-left: auto !important;
+      margin-right: 0 !important;
     }
 
-    .assistant-message .message-bubble {
-      background: white;
-      color: #333;
-      border: 1px solid #e0e0e0;
+    .tecsalud-assistant-bubble {
+      background: white !important;
+      color: #333 !important;
+      border: 2px solid #e0e0e0 !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      margin-left: 0 !important;
+      margin-right: auto !important;
     }
 
-    .message-text {
-      line-height: 1.5;
-      word-wrap: break-word;
+    .tecsalud-streaming {
+      border-color: #4CAF50 !important;
+      animation: tecsalud-pulse 1.5s infinite !important;
     }
 
-    .message-time {
-      font-size: 0.75rem;
-      opacity: 0.7;
-      margin-top: 5px;
+    @keyframes tecsalud-pulse {
+      0%, 100% { 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      }
+      50% { 
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+      }
     }
 
-    .user-message .message-time {
-      color: rgba(255, 255, 255, 0.8);
+    .tecsalud-message-text {
+      line-height: 1.5 !important;
+      word-wrap: break-word !important;
+      margin: 0 !important;
+      font-size: 0.95rem !important;
+    }
+
+    .tecsalud-message-time {
+      font-size: 0.75rem !important;
+      opacity: 0.7 !important;
+      margin-top: 8px !important;
+      text-align: right !important;
+    }
+
+    .tecsalud-user-bubble .tecsalud-message-time {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    .tecsalud-assistant-bubble .tecsalud-message-time {
+      color: #666 !important;
     }
 
     /* FOOTER */
-    .chat-footer {
-      padding: 20px;
-      background: white;
-      border-top: 1px solid #e0e0e0;
+    .tecsalud-chat-footer {
+      flex-shrink: 0 !important;
+      padding: 20px !important;
+      background: white !important;
+      border-top: 1px solid #e0e0e0 !important;
+      z-index: 10 !important;
     }
 
-    .input-section {
-      max-width: 800px;
-      margin: 0 auto;
+    .tecsalud-input-section {
+      max-width: 800px !important;
+      margin: 0 auto !important;
     }
 
-    .input-container {
-      border: 2px solid #e0e0e0;
-      border-radius: 15px;
-      background: white;
-      transition: all 0.3s ease;
+    .tecsalud-input-container {
+      border: 2px solid #e0e0e0 !important;
+      border-radius: 15px !important;
+      background: white !important;
+      transition: all 0.3s ease !important;
+      overflow: hidden !important;
     }
 
-    .input-container:focus-within {
-      border-color: #2196F3;
-      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+    .tecsalud-input-container:focus-within {
+      border-color: #2196F3 !important;
+      box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1) !important;
     }
 
-    .message-input {
-      width: 100%;
-      border: none;
-      outline: none;
-      padding: 15px;
-      font-size: 1rem;
-      resize: none;
-      background: transparent;
-      font-family: inherit;
+    .tecsalud-message-input {
+      width: 100% !important;
+      border: none !important;
+      outline: none !important;
+      padding: 15px !important;
+      font-size: 1rem !important;
+      resize: none !important;
+      background: transparent !important;
+      font-family: inherit !important;
+      color: #333 !important;
+      line-height: 1.4 !important;
     }
 
-    .message-input::placeholder {
-      color: #999;
+    .tecsalud-message-input::placeholder {
+      color: #999 !important;
     }
 
-    .input-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 15px;
-      border-top: 1px solid #f0f0f0;
+    .tecsalud-input-footer {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      padding: 10px 15px !important;
+      border-top: 1px solid #f0f0f0 !important;
+      background: #fafafa !important;
     }
 
-    .char-count {
-      color: #666;
-      font-size: 0.8rem;
+    .tecsalud-char-count {
+      color: #666 !important;
+      font-size: 0.8rem !important;
     }
 
-    .send-button {
-      background: #2196F3;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+    .tecsalud-send-button {
+      background: #2196F3 !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 10px 20px !important;
+      font-size: 0.9rem !important;
+      font-weight: 500 !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+      min-width: 80px !important;
     }
 
-    .send-button:hover:not(:disabled) {
-      background: #1976D2;
+    .tecsalud-send-button:hover:not(:disabled) {
+      background: #1976D2 !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 4px 8px rgba(33, 150, 243, 0.3) !important;
     }
 
-    .send-button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
+    .tecsalud-send-button:disabled {
+      background: #ccc !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+      box-shadow: none !important;
     }
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
-      .message-bubble {
-        max-width: 85%;
+      .tecsalud-message-bubble {
+        max-width: 85% !important;
       }
       
-      .chat-header {
-        padding: 15px;
+      .tecsalud-chat-header {
+        padding: 15px !important;
       }
       
-      .chat-main {
-        padding: 15px;
+      .tecsalud-chat-main {
+        padding: 15px !important;
       }
       
-      .chat-footer {
-        padding: 15px;
+      .tecsalud-chat-footer {
+        padding: 15px !important;
       }
+    }
+
+    /* OVERRIDE PARA ESTILOS GLOBALES PROBLEMÁTICOS */
+    .tecsalud-medical-chat-container .send-btn-premium {
+      all: unset !important;
+    }
+
+    .tecsalud-medical-chat-container .premium-card {
+      all: unset !important;
+    }
+
+    /* ASEGURAR QUE LOS BUBBLES SEAN VISIBLES */
+    .tecsalud-message-bubble {
+      opacity: 1 !important;
+      visibility: visible !important;
+      display: block !important;
+      z-index: 1 !important;
     }
   `]
 })
