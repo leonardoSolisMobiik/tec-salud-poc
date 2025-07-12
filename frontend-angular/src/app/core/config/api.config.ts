@@ -49,8 +49,6 @@ export const API_CONFIG = {
   
   // Development settings
   development: {
-    mockData: environment.enableMockData || false,
-    enableLogging: environment.enableLogging || false,
     enableDebug: environment.debug?.showApiLogs || false
   }
 }; 
