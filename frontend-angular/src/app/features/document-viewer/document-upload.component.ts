@@ -637,82 +637,287 @@ interface DocumentUpload {
       }
     }
 
-    @media (max-width: 768px) {
+    /* 📱 AGGRESSIVE RESPONSIVE FIXES */
+    @media (max-width: 950px) {
       .document-upload-container {
-        padding: var(--bmb-spacing-m);
-        padding-bottom: calc(var(--bmb-spacing-xxl) * 2 + var(--bmb-spacing-l));
-        max-height: 100vh;
-        overflow-y: auto;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        padding: var(--bmb-spacing-s) !important;
+        padding-bottom: 150px !important;
+        overflow-y: auto !important;
       }
       
+      /* ✅ FORCE MOBILE HEADER */
       .upload-header {
-        margin-bottom: var(--bmb-spacing-l);
+        margin-bottom: var(--bmb-spacing-m) !important;
         
         .header-top {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          gap: var(--bmb-spacing-s) !important;
+          
+          .back-button {
+            margin-right: 0 !important;
+            margin-bottom: var(--bmb-spacing-s) !important;
+            order: 1 !important;
+          }
+          
           .title-container {
+            order: 2 !important;
+            text-align: center !important;
+            
             .upload-title {
-              font-size: 1.5rem;
+              font-size: 1.3rem !important;
+              margin-bottom: var(--bmb-spacing-xs) !important;
             }
             
             .upload-subtitle {
-              font-size: 1rem;
+              font-size: 0.9rem !important;
             }
           }
         }
       }
       
+      /* ✅ FORCE MOBILE UPLOAD SECTION */
       .upload-section {
-        margin-bottom: var(--bmb-spacing-xl);
-      }
-      
-      .config-panel {
-        margin-bottom: var(--bmb-spacing-l);
+        margin: 0 auto !important;
+        margin-bottom: var(--bmb-spacing-l) !important;
+        padding: 0 !important;
         
-        .config-row {
-          margin-bottom: var(--bmb-spacing-m);
+        .drop-zone {
+          min-height: 120px !important;
+          padding: var(--bmb-spacing-m) !important;
+          margin-bottom: var(--bmb-spacing-m) !important;
           
-          .select-wrapper {
-            .bamboo-select {
-              width: 100%;
+          .drop-zone-content {
+            h3 {
+              font-size: 1rem !important;
+              margin: var(--bmb-spacing-s) 0 !important;
+            }
+            
+            p {
+              font-size: 0.85rem !important;
+              margin-bottom: var(--bmb-spacing-s) !important;
+            }
+            
+            .supported-formats {
+              display: flex !important;
+              justify-content: center !important;
+              gap: var(--bmb-spacing-xs) !important;
+              
+              .format-badge {
+                font-size: 0.7rem !important;
+                padding: 2px 6px !important;
+              }
             }
           }
         }
         
-        .upload-button {
-          width: 100%;
-          margin-top: var(--bmb-spacing-m);
+        /* ✅ FORCE MOBILE CONFIG PANEL */
+        .config-panel {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: var(--bmb-spacing-m) !important;
+          padding: var(--bmb-spacing-m) !important;
+          background: var(--general_contrasts-15) !important;
+          border-radius: var(--bmb-radius-m) !important;
+          margin-bottom: var(--bmb-spacing-m) !important;
+          
+          .config-section {
+            width: 100% !important;
+            margin-bottom: var(--bmb-spacing-s) !important;
+            
+            .config-label {
+              font-size: 0.9rem !important;
+              margin-bottom: var(--bmb-spacing-xs) !important;
+            }
+            
+            .bamboo-select {
+              width: 100% !important;
+              padding: var(--bmb-spacing-s) !important;
+              font-size: 0.9rem !important;
+            }
+          }
+          
+          .upload-button {
+            width: 100% !important;
+            padding: var(--bmb-spacing-m) !important;
+            font-size: 1rem !important;
+            margin-top: var(--bmb-spacing-s) !important;
+            order: 3 !important;
+          }
+        }
+      }
+      
+      /* ✅ FORCE MOBILE FILES SECTION */
+      .files-section {
+        margin: 0 auto !important;
+        margin-bottom: var(--bmb-spacing-l) !important;
+        padding: 0 !important;
+        
+        .files-title {
+          font-size: 1.2rem !important;
+          margin-bottom: var(--bmb-spacing-m) !important;
+        }
+        
+        .file-list {
+          gap: var(--bmb-spacing-s) !important;
+          
+          .file-item {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: var(--bmb-spacing-s) !important;
+            padding: var(--bmb-spacing-s) !important;
+            align-items: stretch !important;
+            
+            .file-info {
+              order: 1 !important;
+              width: 100% !important;
+              
+              .file-name {
+                font-size: 0.9rem !important;
+                margin-bottom: var(--bmb-spacing-xs) !important;
+                word-break: break-word !important;
+              }
+              
+              .file-details {
+                font-size: 0.8rem !important;
+              }
+            }
+            
+            .file-status {
+              order: 2 !important;
+              width: 100% !important;
+              min-width: auto !important;
+              display: flex !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              padding: var(--bmb-spacing-xs) !important;
+              background: var(--general_contrasts-25) !important;
+              border-radius: var(--bmb-radius-s) !important;
+              
+              .status-uploading {
+                display: flex !important;
+                align-items: center !important;
+                gap: var(--bmb-spacing-s) !important;
+                
+                .progress-bar {
+                  width: 60px !important;
+                  height: 4px !important;
+                }
+                
+                span {
+                  font-size: 0.75rem !important;
+                }
+              }
+            }
+            
+            .file-actions {
+              order: 3 !important;
+              display: flex !important;
+              justify-content: center !important;
+              width: 100% !important;
+              
+              .remove-button {
+                padding: var(--bmb-spacing-s) !important;
+                font-size: 0.9rem !important;
+              }
+            }
+          }
+        }
+      }
+      
+      /* ✅ FORCE MOBILE RESULTS SECTION */
+      .results-section {
+        margin: 0 auto !important;
+        padding: var(--bmb-spacing-m) !important;
+        background: var(--general_contrasts-15) !important;
+        border-radius: var(--bmb-radius-m) !important;
+        
+        .results-title {
+          font-size: 1.2rem !important;
+          margin-bottom: var(--bmb-spacing-m) !important;
+        }
+        
+        .results-summary {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: var(--bmb-spacing-m) !important;
+          margin-bottom: var(--bmb-spacing-l) !important;
+          
+          .summary-stat {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: var(--bmb-spacing-s) !important;
+            background: var(--general_contrasts-25) !important;
+            border-radius: var(--bmb-radius-s) !important;
+            
+            .stat-number {
+              font-size: 1.3rem !important;
+              margin-bottom: 0 !important;
+            }
+            
+            .stat-label {
+              font-size: 0.8rem !important;
+            }
+          }
+        }
+        
+        .test-search-button {
+          width: 100% !important;
+          padding: var(--bmb-spacing-m) !important;
+          font-size: 1rem !important;
+        }
+      }
+    }
+    
+    /* 🖥️ MEDIUM SCREEN FIXES */
+    @media (max-width: 1200px) and (min-width: 951px) {
+      .upload-section {
+        max-width: 700px !important;
+        
+        .config-panel {
+          padding: var(--bmb-spacing-m) !important;
+          
+          .config-section {
+            .bamboo-select {
+              font-size: 0.9rem !important;
+            }
+          }
+          
+          .upload-button {
+            font-size: 1rem !important;
+            padding: var(--bmb-spacing-s) var(--bmb-spacing-l) !important;
+          }
         }
       }
       
       .files-section {
-        margin-bottom: var(--bmb-spacing-xl);
-      }
-      
-      .file-item {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--bmb-spacing-s);
-        margin-bottom: var(--bmb-spacing-m);
-      }
-      
-      .file-status {
-        min-width: auto;
-        text-align: left;
-      }
-      
-      .results-summary {
-        flex-direction: column;
-        gap: var(--bmb-spacing-m);
-        margin-bottom: var(--bmb-spacing-l);
+        max-width: 700px !important;
+        
+        .file-item {
+          padding: var(--bmb-spacing-s) !important;
+          
+          .file-info {
+            .file-name {
+              font-size: 0.9rem !important;
+            }
+            
+            .file-details {
+              font-size: 0.8rem !important;
+            }
+          }
+        }
       }
       
       .results-section {
-        margin-bottom: var(--bmb-spacing-xl);
-      }
-      
-      .test-search-button {
-        width: 100%;
-        margin-top: var(--bmb-spacing-m);
+        max-width: 700px !important;
+        
+        .results-summary {
+          gap: var(--bmb-spacing-l) !important;
+        }
       }
     }
   `]

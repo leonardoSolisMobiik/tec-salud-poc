@@ -3,41 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 /**
- * Patient Management component for medical record administration
+ * Patient Management component - COMMENTED OUT
  * 
- * @description Provides an interface for managing patient records including
- * creation, editing, searching, and viewing patient information. Currently
- * serves as a placeholder with planned backend integration.
+ * @description This component has been temporarily disabled as requested.
+ * The patient management functionality is not available in the current version.
  * 
- * @example
- * ```typescript
- * // Accessed via routing
- * // Route: '/patients'
- * // Navigation from dashboard or sidebar
- * ```
- * 
- * @plannedFeatures
- * - Patient record CRUD operations
- * - Advanced patient search functionality
- * - Patient medical history timeline
- * - Integration with document management
- * - Patient data export/import
- * 
- * @apiEndpoints
- * - GET /api/v1/patients - List all patients
- * - GET /api/v1/patients/search - Search patients
- * - GET /api/v1/patients/:id - Get patient details
- * - POST /api/v1/patients - Create new patient
- * - PUT /api/v1/patients/:id - Update patient
- * - DELETE /api/v1/patients/:id - Delete patient
- * 
- * @security
- * - HIPAA compliance for patient data
- * - Role-based access control
- * - Audit logging for patient record access
- * 
- * @since 1.0.0
- * @todo Implement full patient management functionality
+ * @todo Re-enable when patient management features are needed
  */
 @Component({
   selector: 'app-patient-management',
@@ -49,69 +20,97 @@ import { RouterLink } from '@angular/router';
         <a routerLink="/dashboard">← Volver</a>
         <h1>Gestión de Pacientes</h1>
       </div>
-      <div class="patients-content">
-        <p>La gestión de pacientes se implementará aquí.</p>
-        <p>Utilizará los endpoints del backend:</p>
-        <ul>
-          <li>GET /api/v1/patients</li>
-          <li>GET /api/v1/patients/search</li>
-          <li>GET /api/v1/patients/:id</li>
-        </ul>
+      
+      <div class="patients-placeholder">
+        <h2>⚠️ Funcionalidad Deshabilitada</h2>
+        <p>La gestión de pacientes ha sido temporalmente deshabilitada.</p>
+        <p>Esta funcionalidad no está disponible en la versión actual.</p>
+        <div class="placeholder-actions">
+          <a routerLink="/dashboard" class="back-button">
+            🏠 Volver al Dashboard
+          </a>
+        </div>
       </div>
     </div>
   `,
   styles: [`
     .patients-container {
-      min-height: 100vh;
-      background: var(--medical-background);
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
     }
     
     .patients-header {
-      padding: 1rem 2rem;
-      background: var(--medical-surface);
-      border-bottom: 1px solid var(--medical-divider);
       display: flex;
       align-items: center;
-      gap: 2rem;
-      
-      a {
-        color: var(--medical-blue);
-        text-decoration: none;
-      }
-      
-      h1 {
-        margin: 0;
-        color: var(--medical-blue);
-      }
+      gap: 20px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--medical-primary);
     }
     
-    .patients-content {
-      padding: 2rem;
-      
-      ul {
-        margin-top: 1rem;
-        padding-left: 2rem;
-        
-        li {
-          margin: 0.5rem 0;
-          font-family: monospace;
-          color: var(--medical-text-secondary);
-        }
-      }
+    .patients-header a {
+      color: var(--medical-primary);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 8px 16px;
+      background: var(--medical-background);
+      border-radius: var(--bmb-radius-s);
+      transition: all 0.2s;
+    }
+    
+    .patients-header a:hover {
+      background: var(--medical-primary);
+      color: white;
+    }
+    
+    .patients-header h1 {
+      color: var(--medical-primary);
+      margin: 0;
+      font-size: 2rem;
+    }
+    
+    .patients-placeholder {
+      background: #fff3cd;
+      padding: 40px;
+      border-radius: var(--bmb-radius-m);
+      text-align: center;
+      border: 2px solid #ffc107;
+    }
+    
+    .patients-placeholder h2 {
+      color: #856404;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+    
+    .patients-placeholder p {
+      color: #856404;
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+    }
+    
+    .placeholder-actions {
+      margin-top: 30px;
+    }
+    
+    .back-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: var(--medical-primary);
+      color: white;
+      text-decoration: none;
+      border-radius: var(--bmb-radius-s);
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    
+    .back-button:hover {
+      background: var(--medical-primary-dark);
+      transform: translateY(-2px);
     }
   `]
 })
 export class PatientManagementComponent {
-  /**
-   * Creates an instance of PatientManagementComponent
-   * 
-   * @description Initializes the patient management interface.
-   * Currently displays placeholder content with planned API endpoints.
-   * 
-   * @todo Add constructor dependencies when implementing:
-   * - PatientService for CRUD operations
-   * - SearchService for patient search
-   * - AuthService for access control
-   * - UiStateService for notifications
-   */
+  // Component has been commented out and is not available in the current version
 }

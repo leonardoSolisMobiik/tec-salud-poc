@@ -2,28 +2,55 @@
 
 /* Import Bamboo tokens - they're already available from global styles.scss */
 
+/* 📄 DOCUMENT PANEL CSS VARIABLES */
+:root {
+  --document-panel-width: 400px;
+  --document-panel-width-tablet: 350px;
+  --document-panel-width-mobile: 300px;
+}
+
 /* 📱 APP CONTAINER - LAYOUT BASE - TASK-UI-004 RESPONSIVE */
 .app-container {
   display: grid !important;
-  grid-template-columns: var(--sidebar-width-desktop, 320px) 1fr !important;
+  grid-template-columns: var(--sidebar-width-desktop, 320px) 1fr var(--document-panel-width, 400px) !important;
   height: 100vh !important;
   overflow: hidden !important;
-  transition: grid-template-columns 0.3s ease !important;
+  transition: grid-template-columns 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
+/* Sidebar colapsado */
 .app-container:has(.sidebar-panel.collapsed) {
-  grid-template-columns: 60px 1fr !important;
+  grid-template-columns: 60px 1fr var(--document-panel-width, 400px) !important;
+}
+
+/* Document panel colapsado */
+.app-container:has(.document-panel.collapsed) {
+  grid-template-columns: var(--sidebar-width-desktop, 320px) 1fr 60px !important;
+}
+
+/* Ambos colapsados */
+.app-container:has(.sidebar-panel.collapsed):has(.document-panel.collapsed) {
+  grid-template-columns: 60px 1fr 60px !important;
 }
 
 /* 📱 MOBILE LAYOUT - TASK-UI-004 */
 @media (max-width: 767px) {
   .app-container {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr var(--document-panel-width-mobile, 300px) !important;
     position: relative !important;
   }
   
   .app-container.sidebar-open {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr var(--document-panel-width-mobile, 300px) !important;
+  }
+  
+  /* Document panel colapsado en móvil */
+  .app-container:has(.document-panel.collapsed) {
+    grid-template-columns: 1fr 50px !important;
+  }
+  
+  .app-container.sidebar-open:has(.document-panel.collapsed) {
+    grid-template-columns: 1fr 50px !important;
   }
   
   .sidebar-panel {
@@ -60,11 +87,22 @@
 /* 📱 TABLET LAYOUT - TASK-UI-004 */
 @media (min-width: 768px) and (max-width: 1024px) {
   .app-container {
-    grid-template-columns: var(--sidebar-width-tablet, 280px) 1fr !important;
+    grid-template-columns: var(--sidebar-width-tablet, 280px) 1fr var(--document-panel-width-tablet, 350px) !important;
   }
   
+  /* Sidebar colapsado */
   .app-container:has(.sidebar-panel.collapsed) {
-    grid-template-columns: 60px 1fr !important;
+    grid-template-columns: 60px 1fr var(--document-panel-width-tablet, 350px) !important;
+  }
+  
+  /* Document panel colapsado */
+  .app-container:has(.document-panel.collapsed) {
+    grid-template-columns: var(--sidebar-width-tablet, 280px) 1fr 60px !important;
+  }
+  
+  /* Ambos colapsados */
+  .app-container:has(.sidebar-panel.collapsed):has(.document-panel.collapsed) {
+    grid-template-columns: 60px 1fr 60px !important;
   }
 }
 
@@ -78,7 +116,7 @@
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
   backdrop-filter: blur(20px) !important;
   box-shadow: 
     inset -1px 0 0 rgba(255, 255, 255, 0.1),
@@ -148,6 +186,133 @@
   font-family: var(--font-display, 'Poppins', sans-serif) !important;
   line-height: 1.2 !important;
   transition: color 0.3s ease !important;
+}
+
+/* 🔄 COLLAPSE/EXPAND BUTTONS PREMIUM STYLES */
+.collapse-btn {
+  background: rgba(var(--color-blue-tec, 0, 57, 166), 0.1) !important;
+  border: 1px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
+  color: var(--color-blue-tec, #0066cc) !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: var(--bmb-radius-s, 0.5rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+  
+  svg {
+    width: 16px !important;
+    height: 16px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+  
+  &:hover {
+    background: rgba(var(--color-blue-tec, 0, 57, 166), 0.15) !important;
+    border-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.3) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
+    
+    svg {
+      transform: translateX(-1px) !important;
+    }
+  }
+  
+  &:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+/* 🔄 SIDEBAR COLLAPSED HEADER */
+.sidebar-header-collapsed {
+  padding: var(--bmb-spacing-m, 1rem) var(--bmb-spacing-s, 0.75rem) !important;
+  border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  background: linear-gradient(135deg, 
+    var(--general_contrasts-input-background, #ffffff) 0%, 
+    rgba(var(--color-mariner-50, 224, 242, 254), 0.1) 100%
+  ) !important;
+  backdrop-filter: blur(10px) !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.expand-btn {
+  background: linear-gradient(135deg, 
+    rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+    rgba(var(--color-blue-tec, 0, 57, 166), 0.9) 100%
+  ) !important;
+  border: none !important;
+  color: white !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: var(--bmb-radius-m, 1rem) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-weight: 700 !important;
+  font-size: 1.25rem !important;
+  font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  box-shadow: 
+    0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  animation: expandPulse 3s ease-in-out infinite !important;
+  
+  &::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(255, 255, 255, 0.3), 
+      transparent
+    ) !important;
+    transition: left 0.5s !important;
+  }
+  
+  &:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 
+      0 6px 20px rgba(var(--color-blue-tec, 0, 57, 166), 0.4),
+      0 3px 8px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    
+    &::before {
+      left: 100% !important;
+    }
+  }
+  
+  &:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+/* 🎯 EXPAND BUTTON PULSE ANIMATION */
+@keyframes expandPulse {
+  0%, 100% {
+    box-shadow: 
+      0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
+      0 2px 4px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  }
+  50% {
+    box-shadow: 
+      0 6px 20px rgba(var(--color-blue-tec, 0, 57, 166), 0.4),
+      0 3px 8px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      0 0 0 4px rgba(var(--color-blue-tec, 0, 57, 166), 0.1) !important;
+  }
 }
 
 .brand-subtitle {
@@ -1406,10 +1571,80 @@ body .app-container .main-panel .main-header .header-actions .nav-dropdown-conta
     letter-spacing: 0.5px !important;
   }
 
+  /* 🔽 PATIENTS TITLE WITH TOGGLE BUTTON */
+  .patients-title-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: var(--bmb-spacing-m, 1rem) !important;
+  }
+
+  .patients-title {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    color: var(--general_contrasts-75, #6b7280) !important;
+    margin: 0 !important;
+    text-transform: uppercase !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+    letter-spacing: 0.5px !important;
+  }
+
+  .collapse-toggle-btn {
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 4px !important;
+    border-radius: var(--bmb-radius-s, 0.5rem) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    color: var(--general_contrasts-75, #6b7280) !important;
+    width: 24px !important;
+    height: 24px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    svg {
+      width: 16px !important;
+      height: 16px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    
+    &:hover {
+      background: rgba(var(--color-blue-tec, 0, 57, 166), 0.1) !important;
+      color: var(--color-blue-tec, #0066cc) !important;
+      transform: scale(1.1) !important;
+    }
+    
+    &:active {
+      transform: scale(0.95) !important;
+    }
+    
+    &.collapsed {
+      color: var(--color-blue-tec, #0066cc) !important;
+      
+      svg {
+        transform: rotate(-90deg) !important;
+      }
+    }
+  }
+
   .patients-list {
     display: flex !important;
     flex-direction: column !important;
     gap: var(--bmb-spacing-s, 0.75rem) !important;
+    animation: patientsListFadeIn 0.3s ease-out !important;
+  }
+}
+
+/* 🎯 PATIENTS LIST ANIMATION */
+@keyframes patientsListFadeIn {
+  from {
+    opacity: 0 !important;
+    transform: translateY(-10px) !important;
+  }
+  to {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
   }
 }
 

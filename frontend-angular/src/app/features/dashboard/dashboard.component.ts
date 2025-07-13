@@ -48,13 +48,18 @@ import { ApiService, UiStateService } from '@core/services';
             <h3>🩺 Chat Médico IA</h3>
             <p>Consulta médica asistida por inteligencia artificial</p>
           </a>
-          <a routerLink="/patients" class="action-card">
+          <!-- COMMENTED OUT: Patient Management functionality -->
+          <!-- <a routerLink="/patients" class="action-card">
             <h3>👥 Gestión de Pacientes</h3>
             <p>Administra los registros de pacientes</p>
-          </a>
+          </a> -->
           <a routerLink="/documents" class="action-card">
             <h3>📄 Gestión de Documentos</h3>
             <p>Administra documentos médicos y análisis</p>
+          </a>
+          <a routerLink="/admin-pills" class="action-card admin-card">
+            <h3>💊 Gestión de Pastillas</h3>
+            <p>Configura preguntas rápidas para el chat médico</p>
           </a>
         </div>
       </div>
@@ -113,7 +118,32 @@ import { ApiService, UiStateService } from '@core/services';
       }
     }
 
-
+    .action-card.admin-card {
+      background: linear-gradient(135deg, 
+        rgba(var(--color-blue-tec), 0.05) 0%, 
+        rgba(var(--color-blue-tec), 0.02) 100%
+      );
+      border: 1px solid rgba(var(--color-blue-tec), 0.2);
+      
+      &:hover {
+        background: linear-gradient(135deg, 
+          rgba(var(--color-blue-tec), 0.1) 0%, 
+          rgba(var(--color-blue-tec), 0.05) 100%
+        );
+        border-color: rgba(var(--color-blue-tec), 0.3);
+      }
+      
+      h3 {
+        color: var(--medical-blue);
+        
+        &::after {
+          content: '🛠️';
+          margin-left: 0.5rem;
+          font-size: 0.8em;
+          opacity: 0.7;
+        }
+      }
+    }
     
     .system-status {
       margin-top: 3rem;

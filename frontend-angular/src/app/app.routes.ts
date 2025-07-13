@@ -49,10 +49,11 @@ export const routes: Routes = [
   },
   
   /** Patient Management - CRUD operations for patient records */
-  {
-    path: 'patients',
-    loadComponent: () => import('./features/patient-management/patient-management.component').then(m => m.PatientManagementComponent)
-  },
+  // COMMENTED OUT: Patient Management functionality
+  // {
+  //   path: 'patients',
+  //   loadComponent: () => import('./features/patient-management/patient-management.component').then(m => m.PatientManagementComponent)
+  // },
   
   /** Document Upload - Medical document processing and vectorization */
   {
@@ -72,6 +73,12 @@ export const routes: Routes = [
   {
     path: 'admin-bulk-upload',
     loadComponent: () => import('./features/admin-bulk-upload/admin-bulk-upload.component').then(m => m.AdminBulkUploadComponent)
+  },
+  
+  /** Administrative Pills Manager - Manage quick questions for medical chat */
+  {
+    path: 'admin-pills',
+    loadComponent: () => import('./features/admin-pills-manager/admin-pills-manager.component').then(m => m.AdminPillsManagerComponent)
   },
   
   /** Wildcard route - Redirect any unmatched paths to dashboard */

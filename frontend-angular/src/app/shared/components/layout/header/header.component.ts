@@ -47,57 +47,66 @@ import { Patient } from '@core/models';
           <span class="notification-badge" *ngIf="false">3</span>
         </button>
         
-        <!-- 🚨 DROPDOWN DE NAVEGACIÓN DESHABILITADO TEMPORALMENTE -->
-        <!-- <div class="nav-dropdown" style="position: relative; z-index: 9999;">
+        <!-- Dropdown de navegación con administración de pastillas -->
+        <div class="nav-dropdown" style="position: relative; z-index: 9999;">
           <button class="nav-dropdown-trigger" 
                   (click)="toggleNavDropdown()"
-                  style="background: #ff6b6b !important; color: white !important; padding: 12px 20px !important; border: 3px solid #000 !important; border-radius: 8px !important; font-weight: bold !important; font-size: 16px !important; cursor: pointer !important;">
-            📋 MENÚ NAVEGACIÓN
+                  style="background: var(--medical-blue) !important; color: white !important; padding: 12px 20px !important; border: none !important; border-radius: var(--bmb-radius-m, 1rem) !important; font-weight: 600 !important; font-size: 14px !important; cursor: pointer !important; transition: all 0.3s ease !important; box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.2) !important;">
+            ⚙️ Configuración
           </button>
           
           <div class="nav-dropdown-menu" 
                *ngIf="isNavDropdownOpen"
-               style="position: absolute !important; top: 100% !important; right: 0 !important; background: white !important; border: 3px solid #000 !important; border-radius: 8px !important; box-shadow: 0 8px 16px rgba(0,0,0,0.3) !important; padding: 10px !important; min-width: 250px !important; z-index: 9999 !important;">
+               style="position: absolute !important; top: 100% !important; right: 0 !important; background: var(--medical-surface) !important; border: 1px solid var(--medical-divider) !important; border-radius: var(--bmb-radius-m, 1rem) !important; box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; padding: 8px !important; min-width: 280px !important; z-index: 9999 !important; backdrop-filter: blur(10px) !important;">
             
             <a routerLink="/chat" 
                (click)="closeNavDropdown()"
                class="nav-dropdown-item"
-               style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: lime !important; color: black !important; text-decoration: none !important; border: 2px solid #000 !important; border-radius: 4px !important; font-weight: bold !important; transition: all 0.2s !important;">
-              <span style="font-size: 1.5rem !important;">🩺</span>
+               style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.25rem !important;">🩺</span>
               <span>Copiloto Médico</span>
             </a>
             
             <a routerLink="/dashboard" 
                (click)="closeNavDropdown()"
                class="nav-dropdown-item"
-               style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: cyan !important; color: black !important; text-decoration: none !important; border: 2px solid #000 !important; border-radius: 4px !important; font-weight: bold !important; transition: all 0.2s !important;">
-              <span style="font-size: 1.5rem !important;">📊</span>
+               style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.25rem !important;">📊</span>
               <span>Dashboard</span>
             </a>
             
-            <a routerLink="/patients" 
+            <!-- COMMENTED OUT: Patient Management functionality -->
+            <!-- <a routerLink="/patients" 
                (click)="closeNavDropdown()"
                class="nav-dropdown-item"
-               style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: orange !important; color: black !important; text-decoration: none !important; border: 2px solid #000 !important; border-radius: 4px !important; font-weight: bold !important; transition: all 0.2s !important;">
-              <span style="font-size: 1.5rem !important;">👥</span>
+               style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.25rem !important;">👥</span>
               <span>Gestión Pacientes</span>
-            </a>
+            </a> -->
             
             <a routerLink="/documents" 
                (click)="closeNavDropdown()"
                class="nav-dropdown-item"
-               style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: magenta !important; color: white !important; text-decoration: none !important; border: 2px solid #000 !important; font-weight: bold !important; transition: all 0.2s !important;">
-              <span style="font-size: 1.5rem !important;">📄</span>
+               style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.25rem !important;">📄</span>
               <span>Documentos</span>
             </a>
             
-            <hr style="margin: 10px 0 !important; border: 1px solid #000 !important;">
+            <hr style="margin: 8px 0 !important; border: none !important; border-top: 1px solid var(--medical-divider) !important;">
             
-            <div style="padding: 8px 16px !important; background: #f0f0f0 !important; border-radius: 4px !important; font-weight: bold !important; color: #333 !important; font-size: 14px !important;">
-              🚧 Próximamente: Subir Documentos
+            <div style="padding: 8px 16px !important; color: var(--medical-text-secondary) !important; font-size: 12px !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important;">
+              Administración
             </div>
+            
+            <a routerLink="/admin-pills" 
+               (click)="closeNavDropdown()"
+               class="nav-dropdown-item"
+               style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+              <span style="font-size: 1.25rem !important;">💊</span>
+              <span>Gestión de Pastillas</span>
+            </a>
           </div>
-        </div> -->
+        </div>
         
         <div class="user-menu">
           <div class="user-avatar">LS</div>
@@ -431,20 +440,21 @@ import { Patient } from '@core/models';
     }
     
     .nav-dropdown-trigger {
-      background: #ff6b6b !important;
+      background: var(--medical-blue) !important;
       color: white !important;
       padding: 12px 20px !important;
-      border: 3px solid #000 !important;
-      border-radius: 8px !important;
-      font-weight: bold !important;
-      font-size: 16px !important;
+      border: none !important;
+      border-radius: var(--bmb-radius-m, 1rem) !important;
+      font-weight: 600 !important;
+      font-size: 14px !important;
       cursor: pointer !important;
-      transition: all 0.3s !important;
+      transition: all 0.3s ease !important;
+      box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.2) !important;
       
       &:hover {
-        background: #ff5252 !important;
+        background: rgba(var(--color-blue-tec), 0.9) !important;
         transform: translateY(-2px) !important;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2) !important;
+        box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.3) !important;
       }
     }
     
@@ -465,18 +475,21 @@ import { Patient } from '@core/models';
     .nav-dropdown-item {
       display: flex !important;
       align-items: center !important;
-      gap: 10px !important;
+      gap: 12px !important;
       padding: 12px 16px !important;
       margin: 4px 0 !important;
+      background: transparent !important;
+      color: var(--medical-text-primary) !important;
       text-decoration: none !important;
-      border: 2px solid #000 !important;
-      border-radius: 4px !important;
-      font-weight: bold !important;
-      transition: all 0.2s !important;
+      border-radius: var(--bmb-radius-s) !important;
+      font-weight: 500 !important;
+      transition: all 0.2s ease !important;
       
       &:hover {
-        transform: translateX(5px) !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+        background: var(--medical-context-active) !important;
+        color: var(--medical-blue) !important;
+        transform: translateX(4px) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
       }
     }
     

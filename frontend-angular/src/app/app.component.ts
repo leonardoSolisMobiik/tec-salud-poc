@@ -12,6 +12,8 @@ import { MedicalStateService } from './core/services/medical-state.service';
 import { ApiService } from './core/services/api.service';
 import { StreamingService } from './core/services/streaming.service';
 import { MarkdownPipe } from './shared/pipes/markdown.pipe';
+import { QuickPillsComponent } from './features/medical-chat/components/quick-pills/quick-pills.component';
+import { DocumentPanelComponent } from './shared/components/document-panel/document-panel.component';
 
 /**
  * Main application component for TecSalud Medical Assistant
@@ -59,7 +61,7 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, MarkdownPipe, RouterOutlet],
+  imports: [CommonModule, FormsModule, MarkdownPipe, RouterOutlet, QuickPillsComponent, DocumentPanelComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="app-container">
@@ -78,9 +80,13 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                 <p class="brand-subtitle">Asistente Virtual</p>
               </div>
             </div>
-            <button class="collapse-btn" (click)="sidebarCollapsed = !sidebarCollapsed">
+            <button 
+              class="collapse-btn" 
+              (click)="sidebarCollapsed = !sidebarCollapsed"
+              title="Contraer panel lateral">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M15 18l-6-6 6-6"/>
+                <path d="M11 19l-7-7 7-7"/>
+                <path d="M21 12H3" opacity="0.6"/>
               </svg>
             </button>
           </div>
@@ -88,7 +94,12 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
         
         <!-- Collapsed Header -->
         <div class="sidebar-header-collapsed" *ngIf="sidebarCollapsed">
-          <button class="expand-btn" (click)="sidebarCollapsed = false">T</button>
+          <button 
+            class="expand-btn" 
+            (click)="sidebarCollapsed = false"
+            title="Expandir panel lateral">
+            T
+          </button>
         </div>
         
         <!-- Main Content -->
@@ -120,11 +131,23 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
           
           <!-- Patients List -->
           <div class="patients-container">
-            <h3 class="patients-title">
-              {{searchQuery ? (isSearching ? 'Buscando...' : 'Resultados (' + patientsToShow.length + ')') : 'Pacientes Recientes'}}
-            </h3>
+            <div class="patients-title-container">
+              <h3 class="patients-title">
+                {{searchQuery ? (isSearching ? 'Buscando...' : 'Resultados (' + patientsToShow.length + ')') : 'Pacientes Recientes'}}
+              </h3>
+              <button 
+                *ngIf="!searchQuery"
+                class="collapse-toggle-btn"
+                (click)="toggleRecentPatientsCollapse()"
+                [class.collapsed]="recentPatientsCollapsed"
+                title="{{recentPatientsCollapsed ? 'Expandir' : 'Contraer'}} pacientes recientes">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 9L12 15L18 9" [attr.transform]="recentPatientsCollapsed ? 'rotate(90 12 12)' : ''"/>
+                </svg>
+              </button>
+            </div>
             
-            <div class="patients-list">
+            <div class="patients-list" *ngIf="!recentPatientsCollapsed || searchQuery">
               <!-- Loading -->
               <div *ngIf="isSearching" class="loading-state">
                 <div class="loading-spinner"></div>
@@ -263,13 +286,14 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
         </div>
                   </button>
                   
-                  <button class="dropdown-item" (click)="navigateTo('/patients')">
+                  <!-- COMMENTED OUT: Patient Management functionality -->
+                  <!-- <button class="dropdown-item" (click)="navigateTo('/patients')">
                     <span class="dropdown-icon">👥</span>
                     <div class="dropdown-text">
                       <div class="dropdown-title">Gestión Pacientes</div>
                       <div class="dropdown-subtitle">Base de datos</div>
                     </div>
-                  </button>
+                  </button> -->
                   
 
                   
@@ -282,6 +306,16 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                       <div class="dropdown-subtitle">Procesamiento de lotes TecSalud</div>
                     </div>
                   </button>
+                  
+                  <button class="dropdown-item" (click)="navigateTo('/admin-pills')">
+                    <span class="dropdown-icon">💊</span>
+                    <div class="dropdown-text">
+                      <div class="dropdown-title">Gestión de Pastillas</div>
+                      <div class="dropdown-subtitle">Configurar preguntas rápidas</div>
+                    </div>
+                  </button>
+                  
+
                   
                   <button class="dropdown-item" (click)="navigateTo('/documents')">
                     <span class="dropdown-icon">📄</span>
@@ -426,6 +460,14 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
             
             <!-- Input Area -->
             <div class="input-area">
+              <!-- Quick Pills Premium - Reutiliza patrón existente -->
+              <app-quick-pills 
+                *ngIf="activePatient && !isLoading"
+                [patient]="activePatient"
+                [showRotationIndicator]="true"
+                (questionSelected)="onQuickPillSelected($event)">
+              </app-quick-pills>
+              
               <div class="input-container">
                 <input
                   #messageInput
@@ -503,6 +545,13 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
           </div>
         </div>
       </div>
+      
+      <!-- Document Panel (Derecho) -->
+      <app-document-panel
+        [activePatient]="activePatient"
+        [isCollapsed]="documentPanelCollapsed"
+        (toggleCollapse)="onDocumentPanelToggle($event)">
+      </app-document-panel>
     </div>
   `,
   styleUrls: ['./app.component.scss']
@@ -523,6 +572,12 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   
   /** Whether the sidebar is collapsed (responsive design) */
   sidebarCollapsed = false;
+  
+  /** Whether the recent patients section is collapsed */
+  recentPatientsCollapsed = false;
+  
+  /** Whether the document panel (right) is collapsed */
+  documentPanelCollapsed = true;
   
   /** Current search query for patient lookup */
   searchQuery = '';
@@ -702,7 +757,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       )
       .subscribe((event: NavigationEnd) => {
         // Show router-outlet for specific routes, hide for chat
-        const showRouterOutletRoutes = ['/documents', '/dashboard', '/patients', '/admin-bulk-upload'];
+        const showRouterOutletRoutes = ['/documents', '/dashboard', '/patients', '/admin-bulk-upload', '/admin-pills'];
         this.shouldShowRouterOutlet = showRouterOutletRoutes.some(route => event.url.startsWith(route));
       });
   }
@@ -970,6 +1025,37 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.sendMessage();
     }
   }
+
+  /**
+   * Handle quick pill selection - reutiliza patrón del chat-input.component.ts
+   */
+  onQuickPillSelected(questionText: string): void {
+    // Reutiliza la misma lógica de insertQuickAction existente
+    this.inputMessage = questionText;
+    
+    // Focus en el input después de un delay corto
+    setTimeout(() => {
+      const messageInput = document.querySelector('.message-input') as HTMLInputElement;
+      if (messageInput) {
+        messageInput.focus();
+        messageInput.setSelectionRange(messageInput.value.length, messageInput.value.length);
+      }
+    }, 100);
+  }
+
+  addDocumentReference(message: string): string {
+    // Agregar referencia simple a documentos si hay paciente activo
+    if (this.activePatient && message.trim()) {
+      return message + '\n\n📚 **Referencias disponibles:** [Ver expedientes del paciente](action:open-documents)';
+    }
+    return message;
+  }
+
+  openDocumentsFromChat(): void {
+    if (this.documentPanelCollapsed) {
+      this.toggleDocumentPanel();
+    }
+  }
   
   private scrollToBottom() {
     if (this.messagesArea) {
@@ -1002,12 +1088,24 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   // 🎯 ROUTER OUTLET CONTROL
   shouldShowRouterOutlet = false;
   
-  toggleNavDropdown(): void {
+    toggleNavDropdown(): void {
     this.isNavDropdownOpen = !this.isNavDropdownOpen;
   }
-  
+
   closeNavDropdown(): void {
     this.isNavDropdownOpen = false;
+  }
+
+  toggleRecentPatientsCollapse(): void {
+    this.recentPatientsCollapsed = !this.recentPatientsCollapsed;
+  }
+
+  toggleDocumentPanel(): void {
+    this.documentPanelCollapsed = !this.documentPanelCollapsed;
+  }
+
+  onDocumentPanelToggle(isCollapsed: boolean): void {
+    this.documentPanelCollapsed = isCollapsed;
   }
 
   navigateTo(route: string): void {
