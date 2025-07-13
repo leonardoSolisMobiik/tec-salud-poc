@@ -12,7 +12,12 @@ from typing import Dict, Any
 from app.core.config import settings
 
 def setup_logging() -> None:
-    """Setup application logging configuration"""
+    """Setup application logging configuration (idempotent)"""
+    
+    # Check if our specific app logger is already configured
+    app_logger = logging.getLogger("app")
+    if hasattr(app_logger, '_tecsalud_configured'):
+        return
     
     # Create logs directory
     log_dir = Path("logs")
@@ -98,6 +103,10 @@ def setup_logging() -> None:
     
     logger = logging.getLogger(__name__)
     logger.info("🔧 Logging configuration initialized")
+    
+    # Mark app logger as configured to prevent re-initialization
+    app_logger = logging.getLogger("app")
+    app_logger._tecsalud_configured = True
 
 def get_logger(name: str) -> logging.Logger:
     """Get a logger instance with the given name"""

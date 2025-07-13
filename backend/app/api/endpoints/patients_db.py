@@ -6,17 +6,11 @@ API endpoints for patient management using SQLAlchemy models
 import logging
 import unicodedata
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
-from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import desc, or_, and_, func
+from datetime import datetime
+from fastapi import APIRouter, HTTPException, Depends
 
 from app.core.database import get_db
-from app.db.models import Patient, Doctor, PatientInteraction, StatusEnum
 from app.database.abstract_layer import DatabaseSession
-from app.models.medical import PatientSearch
-from app.services.chroma_service import chroma_service
-from app.utils.exceptions import ChromaError
 
 logger = logging.getLogger(__name__)
 
@@ -359,13 +353,8 @@ async def get_patient(
             ]
         }
         
-        # Try to get vector context
-        try:
-            patient_context = await chroma_service.get_patient_context(patient_id)
-            patient_dict["vector_context"] = patient_context
-        except ChromaError as e:
-            logger.warning(f"⚠️ Could not retrieve vector context: {str(e)}")
-            patient_dict["vector_context"] = None
+        # Vector context removed - using only complete documents
+        patient_dict["vector_context"] = None
         
         return patient_dict
         

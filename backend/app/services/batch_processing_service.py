@@ -15,11 +15,10 @@ from pathlib import Path
 from dataclasses import dataclass
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from sqlalchemy.orm import Session
-from sqlalchemy import text
 from fastapi import UploadFile
 
-from app.core.database import get_db
+from app.database.abstract_layer import DatabaseSession
+from app.database.factory import get_db_async
 from app.db.models import (
     BatchUpload, BatchFile, MedicalDocument, Patient,
     BatchUploadStatusEnum, PatientMatchingStatusEnum, VectorizationStatusEnum,
@@ -27,7 +26,7 @@ from app.db.models import (
 )
 from app.services.tecsalud_filename_parser import TecSaludFilenameParser, PatientData, DocumentTypeEnum as TecSaludDocTypeEnum
 from app.services.patient_matching_service import PatientMatchingService
-from app.services.chroma_service import ChromaService
+# ChromaDB removed - using only complete documents
 from app.services.azure_openai_service import AzureOpenAIService
 from app.agents.document_analysis_agent import DocumentAnalysisAgent
 
@@ -69,7 +68,7 @@ class BatchProcessingService:
     def __init__(self):
         self.filename_parser = TecSaludFilenameParser()
         # Don't initialize patient_matcher here - create it when needed with db session
-        self.chroma_service = ChromaService()
+        # ChromaDB removed - using only complete documents
         self.azure_openai_service = AzureOpenAIService()
         self.document_agent = DocumentAnalysisAgent()
         self.max_parallel_files = 5  # Process up to 5 files in parallel
@@ -80,21 +79,21 @@ class BatchProcessingService:
         self, 
         uploaded_by: str, 
         processing_type: ProcessingTypeEnum,
-        db: Session
+        db: DatabaseSession
     ) -> str:
         """Create new batch upload session"""
         session_id = str(uuid.uuid4())
         
-        batch_upload = BatchUpload(
-            session_id=session_id,
-            uploaded_by=uploaded_by,
-            processing_type=processing_type,
-            status=BatchUploadStatusEnum.PENDING
-        )
+        batch_upload_data = {
+            "session_id": session_id,
+            "uploaded_by": uploaded_by,
+            "processing_type": processing_type.value,
+            "status": BatchUploadStatusEnum.PENDING.value,
+            "created_at": datetime.now(),
+            "updated_at": datetime.now()
+        }
         
-        db.add(batch_upload)
-        db.commit()
-        db.refresh(batch_upload)
+        await db.create("batch_uploads", batch_upload_data)
         
         logger.info(f"📤 Created batch upload session: {session_id}")
         return session_id
@@ -103,16 +102,16 @@ class BatchProcessingService:
         self,
         session_id: str,
         files: List[UploadFile],
-        db: Session
+        db: DatabaseSession
     ) -> Dict[str, Any]:
         """Upload files to batch session and prepare for processing"""
         
         # Get batch upload session
-        batch_upload = db.query(BatchUpload).filter_by(session_id=session_id).first()
+        batch_upload = await db.find_one("batch_uploads", {"session_id": session_id})
         if not batch_upload:
             raise ValueError(f"Batch upload session not found: {session_id}")
         
-        if batch_upload.status != BatchUploadStatusEnum.PENDING:
+        if batch_upload.get("status") != BatchUploadStatusEnum.PENDING.value:
             raise ValueError(f"Batch upload session already started: {session_id}")
         
         # Create session directory
@@ -138,25 +137,29 @@ class BatchProcessingService:
                 parsing_result = await self.filename_parser.parse_filename(file.filename)
                 
                 # Create batch file record
-                batch_file = BatchFile(
-                    batch_upload_id=batch_upload.id,
-                    original_filename=file.filename,
-                    file_path=str(file_path),
-                    file_size=len(content),
-                    content_hash=content_hash,
-                    parsed_patient_id=parsing_result.patient_id if parsing_result.success else None,
-                    parsed_patient_name=parsing_result.patient_name if parsing_result.success else None,
-                    parsed_document_number=parsing_result.document_number if parsing_result.success else None,
-                    parsed_document_type=parsing_result.document_type if parsing_result.success else None,
-                    patient_matching_status=PatientMatchingStatusEnum.PENDING,
-                    processing_status=VectorizationStatusEnum.PENDING
-                )
+                batch_file_data = {
+                    "batch_upload_id": str(batch_upload.get("_id")),
+                    "original_filename": file.filename,
+                    "file_path": str(file_path),
+                    "file_size": len(content),
+                    "content_hash": content_hash,
+                    "parsed_patient_id": parsing_result.patient_id if parsing_result.success else None,
+                    "parsed_patient_name": parsing_result.patient_name if parsing_result.success else None,
+                    "parsed_document_number": parsing_result.document_number if parsing_result.success else None,
+                    "parsed_document_type": parsing_result.document_type if parsing_result.success else None,
+                    "patient_matching_status": PatientMatchingStatusEnum.PENDING.value,
+                    "processing_status": VectorizationStatusEnum.PENDING.value,
+                    "created_at": datetime.now(),
+                    "updated_at": datetime.now(),
+                    "error_message": None,
+                    "review_required": False
+                }
                 
                 if not parsing_result.success:
-                    batch_file.error_message = f"Filename parsing failed: {parsing_result.error_message}"
-                    batch_file.review_required = True
+                    batch_file_data["error_message"] = f"Filename parsing failed: {parsing_result.error_message}"
+                    batch_file_data["review_required"] = True
                 
-                db.add(batch_file)
+                await db.create("batch_files", batch_file_data)
                 uploaded_files.append({
                     'filename': file.filename,
                     'size': len(content),
@@ -173,10 +176,15 @@ class BatchProcessingService:
                 })
         
         # Update batch upload with file counts
-        batch_upload.total_files = len(uploaded_files)
-        batch_upload.failed_files = len(failed_files)
-        
-        db.commit()
+        await db.update_by_id(
+            "batch_uploads",
+            str(batch_upload.get("_id")),
+            {
+                "total_files": len(uploaded_files),
+                "failed_files": len(failed_files),
+                "updated_at": datetime.now()
+            }
+        )
         
         logger.info(f"📤 Uploaded {len(uploaded_files)} files to session {session_id}")
         
@@ -191,33 +199,39 @@ class BatchProcessingService:
     async def process_batch_upload(
         self,
         session_id: str,
-        db: Session
+        db: DatabaseSession
     ) -> BatchProcessingResult:
         """Process all files in batch upload session"""
         
         start_time = datetime.now()
         
         # Get batch upload session
-        batch_upload = db.query(BatchUpload).filter_by(session_id=session_id).first()
+        batch_upload = await db.find_one("batch_uploads", {"session_id": session_id})
         if not batch_upload:
             raise ValueError(f"Batch upload session not found: {session_id}")
         
-        if batch_upload.status != BatchUploadStatusEnum.PENDING:
+        if batch_upload.get("status") != BatchUploadStatusEnum.PENDING.value:
             raise ValueError(f"Batch upload session already processed: {session_id}")
         
         # Update status to processing
-        batch_upload.status = BatchUploadStatusEnum.PROCESSING
-        batch_upload.started_at = start_time
-        db.commit()
+        await db.update_by_id(
+            "batch_uploads",
+            str(batch_upload.get("_id")),
+            {
+                "status": BatchUploadStatusEnum.PROCESSING.value,
+                "started_at": start_time,
+                "updated_at": datetime.now()
+            }
+        )
         
         logger.info(f"🔄 Starting batch processing for session: {session_id}")
         
         try:
             # Get all batch files for this session
-            batch_files = db.query(BatchFile).filter_by(batch_upload_id=batch_upload.id).all()
+            batch_files = await db.find_many("batch_files", {"batch_upload_id": str(batch_upload.get("_id"))})
             
             # Process files in parallel
-            results = await self._process_files_parallel(batch_files, batch_upload.processing_type, db)
+            results = await self._process_files_parallel(batch_files, batch_upload.get("processing_type"), db)
             
             # Aggregate results
             processed_files = sum(1 for r in results if r.success)
@@ -227,20 +241,31 @@ class BatchProcessingService:
             review_required = sum(1 for r in results if r.review_required)
             error_details = [r.error_message for r in results if r.error_message]
             
-            # Update batch upload status
-            batch_upload.processed_files = processed_files
-            batch_upload.failed_files = failed_files
-            batch_upload.completed_at = datetime.now()
+            # Determine final status
+            final_status = None
+            error_message = None
             
             if failed_files == 0:
-                batch_upload.status = BatchUploadStatusEnum.COMPLETED
+                final_status = BatchUploadStatusEnum.COMPLETED.value
             elif processed_files > 0:
-                batch_upload.status = BatchUploadStatusEnum.PARTIALLY_FAILED
+                final_status = BatchUploadStatusEnum.PARTIALLY_FAILED.value
             else:
-                batch_upload.status = BatchUploadStatusEnum.FAILED
-                batch_upload.error_message = f"All files failed processing. First error: {error_details[0] if error_details else 'Unknown error'}"
+                final_status = BatchUploadStatusEnum.FAILED.value
+                error_message = f"All files failed processing. First error: {error_details[0] if error_details else 'Unknown error'}"
             
-            db.commit()
+            # Update batch upload status
+            update_data = {
+                "processed_files": processed_files,
+                "failed_files": failed_files,
+                "completed_at": datetime.now(),
+                "status": final_status,
+                "updated_at": datetime.now()
+            }
+            
+            if error_message:
+                update_data["error_message"] = error_message
+            
+            await db.update_by_id("batch_uploads", str(batch_upload.get("_id")), update_data)
             
             processing_time = (datetime.now() - start_time).total_seconds()
             
@@ -253,7 +278,7 @@ class BatchProcessingService:
                 matched_patients=matched_patients,
                 review_required=review_required,
                 processing_time=processing_time,
-                status=batch_upload.status,
+                status=BatchUploadStatusEnum(final_status),
                 error_details=error_details
             )
             
@@ -265,10 +290,16 @@ class BatchProcessingService:
             logger.error(f"❌ Batch processing failed: {session_id} - {str(e)}")
             
             # Update batch upload status to failed
-            batch_upload.status = BatchUploadStatusEnum.FAILED
-            batch_upload.error_message = str(e)
-            batch_upload.completed_at = datetime.now()
-            db.commit()
+            await db.update_by_id(
+                "batch_uploads",
+                str(batch_upload.get("_id")),
+                {
+                    "status": BatchUploadStatusEnum.FAILED.value,
+                    "error_message": str(e),
+                    "completed_at": datetime.now(),
+                    "updated_at": datetime.now()
+                }
+            )
             
             processing_time = (datetime.now() - start_time).total_seconds()
             
@@ -287,9 +318,9 @@ class BatchProcessingService:
     
     async def _process_files_parallel(
         self,
-        batch_files: List[BatchFile],
-        processing_type: ProcessingTypeEnum,
-        db: Session
+        batch_files: List[Dict[str, Any]],
+        processing_type: str,
+        db: DatabaseSession
     ) -> List[FileProcessingResult]:
         """Process files in parallel with limited concurrency"""
         
@@ -326,25 +357,31 @@ class BatchProcessingService:
     
     async def _process_single_file(
         self,
-        batch_file: BatchFile,
-        processing_type: ProcessingTypeEnum,
-        db: Session
+        batch_file: Dict[str, Any],
+        processing_type: str,
+        db: DatabaseSession
     ) -> FileProcessingResult:
         """Process a single file through the complete workflow"""
         
         start_time = datetime.now()
         
         try:
-            logger.info(f"🔄 Processing file: {batch_file.original_filename}")
+            logger.info(f"🔄 Processing file: {batch_file.get('original_filename')}")
             
             # Step 1: Check if filename was parsed successfully
-            if not batch_file.parsed_patient_id:
-                batch_file.error_message = "Filename parsing failed - cannot extract patient information"
-                batch_file.review_required = True
-                db.commit()
+            if not batch_file.get("parsed_patient_id"):
+                await db.update_by_id(
+                    "batch_files",
+                    str(batch_file.get("_id")),
+                    {
+                        "error_message": "Filename parsing failed - cannot extract patient information",
+                        "review_required": True,
+                        "updated_at": datetime.now()
+                    }
+                )
                 
                 return FileProcessingResult(
-                    filename=batch_file.original_filename,
+                    filename=batch_file.get("original_filename"),
                     success=False,
                     error_message="Filename parsing failed",
                     review_required=True,
@@ -355,12 +392,18 @@ class BatchProcessingService:
             patient_id, matching_result = await self._match_or_create_patient(batch_file, db)
             
             if not patient_id:
-                batch_file.error_message = "Patient matching failed"
-                batch_file.review_required = True
-                db.commit()
+                await db.update_by_id(
+                    "batch_files",
+                    str(batch_file.get("_id")),
+                    {
+                        "error_message": "Patient matching failed",
+                        "review_required": True,
+                        "updated_at": datetime.now()
+                    }
+                )
                 
                 return FileProcessingResult(
-                    filename=batch_file.original_filename,
+                    filename=batch_file.get("original_filename"),
                     success=False,
                     error_message="Patient matching failed",
                     review_required=True,
@@ -368,7 +411,7 @@ class BatchProcessingService:
                 )
             
             # Step 3: Read file content
-            file_content = await self._read_file_content(batch_file.file_path)
+            file_content = await self._read_file_content(batch_file.get("file_path"))
             
             # Step 4: Create medical document
             document_id = await self._create_medical_document(
@@ -376,19 +419,25 @@ class BatchProcessingService:
             )
             
             # Step 5: Process document based on processing type
-            if processing_type in [ProcessingTypeEnum.VECTORIZED, ProcessingTypeEnum.BOTH]:
+            if processing_type in ["vectorized", "both"]:
                 await self._vectorize_document(document_id, file_content, db)
             
             # Update batch file with success
-            batch_file.medical_document_id = document_id
-            batch_file.processing_status = VectorizationStatusEnum.COMPLETED
-            batch_file.processed_at = datetime.now()
-            db.commit()
+            await db.update_by_id(
+                "batch_files",
+                str(batch_file.get("_id")),
+                {
+                    "medical_document_id": str(document_id),
+                    "processing_status": VectorizationStatusEnum.COMPLETED.value,
+                    "processed_at": datetime.now(),
+                    "updated_at": datetime.now()
+                }
+            )
             
-            logger.info(f"✅ Successfully processed: {batch_file.original_filename}")
+            logger.info(f"✅ Successfully processed: {batch_file.get('original_filename')}")
             
             return FileProcessingResult(
-                filename=batch_file.original_filename,
+                filename=batch_file.get("original_filename"),
                 success=True,
                 patient_id=patient_id,
                 document_id=document_id,
@@ -398,16 +447,22 @@ class BatchProcessingService:
             )
             
         except Exception as e:
-            logger.error(f"❌ Error processing file {batch_file.original_filename}: {str(e)}")
+            logger.error(f"❌ Error processing file {batch_file.get('original_filename')}: {str(e)}")
             
             # Update batch file with error
-            batch_file.error_message = str(e)
-            batch_file.processing_status = VectorizationStatusEnum.FAILED
-            batch_file.processed_at = datetime.now()
-            db.commit()
+            await db.update_by_id(
+                "batch_files",
+                str(batch_file.get("_id")),
+                {
+                    "error_message": str(e),
+                    "processing_status": VectorizationStatusEnum.FAILED.value,
+                    "processed_at": datetime.now(),
+                    "updated_at": datetime.now()
+                }
+            )
             
             return FileProcessingResult(
-                filename=batch_file.original_filename,
+                filename=batch_file.get("original_filename"),
                 success=False,
                 error_message=str(e),
                 processing_time=(datetime.now() - start_time).total_seconds()
@@ -415,8 +470,8 @@ class BatchProcessingService:
     
     async def _match_or_create_patient(
         self,
-        batch_file: BatchFile,
-        db: Session
+        batch_file: Dict[str, Any],
+        db: DatabaseSession
     ) -> Tuple[Optional[int], Optional[Any]]:
         """Match patient or create new one based on TecSalud data"""
         
@@ -425,36 +480,45 @@ class BatchProcessingService:
         
         # Try to match existing patient using TecSalud data
         tecsalud_data = PatientData(
-            expediente_id=batch_file.parsed_patient_id,
+            expediente_id=batch_file.get("parsed_patient_id"),
             nombre="", # We need to parse this from full name
             apellido_paterno="",
             apellido_materno="",
-            full_name=batch_file.parsed_patient_name,
+            full_name=batch_file.get("parsed_patient_name"),
             numero_adicional="",
-            document_type=TecSaludDocTypeEnum.OTHER,  # Map from batch_file.parsed_document_type if needed
-            original_filename=batch_file.original_filename,
+            document_type=TecSaludDocTypeEnum.OTHER,  # Map from batch_file parsed_document_type if needed
+            original_filename=batch_file.get("original_filename"),
             confidence=1.0
         )
         
         matching_result = await patient_matcher.find_patient_matches(tecsalud_data)
         
         # Update batch file with matching results
-        batch_file.matching_confidence = matching_result.best_match.confidence if matching_result.best_match else 0.0
-        batch_file.matching_details = str(matching_result)
+        update_data = {
+            "matching_confidence": matching_result.best_match.confidence if matching_result.best_match else 0.0,
+            "matching_details": str(matching_result),
+            "updated_at": datetime.now()
+        }
         
         if matching_result.best_match and matching_result.best_match.confidence >= 0.95:
             # High confidence match - use existing patient
-            batch_file.patient_matching_status = PatientMatchingStatusEnum.MATCHED
-            batch_file.matched_patient_id = matching_result.best_match.patient_id
-            db.commit()
+            update_data.update({
+                "patient_matching_status": PatientMatchingStatusEnum.MATCHED.value,
+                "matched_patient_id": matching_result.best_match.patient_id
+            })
+            
+            await db.update_by_id("batch_files", str(batch_file.get("_id")), update_data)
             
             return matching_result.best_match.patient_id, matching_result
             
         elif matching_result.best_match and matching_result.best_match.confidence >= 0.8:
             # Medium confidence - requires admin review
-            batch_file.patient_matching_status = PatientMatchingStatusEnum.REVIEW_REQUIRED
-            batch_file.review_required = True
-            db.commit()
+            update_data.update({
+                "patient_matching_status": PatientMatchingStatusEnum.REVIEW_REQUIRED.value,
+                "review_required": True
+            })
+            
+            await db.update_by_id("batch_files", str(batch_file.get("_id")), update_data)
             
             # For now, create new patient but mark for review
             patient_id = await self._create_new_patient(batch_file, db)
@@ -462,49 +526,61 @@ class BatchProcessingService:
             
         else:
             # Low confidence - create new patient
-            batch_file.patient_matching_status = PatientMatchingStatusEnum.NEW_PATIENT
+            update_data.update({
+                "patient_matching_status": PatientMatchingStatusEnum.NEW_PATIENT.value
+            })
+            
+            await db.update_by_id("batch_files", str(batch_file.get("_id")), update_data)
+            
             patient_id = await self._create_new_patient(batch_file, db)
             
             if patient_id:
-                batch_file.matched_patient_id = patient_id
-                db.commit()
+                await db.update_by_id(
+                    "batch_files", 
+                    str(batch_file.get("_id")), 
+                    {
+                        "matched_patient_id": patient_id,
+                        "updated_at": datetime.now()
+                    }
+                )
             
             return patient_id, matching_result
     
     async def _create_new_patient(
         self,
-        batch_file: BatchFile,
-        db: Session
+        batch_file: Dict[str, Any],
+        db: DatabaseSession
     ) -> Optional[int]:
         """Create new patient from TecSalud filename data"""
         
         try:
             # Parse patient name components
-            name_parts = batch_file.parsed_patient_name.split(',')
+            parsed_name = batch_file.get("parsed_patient_name", "")
+            name_parts = parsed_name.split(',')
             if len(name_parts) >= 2:
                 surnames = name_parts[0].strip()
                 given_names = name_parts[1].strip()
                 full_name = f"{surnames}, {given_names}"
             else:
-                full_name = batch_file.parsed_patient_name
+                full_name = parsed_name
             
             # Create patient with minimal information from filename
-            patient = Patient(
-                medical_record_number=batch_file.parsed_patient_id,
-                name=full_name,
-                birth_date="1900-01-01",  # Default date - requires admin review
-                gender="desconocido",  # Default gender - requires admin review
-                doctor_id=1,  # Default doctor - requires admin review
-                status="Activo"
-            )
+            patient_data = {
+                "medical_record_number": batch_file.get("parsed_patient_id"),
+                "name": full_name,
+                "birth_date": "1900-01-01",  # Default date - requires admin review
+                "gender": "desconocido",  # Default gender - requires admin review
+                "doctor_id": 1,  # Default doctor - requires admin review
+                "status": "Activo",
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            }
             
-            db.add(patient)
-            db.commit()
-            db.refresh(patient)
+            patient_id = await db.create("patients", patient_data)
             
-            logger.info(f"👤 Created new patient: {full_name} (ID: {patient.id})")
+            logger.info(f"👤 Created new patient: {full_name} (ID: {patient_id})")
             
-            return patient.id
+            return patient_id
             
         except Exception as e:
             logger.error(f"❌ Failed to create patient: {str(e)}")
@@ -519,96 +595,96 @@ class BatchProcessingService:
     
     async def _create_medical_document(
         self,
-        batch_file: BatchFile,
+        batch_file: Dict[str, Any],
         patient_id: int,
         content: str,
-        processing_type: ProcessingTypeEnum,
-        db: Session
+        processing_type: str,
+        db: DatabaseSession
     ) -> int:
         """Create medical document record"""
         
         # Map TecSalud document types to our enum
         doc_type_mapping = {
-            'CONS': DocumentTypeEnum.CONSULTATION,
-            'HIST': DocumentTypeEnum.HISTORY,
-            'LAB': DocumentTypeEnum.LAB_RESULTS,
-            'IMG': DocumentTypeEnum.IMAGING,
-            'EMER': DocumentTypeEnum.CONSULTATION,
-            'CIRUG': DocumentTypeEnum.SURGERY,
-            'RECETA': DocumentTypeEnum.PRESCRIPTION,
-            'ALTA': DocumentTypeEnum.DISCHARGE
+            'CONS': DocumentTypeEnum.CONSULTATION.value,
+            'HIST': DocumentTypeEnum.HISTORY.value,
+            'LAB': DocumentTypeEnum.LAB_RESULTS.value,
+            'IMG': DocumentTypeEnum.IMAGING.value,
+            'EMER': DocumentTypeEnum.CONSULTATION.value,
+            'CIRUG': DocumentTypeEnum.SURGERY.value,
+            'RECETA': DocumentTypeEnum.PRESCRIPTION.value,
+            'ALTA': DocumentTypeEnum.DISCHARGE.value
         }
         
         document_type = doc_type_mapping.get(
-            batch_file.parsed_document_type, 
-            DocumentTypeEnum.OTHER
+            batch_file.get("parsed_document_type"), 
+            DocumentTypeEnum.OTHER.value
         )
         
-        document = MedicalDocument(
-            patient_id=patient_id,
-            document_type=document_type,
-            title=f"{batch_file.parsed_document_type} - {batch_file.parsed_patient_name}",
-            content=content,
-            created_by="batch_processor",
-            processing_type=processing_type,
-            original_filename=batch_file.original_filename,
-            vectorization_status=VectorizationStatusEnum.PENDING,
-            content_hash=batch_file.content_hash
-        )
+        document_data = {
+            "patient_id": patient_id,
+            "document_type": document_type,
+            "title": f"{batch_file.get('parsed_document_type')} - {batch_file.get('parsed_patient_name')}",
+            "content": content,
+            "created_by": "batch_processor",
+            "processing_type": processing_type,
+            "original_filename": batch_file.get("original_filename"),
+            "vectorization_status": VectorizationStatusEnum.PENDING.value,
+            "content_hash": batch_file.get("content_hash"),
+            "created_at": datetime.now(),
+            "updated_at": datetime.now()
+        }
         
-        db.add(document)
-        db.commit()
-        db.refresh(document)
+        document_id = await db.create("medical_documents", document_data)
         
-        return document.id
+        return document_id
     
     async def _vectorize_document(
         self,
         document_id: int,
         content: str,
-        db: Session
+        db: DatabaseSession
     ) -> None:
-        """Vectorize document content using ChromaDB"""
+        """Vectorization removed - using only complete documents"""
         
         try:
             # Get document
-            document = db.query(MedicalDocument).filter_by(id=document_id).first()
+            document = await db.find_by_id("medical_documents", document_id)
             if not document:
                 raise ValueError(f"Document not found: {document_id}")
             
-            # Update status to processing
-            document.vectorization_status = VectorizationStatusEnum.PROCESSING
-            db.commit()
+            logger.info(f"📋 Skipping vectorization for document {document_id} - using complete documents only")
             
-            # Add to ChromaDB
-            chunks = await self.chroma_service.add_document(
-                content=content,
-                metadata={
-                    'document_id': document_id,
-                    'patient_id': document.patient_id,
-                    'document_type': document.document_type,
-                    'created_at': str(document.created_at)
+            # Mark as completed (no vectorization needed)
+            await db.update_by_id(
+                "medical_documents", 
+                document_id, 
+                {
+                    "vectorization_status": VectorizationStatusEnum.COMPLETED.value,
+                    "updated_at": datetime.now()
                 }
             )
             
-            # Update document with chunk count
-            document.chunks_count = len(chunks)
-            document.vectorization_status = VectorizationStatusEnum.COMPLETED
-            db.commit()
+            logger.info(f"✅ Document {document_id} marked as complete (no vectorization)")
             
         except Exception as e:
-            logger.error(f"❌ Vectorization failed for document {document_id}: {str(e)}")
+            logger.error(f"❌ Document update failed for {document_id}: {str(e)}")
             
             # Update document with error
-            document.vectorization_status = VectorizationStatusEnum.FAILED
-            db.commit()
+            await db.update_by_id(
+                "medical_documents", 
+                document_id, 
+                {
+                    "vectorization_status": VectorizationStatusEnum.FAILED.value,
+                    "updated_at": datetime.now()
+                }
+            )
             
             raise e
     
     async def get_batch_status(
         self,
         session_id: str,
-        db: Session
+        db: DatabaseSession
     ) -> Dict[str, Any]:
         """Get current status of batch processing"""
         
@@ -649,7 +725,7 @@ class BatchProcessingService:
     async def get_files_requiring_review(
         self,
         session_id: str,
-        db: Session
+        db: DatabaseSession
     ) -> List[Dict[str, Any]]:
         """Get files that require admin review"""
         
@@ -678,7 +754,7 @@ class BatchProcessingService:
     async def cleanup_batch_session(
         self,
         session_id: str,
-        db: Session
+        db: DatabaseSession
     ) -> None:
         """Clean up batch session files and data"""
         

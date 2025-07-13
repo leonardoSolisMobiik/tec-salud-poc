@@ -22,11 +22,9 @@ class ChatRole(str, Enum):
 
 class ContextStrategy(str, Enum):
     """Context retrieval strategies for enhanced document context"""
-    VECTORS_ONLY = "vectors_only"
     FULL_DOCS_ONLY = "full_docs_only"
-    HYBRID_SMART = "hybrid_smart"
-    HYBRID_PRIORITY_VECTORS = "hybrid_priority_vectors"
-    HYBRID_PRIORITY_FULL = "hybrid_priority_full"
+    RECENT_DOCS = "recent_docs"
+    CRITICAL_DOCS = "critical_docs"
 
 class ChatMessage(BaseModel):
     """Individual chat message"""

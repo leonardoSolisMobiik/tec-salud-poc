@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.config import settings
-from app.database.factory import init_database, get_database_adapter, get_db_async, close_database, DatabaseConfig
+from app.database.factory import init_database, get_db_async, close_database, DatabaseConfig
 
 logger = logging.getLogger(__name__)
 

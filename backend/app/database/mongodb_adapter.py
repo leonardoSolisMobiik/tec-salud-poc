@@ -4,10 +4,9 @@ Implements MongoDB operations and schema mapping from SQLAlchemy models
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List, Optional, Type
 from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
-import pymongo
 from bson import ObjectId
 
 from app.core.config import settings

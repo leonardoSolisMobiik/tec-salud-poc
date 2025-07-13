@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.api.routes import api_router
 from app.core.database import init_db
-from app.services.chroma_service import ChromaService
+# ChromaDB removed - using only complete documents
 from app.services.azure_openai_service import azure_openai_service
 
 # Setup logging
@@ -32,11 +32,6 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("✅ Database initialized")
     
-    # Initialize Chroma vector database
-    chroma_service = ChromaService()
-    await chroma_service.initialize()
-    logger.info("✅ Chroma vector database initialized")
-    
     # Initialize Azure OpenAI service
     await azure_openai_service.initialize()
     logger.info("✅ Azure OpenAI service initialized")
@@ -47,7 +42,7 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("🛑 Shutting down TecSalud Backend...")
-    await chroma_service.close()
+    # ChromaDB removed - no cleanup needed
     logger.info("👋 TecSalud Backend shutdown complete")
 
 # Create FastAPI application
@@ -98,7 +93,7 @@ async def health_check():
         "services": {
             "database": "connected",
             "azure_openai": "connected",
-            "chroma": "connected"
+            "documents": "complete_only"
         }
     }
 

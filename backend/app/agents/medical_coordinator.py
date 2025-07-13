@@ -43,7 +43,7 @@ class MedicalCoordinatorAgent:
         
         # Enhanced context configuration
         self.use_enhanced_context = True
-        self.default_context_strategy = ContextStrategy.HYBRID_SMART
+        self.default_context_strategy = ContextStrategy.FULL_DOCS_ONLY
         
         # Classification tools for function calling
         self.classification_tools = [
@@ -81,7 +81,7 @@ class MedicalCoordinatorAgent:
                             },
                             "context_strategy": {
                                 "type": "string",
-                                "enum": ["vectors_only", "full_docs_only", "hybrid_smart", "hybrid_priority_vectors", "hybrid_priority_full"],
+                                "enum": ["full_docs_only", "recent_docs", "critical_docs"],
                                 "description": "Recommended context retrieval strategy"
                             }
                         },
@@ -363,12 +363,10 @@ class MedicalCoordinatorAgent:
                     - search: Búsqueda de información específica en expedientes (cuando no requiere análisis profundo)
                     - general: Saludos simples, consultas no médicas, conversación casual
                     
-                    También determina la mejor estrategia de contexto:
-                    - vectors_only: Solo vectores semánticos (para preguntas rápidas)
-                    - full_docs_only: Solo documentos completos (para análisis detallado)
-                    - hybrid_smart: Combinación inteligente (para la mayoría de casos)
-                    - hybrid_priority_vectors: Priorizar vectores con docs de respaldo
-                    - hybrid_priority_full: Priorizar docs completos con vectores de apoyo
+                                    También determina la mejor estrategia de contexto:
+                - full_docs_only: Documentos médicos completos (estrategia principal)
+                - recent_docs: Priorizar documentos más recientes
+                - critical_docs: Priorizar documentos críticos (emergencias, cirugías)
                     
                     REGLAS DE CLASIFICACIÓN CONTEXTUAL:
                     - Si hay documentos disponibles Y la consulta pide información del paciente → document_analysis
@@ -436,7 +434,7 @@ class MedicalCoordinatorAgent:
                     "reasoning": "Could not classify automatically, using context-aware fallback",
                     "requires_patient_context": has_context,
                     "urgency": "low",
-                    "context_strategy": "hybrid_smart" if has_context else "vectors_only",
+                    "context_strategy": "full_docs_only" if has_context else "full_docs_only",
                     "context_available": has_context,
                     "context_documents": enhanced_context.total_documents if enhanced_context else 0
                 }
@@ -451,7 +449,7 @@ class MedicalCoordinatorAgent:
                 "reasoning": f"Classification error: {str(e)}, using context-aware fallback",
                 "requires_patient_context": has_context,
                 "urgency": "low",
-                "context_strategy": "hybrid_smart" if has_context else "vectors_only",
+                "context_strategy": "full_docs_only" if has_context else "full_docs_only",
                 "context_available": has_context,
                 "context_documents": enhanced_context.total_documents if enhanced_context else 0
             }
@@ -459,13 +457,13 @@ class MedicalCoordinatorAgent:
     def _determine_default_strategy(self, query_type: str) -> str:
         """Determine default context strategy based on query type"""
         strategy_map = {
-            "diagnostic": "hybrid_priority_full",
+            "diagnostic": "full_docs_only",
             "document_analysis": "full_docs_only", 
-            "quick_question": "hybrid_priority_vectors",
-            "search": "hybrid_smart",
-            "general": "vectors_only"
+            "quick_question": "recent_docs",
+            "search": "full_docs_only",
+            "general": "full_docs_only"
         }
-        return strategy_map.get(query_type, "hybrid_smart")
+        return strategy_map.get(query_type, "full_docs_only")
     
     async def _route_to_agent_enhanced(
         self,
@@ -703,11 +701,7 @@ class MedicalCoordinatorAgent:
                 "context_confidence": enhanced_context.confidence,
                 "recommendations": enhanced_context.recommendations,
                 
-                # Vector results
-                "vector_results": enhanced_context.vector_results,
-                "vector_count": len(enhanced_context.vector_results),
-                
-                # Full documents - Complete medical records
+                # Complete medical documents only
                 "full_documents": [
                     {
                         "document_id": doc.document_id,

@@ -4,7 +4,7 @@ Main router that includes all API endpoints
 """
 
 from fastapi import APIRouter
-from app.api.endpoints import chat, patients_db as patients, documents, batch_documents, admin_review
+from app.api.endpoints import chat, patients_db as patients, documents, admin_review
 
 api_router = APIRouter()
 
@@ -25,12 +25,6 @@ api_router.include_router(
     documents.router,
     prefix="/documents",
     tags=["documents"]
-)
-
-api_router.include_router(
-    batch_documents.router,
-    prefix="/documents",
-    tags=["batch-documents"]
 )
 
 api_router.include_router(

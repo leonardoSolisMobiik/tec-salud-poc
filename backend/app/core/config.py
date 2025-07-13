@@ -5,7 +5,7 @@ Centralized configuration for Azure OpenAI, database, and application settings
 
 from pydantic_settings import BaseSettings
 from pydantic import Field
-from typing import List, Optional, Dict
+from typing import List, Dict
 import os
 from pathlib import Path
 

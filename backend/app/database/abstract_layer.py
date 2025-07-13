@@ -4,8 +4,7 @@ Defines the common interface for database operations
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Union, Type
-from datetime import datetime
+from typing import Any, Dict, List, Optional, Type
 
 
 class DatabaseAdapter(ABC):
@@ -187,6 +186,19 @@ class DatabaseSession:
     async def delete(self, collection: str, id: Any) -> bool:
         """Delete document/record by ID"""
         return await self.adapter.delete(collection, id)
+    
+    async def find_one(self, collection: str, filter_dict: Dict[str, Any] = None) -> Optional[Dict[str, Any]]:
+        """Find one document/record with filters"""
+        results = await self.adapter.find(collection, filter_dict, limit=1)
+        return results[0] if results else None
+    
+    async def find_by_id(self, collection: str, id: Any) -> Optional[Dict[str, Any]]:
+        """Find document/record by ID"""
+        return await self.adapter.get_by_id(collection, id)
+    
+    async def update_by_id(self, collection: str, id: Any, data: Dict[str, Any]) -> bool:
+        """Update document/record by ID"""
+        return await self.adapter.update(collection, id, data)
 
 
 class QueryBuilder:

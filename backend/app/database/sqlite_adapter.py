@@ -5,11 +5,9 @@ Maintains compatibility with existing SQLAlchemy implementation
 
 import logging
 from typing import Any, Dict, List, Optional, Type
-from sqlalchemy import create_engine, MetaData, desc, asc
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
-from datetime import datetime
 
 from app.core.config import settings
 from .abstract_layer import DatabaseAdapter, DatabaseSession, QueryBuilder

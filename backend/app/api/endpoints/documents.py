@@ -6,14 +6,10 @@ API endpoints for medical document management and analysis
 import logging
 from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
-from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
 
 from app.models.medical import DocumentAnalysisRequest, DocumentAnalysisResponse
 # from app.services.chroma_service import ChromaService  # Removed - focusing on complete storage
 from app.agents.document_analysis_agent import DocumentAnalysisAgent
-from app.models.chat import ChatMessage, ModelType
-from app.utils.exceptions import AgentError  # ChromaError removed
 from app.core.database import get_db
 from app.database.abstract_layer import DatabaseSession
 from app.services.patient_matching_service import PatientMatchingService
@@ -27,24 +23,13 @@ router = APIRouter()
 document_agent = DocumentAnalysisAgent()
 filename_service = TecSaludFilenameService()
 
-# Chroma service removed - focusing on complete document storage only
-# chroma_service = None
-
-# async def get_chroma_service():
-#     """Get or initialize Chroma service"""
-#     global chroma_service
-#     if chroma_service is None:
-#         chroma_service = ChromaService()
-#         await chroma_service.initialize()
-#     return chroma_service
-
 @router.post("/upload")
 async def upload_document(
     file: UploadFile = File(...),
     patient_id: str = Form(...),
     document_type: str = Form("general"),
     title: Optional[str] = Form(None),
-    processing_type: str = Form("both"),  # "vectorized", "complete", or "both"
+    processing_type: str = Form("both"),  #  "complete", or "both"
     db: DatabaseSession = Depends(get_db)
 ) -> Dict[str, Any]:
     """
