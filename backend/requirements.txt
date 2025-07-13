@@ -14,6 +14,15 @@ sqlalchemy==2.0.23
 alembic==1.12.1
 psycopg2-binary==2.9.9
 
+# MongoDB and Motor (async PyMongo)
+motor==3.3.2
+pymongo==4.6.0
+dnspython==2.4.2  # Required for MongoDB SRV connections
+
+# Patient Matching
+fuzzywuzzy==0.18.0
+python-Levenshtein==0.23.0
+
 # Authentication and Security
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4

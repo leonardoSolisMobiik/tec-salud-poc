@@ -8,10 +8,10 @@ import logging
 from typing import List, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
 from pydantic import BaseModel
 
-from app.core.database import get_db
+from app.database.abstract_layer import DatabaseSession
+from app.database.factory import get_db
 from app.db.models import ProcessingTypeEnum
 from app.services.batch_processing_service import BatchProcessingService, BatchProcessingResult
 
@@ -48,13 +48,13 @@ class BatchStatusResponse(BaseModel):
 @router.post("/batch/create-session", response_model=BatchUploadResponse)
 async def create_batch_upload_session(
     request: BatchUploadRequest,
-    db: Session = Depends(get_db)
+    db: DatabaseSession = Depends(get_db)
 ):
     """Create new batch upload session"""
     try:
         session_id = await batch_service.create_batch_upload_session(
-            uploaded_by=request.uploaded_by,
             processing_type=request.processing_type,
+            uploaded_by=request.uploaded_by,
             db=db
         )
         
@@ -75,7 +75,7 @@ async def create_batch_upload_session(
 async def upload_files_to_batch(
     session_id: str,
     files: List[UploadFile] = File(...),
-    db: Session = Depends(get_db)
+    db: DatabaseSession = Depends(get_db)
 ):
     """Upload files to existing batch session"""
     try:
@@ -85,14 +85,16 @@ async def upload_files_to_batch(
                 detail="No files provided"
             )
         
-        # Validate file types (only PDFs for now)
+        # Validate file types
+        valid_extensions = {'.pdf', '.docx', '.doc', '.txt'}
         for file in files:
-            if not file.filename.lower().endswith('.pdf'):
+            if not any(file.filename.lower().endswith(ext) for ext in valid_extensions):
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Only PDF files are supported. Invalid file: {file.filename}"
+                    detail=f"Invalid file type: {file.filename}. Supported types: {', '.join(valid_extensions)}"
                 )
         
+        # Upload files
         result = await batch_service.upload_files_to_session(
             session_id=session_id,
             files=files,
@@ -102,20 +104,17 @@ async def upload_files_to_batch(
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
-                "message": f"Successfully uploaded {result['total_files']} files",
+                "success": True,
                 "session_id": session_id,
-                "total_files": result['total_files'],
-                "parsing_success_rate": result['parsing_success_rate'],
-                "uploaded_files": result['uploaded_files'],
-                "failed_files": result['failed_files']
+                "uploaded_files": result.uploaded_files,
+                "total_files": result.total_files,
+                "failed_files": result.failed_files,
+                "message": f"Uploaded {result.uploaded_files} files successfully"
             }
         )
         
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e)
-        )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Failed to upload files to batch {session_id}: {str(e)}")
         raise HTTPException(
@@ -127,9 +126,9 @@ async def upload_files_to_batch(
 @router.post("/batch/{session_id}/process")
 async def process_batch_upload(
     session_id: str,
-    db: Session = Depends(get_db)
+    db: DatabaseSession = Depends(get_db)
 ):
-    """Start processing batch upload"""
+    """Process all files in a batch session"""
     try:
         result = await batch_service.process_batch_upload(
             session_id=session_id,
@@ -139,17 +138,14 @@ async def process_batch_upload(
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
-                "message": "Batch processing completed",
+                "success": True,
                 "session_id": result.session_id,
-                "total_files": result.total_files,
                 "processed_files": result.processed_files,
+                "total_files": result.total_files,
                 "failed_files": result.failed_files,
-                "created_patients": result.created_patients,
-                "matched_patients": result.matched_patients,
-                "review_required": result.review_required,
-                "processing_time": result.processing_time,
-                "status": result.status,
-                "error_details": result.error_details
+                "files_requiring_review": result.files_requiring_review,
+                "processing_summary": result.processing_summary,
+                "message": f"Processed {result.processed_files} files successfully"
             }
         )
         
@@ -169,16 +165,16 @@ async def process_batch_upload(
 @router.get("/batch/{session_id}/status", response_model=BatchStatusResponse)
 async def get_batch_status(
     session_id: str,
-    db: Session = Depends(get_db)
+    db: DatabaseSession = Depends(get_db)
 ):
-    """Get current status of batch processing"""
+    """Get status of a batch upload session"""
     try:
-        status_data = await batch_service.get_batch_status(
+        status_info = await batch_service.get_batch_status(
             session_id=session_id,
             db=db
         )
         
-        return BatchStatusResponse(**status_data)
+        return BatchStatusResponse(**status_info)
         
     except ValueError as e:
         raise HTTPException(
@@ -196,9 +192,9 @@ async def get_batch_status(
 @router.get("/batch/{session_id}/review")
 async def get_files_requiring_review(
     session_id: str,
-    db: Session = Depends(get_db)
+    db: DatabaseSession = Depends(get_db)
 ):
-    """Get files that require admin review"""
+    """Get files from batch session that require admin review"""
     try:
         review_files = await batch_service.get_files_requiring_review(
             session_id=session_id,
@@ -208,9 +204,11 @@ async def get_files_requiring_review(
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
+                "success": True,
                 "session_id": session_id,
-                "review_required_count": len(review_files),
-                "files_requiring_review": review_files
+                "review_files": review_files,
+                "total_review_files": len(review_files),
+                "message": f"Retrieved {len(review_files)} files requiring review"
             }
         )
         
@@ -230,7 +228,7 @@ async def get_files_requiring_review(
 @router.delete("/batch/{session_id}/cleanup")
 async def cleanup_batch_session(
     session_id: str,
-    db: Session = Depends(get_db)
+    db: DatabaseSession = Depends(get_db)
 ):
     """Clean up batch session files"""
     try:
@@ -242,15 +240,21 @@ async def cleanup_batch_session(
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
+                "success": True,
                 "message": f"Batch session {session_id} cleaned up successfully"
             }
         )
         
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        )
     except Exception as e:
         logger.error(f"❌ Failed to cleanup batch {session_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to cleanup batch session: {str(e)}"
+            detail=f"Failed to cleanup batch: {str(e)}"
         )
 
 

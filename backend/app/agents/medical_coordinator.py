@@ -11,7 +11,7 @@ from datetime import datetime
 from app.models.chat import ChatMessage, ChatResponse, ModelType
 from app.services.azure_openai_service import AzureOpenAIService
 from app.services.enhanced_document_service import enhanced_document_service, ContextStrategy
-from app.core.database import get_db
+from app.database.factory import get_db_async
 from app.agents.diagnostic_agent import DiagnosticAgent
 from app.agents.document_analysis_agent import DocumentAnalysisAgent
 from app.agents.quick_response_agent import QuickResponseAgent
@@ -106,7 +106,7 @@ class MedicalCoordinatorAgent:
         self,
         messages: List[ChatMessage],
         patient_context: Optional[Dict[str, Any]] = None,  # Legacy context (now optional)
-        patient_id: Optional[int] = None,  # New: direct patient ID for enhanced context
+        patient_id: Optional[str] = None,  # New: direct patient ID for enhanced context
         model_type: ModelType = ModelType.GPT4O,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
@@ -149,17 +149,18 @@ class MedicalCoordinatorAgent:
             enhanced_context = None
             if patient_id and self.use_enhanced_context:
                 try:
-                    from sqlalchemy.orm import Session
-                    db = next(get_db())
-                    # Use default strategy for initial context retrieval
-                    enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
-                        patient_id=patient_id,
-                        query=user_query,
-                        strategy=context_strategy or self.default_context_strategy,
-                        db=db,
-                        include_recent=True,
-                        include_critical=False  # Don't assume critical yet
-                    )
+                    from app.database.factory import get_database_adapter
+                    adapter = get_database_adapter()
+                    async with adapter.get_session() as db:
+                        # Use default strategy for initial context retrieval
+                        enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
+                            patient_id=patient_id,
+                            query=user_query,
+                            strategy=context_strategy or self.default_context_strategy,
+                            db=db,
+                            include_recent=True,
+                            include_critical=False  # Don't assume critical yet
+                        )
                     logger.info(f"🔍 Pre-classification context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens")
                 except Exception as e:
                     logger.warning(f"⚠️ Enhanced context failed, classification will proceed without context: {str(e)}")
@@ -176,16 +177,15 @@ class MedicalCoordinatorAgent:
                 if refined_strategy != enhanced_context.strategy_used:
                     logger.info(f"🔄 Refining context strategy from {enhanced_context.strategy_used.value} to {refined_strategy.value}")
                     try:
-                        from sqlalchemy.orm import Session
-                        db = next(get_db())
-                        enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
-                            patient_id=patient_id,
-                            query=user_query,
-                            strategy=refined_strategy,
-                            db=db,
-                            include_recent=True,
-                            include_critical=query_classification.get("urgency", "low") in ["high", "critical"]
-                        )
+                        async with get_db_async() as db:
+                            enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
+                                patient_id=patient_id,
+                                query=user_query,
+                                strategy=refined_strategy,
+                                db=db,
+                                include_recent=True,
+                                include_critical=query_classification.get("urgency", "low") in ["high", "critical"]
+                            )
                         logger.info(f"🔍 Refined context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens")
                     except Exception as e:
                         logger.warning(f"⚠️ Context refinement failed, using original context: {str(e)}")
@@ -233,7 +233,7 @@ class MedicalCoordinatorAgent:
         self,
         messages: List[ChatMessage],
         patient_context: Optional[Dict[str, Any]] = None,
-        patient_id: Optional[int] = None,
+        patient_id: Optional[str] = None,
         model_type: ModelType = ModelType.GPT4O,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
@@ -259,16 +259,15 @@ class MedicalCoordinatorAgent:
             enhanced_context = None
             if patient_id and self.use_enhanced_context:
                 try:
-                    from sqlalchemy.orm import Session
-                    db = next(get_db())
-                    enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
-                        patient_id=patient_id,
-                        query=user_query,
-                        strategy=context_strategy or self.default_context_strategy,
-                        db=db,
-                        include_recent=True,
-                        include_critical=False  # Don't assume critical yet
-                    )
+                    async with get_db_async() as db:
+                        enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
+                            patient_id=patient_id,
+                            query=user_query,
+                            strategy=context_strategy or self.default_context_strategy,
+                            db=db,
+                            include_recent=True,
+                            include_critical=False  # Don't assume critical yet
+                        )
                     logger.info(f"🔍 Pre-classification streaming context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens")
                 except Exception as e:
                     logger.warning(f"⚠️ Enhanced context failed for streaming: {str(e)}")
@@ -284,15 +283,14 @@ class MedicalCoordinatorAgent:
                 if refined_strategy != enhanced_context.strategy_used:
                     logger.info(f"🔄 Refining streaming context strategy from {enhanced_context.strategy_used.value} to {refined_strategy.value}")
                     try:
-                        from sqlalchemy.orm import Session
-                        db = next(get_db())
-                        enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
-                            patient_id=patient_id,
-                            query=user_query,
-                            strategy=refined_strategy,
-                            db=db,
-                            include_recent=True,
-                            include_critical=query_classification.get("urgency", "low") in ["high", "critical"]
+                        async with get_db_async() as db:
+                            enhanced_context = await enhanced_document_service.get_enhanced_patient_context(
+                                patient_id=patient_id,
+                                query=user_query,
+                                strategy=refined_strategy,
+                                db=db,
+                                include_recent=True,
+                                include_critical=query_classification.get("urgency", "low") in ["high", "critical"]
                         )
                         logger.info(f"🔍 Refined streaming context: {enhanced_context.total_documents} docs, {enhanced_context.total_tokens} tokens")
                     except Exception as e:
@@ -484,7 +482,7 @@ class MedicalCoordinatorAgent:
         query_type = classification.get("query_type", "general")
         
         # Prepare unified context for agents
-        unified_context = self._prepare_unified_context(legacy_context, enhanced_context)
+        unified_context = await self._prepare_unified_context(legacy_context, enhanced_context)
         
         try:
             if query_type == "diagnostic":
@@ -576,7 +574,7 @@ class MedicalCoordinatorAgent:
         """Route request to appropriate agent for streaming with enhanced context"""
         
         query_type = classification.get("query_type", "general")
-        unified_context = self._prepare_unified_context(legacy_context, enhanced_context)
+        unified_context = await self._prepare_unified_context(legacy_context, enhanced_context)
         
         logger.info(f"🎯 MedicalCoordinator: Routing to {query_type} agent")
         logger.info(f"🎯 MedicalCoordinator: Unified context prepared with {len(unified_context)} keys")
@@ -656,10 +654,11 @@ class MedicalCoordinatorAgent:
             logger.error(f"❌ Enhanced streaming routing failed: {str(e)}")
             yield f"Error en el procesamiento mejorado: {str(e)}"
     
-    def _prepare_unified_context(
+    async def _prepare_unified_context(
         self, 
         legacy_context: Optional[Dict[str, Any]], 
-        enhanced_context  # HybridContext object
+        enhanced_context,  # HybridContext object
+        patient_id: Optional[str] = None
     ) -> Dict[str, Any]:
         """Prepare unified context combining legacy and enhanced context"""
         unified = {}
@@ -671,9 +670,32 @@ class MedicalCoordinatorAgent:
         
         # Add enhanced context if available
         if enhanced_context:
+            # Get patient info to include in context
+            patient_info = {}
+            try:
+                from app.database.factory import get_db_async
+                
+                async with get_db_async() as db:
+                    patient = await db.get_by_id("patients", str(enhanced_context.patient_id))
+                    if patient:
+                        patient_info = {
+                            "name": patient.get("name", "Unknown"),
+                            "medical_record_number": patient.get("medical_record_number", "N/A"),
+                            "age": patient.get("age", "N/A"),
+                            "gender": patient.get("gender", "N/A"),
+                            "blood_type": patient.get("blood_type", "N/A"),
+                            "status": patient.get("status", "N/A")
+                        }
+                    else:
+                        patient_info = {"name": "Unknown Patient"}
+            except Exception as e:
+                logger.warning(f"Could not retrieve patient info: {e}")
+                patient_info = {"name": "Unknown Patient"}
+            
             unified.update({
                 "enhanced_context": True,
                 "patient_id": enhanced_context.patient_id,
+                "patient_info": patient_info,  # Add patient information
                 "strategy_used": enhanced_context.strategy_used.value,
                 "total_documents": enhanced_context.total_documents,
                 "total_tokens": enhanced_context.total_tokens,
@@ -685,12 +707,12 @@ class MedicalCoordinatorAgent:
                 "vector_results": enhanced_context.vector_results,
                 "vector_count": len(enhanced_context.vector_results),
                 
-                # Full documents
+                # Full documents - Complete medical records
                 "full_documents": [
                     {
                         "document_id": doc.document_id,
                         "title": doc.title,
-                        "content": doc.summary or doc.content,  # Use summary if available
+                        "content": doc.content,  # Use full content for medical analysis
                         "document_type": doc.document_type.value,
                         "relevance_score": doc.relevance_score,
                         "relevance_level": doc.relevance_level.value,
@@ -700,6 +722,7 @@ class MedicalCoordinatorAgent:
                     }
                     for doc in enhanced_context.full_documents
                 ],
+                "documents_count": len(enhanced_context.full_documents),  # Add count for easier access
                 "full_documents_count": len(enhanced_context.full_documents)
             })
         

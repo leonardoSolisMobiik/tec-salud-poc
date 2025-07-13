@@ -1,6 +1,7 @@
 """
 Database Configuration
-SQLAlchemy setup for TecSalud application
+Abstracted database layer for TecSalud application
+Supports both SQLite and MongoDB/CosmosDB
 """
 
 import logging
@@ -10,10 +11,11 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from app.core.config import settings
+from app.database.factory import init_database, get_database_adapter, get_db_async, close_database, DatabaseConfig
 
 logger = logging.getLogger(__name__)
 
-# SQLAlchemy setup
+# Legacy SQLAlchemy setup for compatibility
 engine = create_engine(
     settings.DATABASE_URL,
     poolclass=StaticPool,
@@ -29,26 +31,31 @@ Base = declarative_base()
 metadata = MetaData()
 
 async def init_db() -> None:
-    """Initialize database tables"""
+    """Initialize database using abstraction layer"""
     try:
-        # Create all tables
-        Base.metadata.create_all(bind=engine)
-        logger.info("✅ Database tables initialized")
+        # Use the new abstraction layer
+        await init_database()
+        
+        # Log database type being used
+        db_config = DatabaseConfig.get_connection_info()
+        logger.info(f"✅ Database initialized: {db_config['type']}")
+        
     except Exception as e:
         logger.error(f"❌ Database initialization failed: {str(e)}")
         raise
 
-def get_db():
-    """Dependency to get database session"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    """Dependency to get database session (abstracted)"""
+    async with get_db_async() as session:
+        yield session
 
 async def close_db() -> None:
     """Close database connections"""
     try:
+        # Use abstraction layer close
+        await close_database()
+        
+        # Also close legacy SQLAlchemy engine
         engine.dispose()
         logger.info("🔒 Database connections closed")
     except Exception as e:

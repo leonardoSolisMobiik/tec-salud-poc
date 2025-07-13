@@ -14,10 +14,11 @@ Features:
 
 import logging
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 from enum import Enum
 from difflib import SequenceMatcher
+from datetime import datetime
 
 # External dependencies for fuzzy matching
 try:
@@ -27,15 +28,11 @@ except ImportError:
     FUZZYWUZZY_AVAILABLE = False
     logging.warning("fuzzywuzzy not available, using basic string matching")
 
-# ✅ EXISTING: Use current imports and models
-from sqlalchemy.orm import Session
-from sqlalchemy import select, and_, or_
-
-# Import existing models
-from app.db.models import Patient, MedicalDocument
+# ✅ MONGODB: Use abstraction layer only
+from app.database.abstract_layer import DatabaseSession
 from app.services.tecsalud_filename_parser import PatientData, TecSaludFilenameService
 
-# ✅ EXISTING: Use current logging configuration
+# ✅ MONGODB: Use current logging configuration
 logger = logging.getLogger(__name__)
 
 class MatchTypeEnum(str, Enum):
@@ -81,8 +78,8 @@ class MatchResult:
 class PatientCreationResult:
     """Result of patient creation"""
     success: bool
-    patient_id: Optional[int] = None
-    patient: Optional[Patient] = None
+    patient_id: Optional[str] = None
+    patient: Optional[Dict[str, Any]] = None
     error_message: Optional[str] = None
     duplicate_detected: bool = False
 
@@ -97,7 +94,7 @@ class PatientMatchingService:
     - Combined confidence scoring
     """
     
-    def __init__(self, db_session: Session, confidence_threshold: float = 0.8):
+    def __init__(self, db_session: DatabaseSession, confidence_threshold: float = 0.8):
         """
         Initialize patient matching service
         
@@ -131,7 +128,7 @@ class PatientMatchingService:
         try:
             logger.info(f"Finding matches for patient: {patient_data.full_name} (ID: {patient_data.expediente_id})")
             
-            # ✅ EXISTING: Query existing patients using current model
+            # ✅ MONGODB: Query existing patients using current model
             existing_patients = await self._get_existing_patients()
             
             if not existing_patients:
@@ -186,7 +183,7 @@ class PatientMatchingService:
             logger.error(f"Error finding patient matches: {str(e)}")
             raise
     
-    def _evaluate_patient_match(self, patient_data: PatientData, existing_patient: Patient) -> Optional[PatientMatch]:
+    def _evaluate_patient_match(self, patient_data: PatientData, existing_patient: Dict[str, Any]) -> Optional[PatientMatch]:
         """
         Evaluate how well a TecSalud patient matches an existing patient
         
@@ -199,12 +196,13 @@ class PatientMatchingService:
         """
         try:
             # Skip patients without names
-            if not existing_patient.name or not existing_patient.name.strip():
+            patient_name = existing_patient.get("name")
+            if not patient_name or not patient_name.strip():
                 return None
             
             # Normalize names for comparison
             input_name = self._normalize_name(patient_data.full_name)
-            existing_name = self._normalize_name(existing_patient.name)
+            existing_name = self._normalize_name(patient_name)
             
             # Calculate name similarity
             name_similarity = self._calculate_name_similarity(input_name, existing_name)
@@ -212,7 +210,7 @@ class PatientMatchingService:
             # Check expediente ID match
             expediente_match = self._check_expediente_match(
                 patient_data.expediente_id, 
-                existing_patient.medical_record_number
+                existing_patient.get("medical_record_number")
             )
             
             # Calculate overall confidence
@@ -227,9 +225,9 @@ class PatientMatchingService:
             confidence_level = self._get_confidence_level(confidence)
             
             return PatientMatch(
-                patient_id=existing_patient.id,
-                patient_name=existing_patient.name,
-                medical_record_number=existing_patient.medical_record_number,
+                patient_id=existing_patient.get("id") or existing_patient.get("_id"),
+                patient_name=patient_name,
+                medical_record_number=existing_patient.get("medical_record_number"),
                 confidence=confidence,
                 match_type=match_type,
                 confidence_level=confidence_level,
@@ -441,7 +439,7 @@ class PatientMatchingService:
         
         return normalized.strip()
     
-    async def _get_existing_patients(self) -> List[Patient]:
+    async def _get_existing_patients(self) -> List[Dict[str, Any]]:
         """
         Get all existing patients from database
         
@@ -449,19 +447,17 @@ class PatientMatchingService:
             List of existing patients
         """
         try:
-            # Use synchronous database operations
-            from sqlalchemy import select
-            
-            result = self.db.execute(
-                select(Patient)
-                .where(Patient.name.isnot(None))
-                .where(Patient.name != '')
+            # Use abstraction layer
+            patients_data = await self.db.find_many(
+                "patients",
+                filter_dict={
+                    "name": {"$ne": None, "$ne": ""}
+                }
             )
             
-            patients = result.scalars().all()
-            logger.info(f"Retrieved {len(patients)} existing patients for matching")
+            logger.info(f"Retrieved {len(patients_data)} existing patients for matching")
             
-            return patients
+            return patients_data
             
         except Exception as e:
             logger.error(f"Error retrieving existing patients: {str(e)}")
@@ -492,51 +488,63 @@ class PatientMatchingService:
                 )
             
             # Get a default doctor (first available doctor)
-            from sqlalchemy import select
-            from app.db.models import Doctor, GenderEnum
-            from datetime import date
-            
-            result = self.db.execute(select(Doctor).limit(1))
-            default_doctor = result.scalar_one_or_none()
+            doctors = await self.db.find_many("doctors", filter_dict={}, limit=1)
+            default_doctor = doctors[0] if doctors else None
             
             if not default_doctor:
                 # Create a default doctor if none exists
-                default_doctor = Doctor(
-                    email="default@tecsalud.com",
-                    name="Dr. Sistema",
-                    specialty="General",
-                    license_number="DEFAULT001"
-                )
-                self.db.add(default_doctor)
-                self.db.commit()
-                self.db.refresh(default_doctor)
+                default_doctor_data = {
+                    "email": "default@tecsalud.com",
+                    "name": "Dr. Sistema",
+                    "specialty": "General",
+                    "license_number": "DEFAULT001",
+                    "created_at": datetime.now().isoformat(),
+                    "updated_at": datetime.now().isoformat()
+                }
+                default_doctor = await self.db.create("doctors", default_doctor_data)
+            
+            # Get doctor ID correctly
+            doctor_id = None
+            if default_doctor:
+                if isinstance(default_doctor, dict):
+                    doctor_id = str(default_doctor.get("_id") or default_doctor.get("id"))
+                else:
+                    doctor_id = str(default_doctor)
             
             # Create patient with all required fields
-            new_patient = Patient(
-                name=patient_data.full_name,
-                medical_record_number=patient_data.expediente_id,
-                birth_date=date(1900, 1, 1),  # Default date since not available in filename
-                gender=GenderEnum.UNKNOWN,  # Default gender since not available in filename
-                doctor_id=default_doctor.id,  # Assign to default doctor
-                status="Activo",  # Default status
-                blood_type="desconocido"  # Default blood type
-            )
+            from datetime import date
             
-            self.db.add(new_patient)
-            self.db.commit()
-            self.db.refresh(new_patient)
+            new_patient_data = {
+                "name": patient_data.full_name,
+                "medical_record_number": patient_data.expediente_id,
+                "birth_date": date(1900, 1, 1).isoformat(),  # Default date since not available in filename
+                "gender": "desconocido",  # Default gender since not available in filename
+                "doctor_id": doctor_id,  # Assign to default doctor
+                "status": "activo",  # Default status
+                "blood_type": "desconocido",  # Default blood type
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat()
+            }
             
-            logger.info(f"Successfully created patient {new_patient.id}: {new_patient.name}")
+            new_patient = await self.db.create("patients", new_patient_data)
+            
+            # Get patient ID correctly
+            patient_id = None
+            if isinstance(new_patient, dict):
+                patient_id = str(new_patient.get("_id") or new_patient.get("id"))
+            else:
+                patient_id = str(new_patient)
+            
+            logger.info(f"Successfully created patient {patient_id}: {new_patient.get('name') if isinstance(new_patient, dict) else 'Unknown'}")
             
             return PatientCreationResult(
                 success=True,
-                patient_id=new_patient.id,
+                patient_id=patient_id,
                 patient=new_patient
             )
             
         except Exception as e:
             logger.error(f"Error creating patient: {str(e)}")
-            self.db.rollback()
             
             return PatientCreationResult(
                 success=False,

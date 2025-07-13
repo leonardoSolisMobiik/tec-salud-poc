@@ -10,11 +10,12 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.models.medical import DocumentAnalysisRequest, DocumentAnalysisResponse
-from app.services.chroma_service import chroma_service
+# from app.services.chroma_service import ChromaService  # Removed - focusing on complete storage
 from app.agents.document_analysis_agent import DocumentAnalysisAgent
 from app.models.chat import ChatMessage, ModelType
-from app.utils.exceptions import ChromaError, AgentError
+from app.utils.exceptions import AgentError  # ChromaError removed
 from app.core.database import get_db
+from app.database.abstract_layer import DatabaseSession
 from app.services.patient_matching_service import PatientMatchingService
 from app.services.tecsalud_filename_parser import TecSaludFilenameService
 
@@ -26,6 +27,17 @@ router = APIRouter()
 document_agent = DocumentAnalysisAgent()
 filename_service = TecSaludFilenameService()
 
+# Chroma service removed - focusing on complete document storage only
+# chroma_service = None
+
+# async def get_chroma_service():
+#     """Get or initialize Chroma service"""
+#     global chroma_service
+#     if chroma_service is None:
+#         chroma_service = ChromaService()
+#         await chroma_service.initialize()
+#     return chroma_service
+
 @router.post("/upload")
 async def upload_document(
     file: UploadFile = File(...),
@@ -33,7 +45,7 @@ async def upload_document(
     document_type: str = Form("general"),
     title: Optional[str] = Form(None),
     processing_type: str = Form("both"),  # "vectorized", "complete", or "both"
-    db: Session = Depends(get_db)
+    db: DatabaseSession = Depends(get_db)
 ) -> Dict[str, Any]:
     """
     Upload and process medical document
@@ -108,71 +120,14 @@ async def upload_document(
                         logger.info(f"✅ Created new patient: {parse_result.patient_data.full_name} (ID: {actual_patient_id})")
                     else:
                         logger.error(f"❌ Failed to create patient: {patient_creation_result.error_message}")
-                        # Create a default patient for failed cases
-                        from app.db.models import Patient, Doctor, GenderEnum
-                        
-                        # Find or create default doctor
-                        default_doctor = db.query(Doctor).filter(Doctor.email == "admin@tecsalud.com").first()
-                        if not default_doctor:
-                            default_doctor = Doctor(
-                                email="admin@tecsalud.com",
-                                name="Sistema Administrativo",
-                                specialty="Administración",
-                                license_number="ADMIN001"
-                            )
-                            db.add(default_doctor)
-                            db.commit()
-                            db.refresh(default_doctor)
-                        
-                        # Create default patient for failed creation
-                        import datetime
-                        import time
-                        failed_patient = Patient(
-                            medical_record_number=f"FAILED_{int(time.time())}",
-                            name="Creación Fallida",
-                            birth_date=datetime.date(1900, 1, 1),
-                            gender=GenderEnum.UNKNOWN,
-                            doctor_id=default_doctor.id
-                        )
-                        db.add(failed_patient)
-                        db.commit()
-                        db.refresh(failed_patient)
-                        
-                        actual_patient_id = str(failed_patient.id)
-                        logger.info(f"✅ Created default patient for failed creation: {actual_patient_id}")
+                        # Use default patient ID for failed cases
+                        actual_patient_id = "FAILED_PATIENT_CREATION"
+                        logger.warning(f"⚠️ Using default patient ID for failed creation: {actual_patient_id}")
             else:
                 logger.warning(f"⚠️ Could not parse TecSalud filename: {file.filename}")
-                # Create a default patient for unknown cases
-                from app.db.models import Patient, Doctor, GenderEnum
-                
-                # Find or create default doctor
-                default_doctor = db.query(Doctor).filter(Doctor.email == "admin@tecsalud.com").first()
-                if not default_doctor:
-                    default_doctor = Doctor(
-                        email="admin@tecsalud.com",
-                        name="Sistema Administrativo",
-                        specialty="Administración",
-                        license_number="ADMIN001"
-                    )
-                    db.add(default_doctor)
-                    db.commit()
-                    db.refresh(default_doctor)
-                
-                # Create default patient for unknown documents
-                import datetime
-                unknown_patient = Patient(
-                    medical_record_number=f"UNKNOWN_{int(time.time())}",
-                    name="Paciente Desconocido",
-                    birth_date=datetime.date(1900, 1, 1),
-                    gender=GenderEnum.UNKNOWN,
-                    doctor_id=default_doctor.id
-                )
-                db.add(unknown_patient)
-                db.commit()
-                db.refresh(unknown_patient)
-                
-                actual_patient_id = str(unknown_patient.id)
-                logger.info(f"✅ Created default patient for unknown document: {actual_patient_id}")
+                # Use default patient ID for unknown documents
+                actual_patient_id = "UNKNOWN_PATIENT"
+                logger.warning(f"⚠️ Using default patient ID for unknown document: {actual_patient_id}")
         
         # Prepare metadata
         metadata = {
@@ -188,68 +143,61 @@ async def upload_document(
         
         processing_results = {}
         
-        # Handle vectorization (ChromaDB)
+        # Skip vectorization - focusing only on complete document storage
         if processing_type in ["vectorized", "both"]:
-            try:
-                await chroma_service.add_document(
-                    document_id=document_id,
-                    content=text_content,
-                    metadata=metadata
-                )
-                processing_results["vectorized"] = "success"
-                logger.info(f"✅ Document vectorized: {document_id}")
-            except Exception as e:
-                logger.error(f"❌ Vectorization failed: {str(e)}")
-                processing_results["vectorized"] = f"error: {str(e)}"
+            processing_results["vectorized"] = "skipped - not implemented"
+            logger.info("ℹ️ Vectorization skipped - focusing on complete document storage")
         
-        # Handle complete document storage (SQL Database)
+        # Handle complete document storage (MongoDB)
         if processing_type in ["complete", "both"]:
             try:
-                # Store complete document in medical_documents table
-                from app.db.models import MedicalDocument, DocumentTypeEnum, ProcessingTypeEnum, VectorizationStatusEnum
+                import hashlib
+                from datetime import datetime
                 
-                # Map document_type to enum
-                try:
-                    doc_type_enum = DocumentTypeEnum(document_type)
-                except ValueError:
-                    doc_type_enum = DocumentTypeEnum.OTHER
+                # Create document data for MongoDB
+                # Handle patient_id conversion for MongoDB
+                patient_id_for_doc = None
+                if actual_patient_id and actual_patient_id.isdigit():
+                    patient_id_for_doc = int(actual_patient_id)
+                elif actual_patient_id and actual_patient_id not in ["FAILED_PATIENT_CREATION", "UNKNOWN_PATIENT"]:
+                    patient_id_for_doc = actual_patient_id  # Keep as string for MongoDB ObjectId
                 
-                # Map processing_type to enum
-                try:
-                    proc_type_enum = ProcessingTypeEnum(processing_type)
-                except ValueError:
-                    proc_type_enum = ProcessingTypeEnum.COMPLETE
+                medical_doc_data = {
+                    "patient_id": patient_id_for_doc,
+                    "document_type": document_type,
+                    "title": title or file.filename,
+                    "content": text_content,
+                    "file_path": f"uploads/{file.filename}",
+                    "file_size": len(content),
+                    "created_by": "admin",  # Would be actual user
+                    "processing_type": processing_type,
+                    "original_filename": file.filename,
+                    "vectorization_status": "completed" if processing_type in ["vectorized", "both"] else "pending",
+                    "content_hash": hashlib.sha256(content).hexdigest(),
+                    "created_at": datetime.now().isoformat(),
+                    "updated_at": datetime.now().isoformat()
+                }
                 
-                medical_doc = MedicalDocument(
-                    patient_id=int(actual_patient_id) if actual_patient_id.isdigit() else None,
-                    document_type=doc_type_enum,
-                    title=title or file.filename,
-                    content=text_content,
-                    file_path=f"uploads/{file.filename}",  # Would store actual file path
-                    file_size=len(content),
-                    created_by="admin",  # Would be actual user
-                    processing_type=proc_type_enum,
-                    original_filename=file.filename,
-                    vectorization_status=VectorizationStatusEnum.COMPLETED if processing_type in ["vectorized", "both"] else VectorizationStatusEnum.PENDING,
-                    content_hash=hashlib.sha256(content).hexdigest()
-                )
+                # Store in MongoDB
+                result = await db.create("medical_documents", medical_doc_data)
                 
-                db.add(medical_doc)
-                db.commit()
-                db.refresh(medical_doc)
+                # Get document ID from result
+                if isinstance(result, dict):
+                    document_mongo_id = str(result.get("_id") or result.get("id"))
+                else:
+                    document_mongo_id = str(result)
                 
                 processing_results["complete_storage"] = "success"
-                processing_results["medical_document_id"] = medical_doc.id
-                logger.info(f"✅ Document stored completely: {medical_doc.id}")
+                processing_results["medical_document_id"] = document_mongo_id
+                logger.info(f"✅ Document stored completely: {document_mongo_id}")
                 
             except Exception as e:
                 logger.error(f"❌ Complete storage failed: {str(e)}")
                 processing_results["complete_storage"] = f"error: {str(e)}"
-                db.rollback()
         
-        # Generate automatic analysis only if vectorization was successful
+        # Generate automatic analysis for complete documents
         analysis_summary = "No analysis performed"
-        if processing_results.get("vectorized") == "success":
+        if processing_results.get("complete_storage") == "success":
             try:
                 analysis_summary = await _generate_document_analysis(text_content, document_type)
             except Exception as e:
@@ -288,6 +236,7 @@ async def analyze_document(
 ) -> DocumentAnalysisResponse:
     """
     Analyze medical document using AI
+    Note: Temporarily disabled - focusing on complete document storage
     
     Args:
         request: Document analysis request
@@ -295,67 +244,10 @@ async def analyze_document(
     Returns:
         Document analysis results
     """
-    try:
-        logger.info(f"🔬 Analyzing document: {request.document_id}")
-        
-        # Get document from vector database
-        documents = await chroma_service.search_documents(
-            query="documento completo",
-            n_results=1,
-            filters={"original_document_id": request.document_id}
-        )
-        
-        if not documents:
-            raise HTTPException(status_code=404, detail="Document not found")
-        
-        document = documents[0]
-        
-        # Prepare analysis request
-        analysis_messages = [
-            ChatMessage(
-                role="user",
-                content=f"Analiza este documento médico tipo '{request.analysis_type}': {document['content']}"
-            )
-        ]
-        
-        # Get patient context if needed
-        patient_context = None
-        if request.include_context:
-            patient_id = document.get("patient_id")
-            if patient_id:
-                try:
-                    patient_context = await chroma_service.get_patient_context(patient_id)
-                except ChromaError as e:
-                    logger.warning(f"⚠️ Could not get patient context: {str(e)}")
-        
-        # Perform analysis using document agent
-        response = await document_agent.process(
-            messages=analysis_messages,
-            patient_context=patient_context,
-            model_type=ModelType.GPT4O
-        )
-        
-        # Extract key findings and recommendations
-        key_findings = _extract_key_findings(response.content)
-        recommendations = _extract_recommendations(response.content)
-        
-        return DocumentAnalysisResponse(
-            document_id=request.document_id,
-            analysis_type=request.analysis_type,
-            summary=response.content,
-            key_findings=key_findings,
-            recommendations=recommendations,
-            confidence=0.85  # Would be calculated based on analysis
-        )
-        
-    except HTTPException:
-        raise
-    except AgentError as e:
-        logger.error(f"❌ Document analysis failed: {str(e)}")
-        raise HTTPException(status_code=503, detail="Document analysis service error")
-    except Exception as e:
-        logger.error(f"❌ Document analysis failed: {str(e)}")
-        raise HTTPException(status_code=500, detail="Document analysis failed")
+    raise HTTPException(
+        status_code=501, 
+        detail="Document analysis temporarily disabled - focusing on complete document storage"
+    )
 
 @router.get("/{document_id}")
 async def get_document(document_id: str) -> Dict[str, Any]:
@@ -371,33 +263,11 @@ async def get_document(document_id: str) -> Dict[str, Any]:
     try:
         logger.info(f"📄 Getting document: {document_id}")
         
-        # Search for document
-        documents = await chroma_service.search_documents(
-            query="documento completo",
-            n_results=10,
-            filters={"original_document_id": document_id}
+        # Temporarily disabled - focusing on complete document storage
+        raise HTTPException(
+            status_code=501, 
+            detail="Document retrieval temporarily disabled - focusing on complete document storage"
         )
-        
-        if not documents:
-            raise HTTPException(status_code=404, detail="Document not found")
-        
-        # Combine chunks if multiple
-        if len(documents) > 1:
-            # Sort by chunk index
-            documents.sort(key=lambda x: x.get("metadata", {}).get("chunk_index", 0))
-            content = " ".join([doc["content"] for doc in documents])
-            metadata = documents[0]["metadata"]
-        else:
-            content = documents[0]["content"]
-            metadata = documents[0]["metadata"]
-        
-        return {
-            "document_id": document_id,
-            "content": content,
-            "metadata": metadata,
-            "chunks": len(documents),
-            "total_length": len(content)
-        }
         
     except HTTPException:
         raise
@@ -408,7 +278,7 @@ async def get_document(document_id: str) -> Dict[str, Any]:
 @router.delete("/{document_id}")
 async def delete_document(document_id: str) -> Dict[str, Any]:
     """
-    Delete document from vector database
+    Delete document - temporarily disabled
     
     Args:
         document_id: Document identifier
@@ -416,20 +286,10 @@ async def delete_document(document_id: str) -> Dict[str, Any]:
     Returns:
         Deletion confirmation
     """
-    try:
-        logger.info(f"🗑️ Deleting document: {document_id}")
-        
-        await chroma_service.delete_document(document_id)
-        
-        return {
-            "document_id": document_id,
-            "status": "deleted",
-            "message": "Document deleted successfully"
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Failed to delete document: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to delete document")
+    raise HTTPException(
+        status_code=501, 
+        detail="Document deletion temporarily disabled - focusing on complete document storage"
+    )
 
 @router.get("/")
 async def list_documents(
@@ -439,7 +299,7 @@ async def list_documents(
     offset: int = 0
 ) -> Dict[str, Any]:
     """
-    List documents with optional filtering
+    List documents - temporarily disabled
     
     Args:
         patient_id: Filter by patient ID
@@ -450,50 +310,10 @@ async def list_documents(
     Returns:
         List of documents with metadata
     """
-    try:
-        logger.info(f"📋 Listing documents (patient: {patient_id}, type: {document_type})")
-        
-        # Build filters
-        filters = {}
-        if patient_id:
-            filters["patient_id"] = patient_id
-        if document_type:
-            filters["document_type"] = document_type
-        
-        # Search documents
-        documents = await chroma_service.search_documents(
-            query="documentos médicos",
-            n_results=limit + offset,
-            filters=filters if filters else None
-        )
-        
-        # Apply pagination
-        paginated_docs = documents[offset:offset + limit]
-        
-        # Format response
-        formatted_docs = []
-        for doc in paginated_docs:
-            formatted_docs.append({
-                "document_id": doc.get("document_id"),
-                "title": doc.get("metadata", {}).get("title", "Untitled"),
-                "document_type": doc.get("document_type"),
-                "patient_id": doc.get("patient_id"),
-                "date": doc.get("date"),
-                "file_size": doc.get("metadata", {}).get("file_size", 0),
-                "preview": doc.get("content", "")[:200] + "..." if len(doc.get("content", "")) > 200 else doc.get("content", "")
-            })
-        
-        return {
-            "documents": formatted_docs,
-            "total": len(documents),
-            "limit": limit,
-            "offset": offset,
-            "has_more": len(documents) > offset + limit
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Failed to list documents: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to list documents")
+    raise HTTPException(
+        status_code=501, 
+        detail="Document listing temporarily disabled - focusing on complete document storage"
+    )
 
 @router.post("/search")
 async def search_documents(
@@ -503,7 +323,7 @@ async def search_documents(
     limit: int = 10
 ) -> Dict[str, Any]:
     """
-    Search documents using semantic search
+    Search documents - temporarily disabled
     
     Args:
         query: Search query
@@ -514,47 +334,10 @@ async def search_documents(
     Returns:
         Search results with relevance scores
     """
-    try:
-        logger.info(f"🔍 Searching documents: {query}")
-        
-        # Build filters
-        filters = {}
-        if patient_id:
-            filters["patient_id"] = patient_id
-        if document_type:
-            filters["document_type"] = document_type
-        
-        # Perform semantic search
-        results = await chroma_service.search_documents(
-            query=query,
-            n_results=limit,
-            filters=filters if filters else None
-        )
-        
-        # Format results
-        formatted_results = []
-        for result in results:
-            formatted_results.append({
-                "document_id": result.get("document_id"),
-                "title": result.get("metadata", {}).get("title", "Untitled"),
-                "content_preview": result.get("content", "")[:300] + "...",
-                "relevance_score": result.get("score", 0),
-                "document_type": result.get("document_type"),
-                "patient_id": result.get("patient_id"),
-                "date": result.get("date"),
-                "metadata": result.get("metadata", {})
-            })
-        
-        return {
-            "query": query,
-            "results": formatted_results,
-            "total_found": len(results),
-            "search_time": "0.1s"  # Would be actual search time
-        }
-        
-    except Exception as e:
-        logger.error(f"❌ Document search failed: {str(e)}")
-        raise HTTPException(status_code=500, detail="Document search failed")
+    raise HTTPException(
+        status_code=501, 
+        detail="Document search temporarily disabled - focusing on complete document storage"
+    )
 
 async def _extract_text_from_file(filename: str, content: bytes) -> str:
     """Extract text content from uploaded file using appropriate libraries"""

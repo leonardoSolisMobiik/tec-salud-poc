@@ -5,7 +5,7 @@ Centralized configuration for Azure OpenAI, database, and application settings
 
 from pydantic_settings import BaseSettings
 from pydantic import Field
-from typing import List, Optional
+from typing import List, Optional, Dict
 import os
 from pathlib import Path
 
@@ -53,10 +53,39 @@ class Settings(BaseSettings):
     TEMPERATURE: float = Field(default=0.1, env="TEMPERATURE")
     
     # Database
+    DATABASE_TYPE: str = Field(
+        default="mongodb", 
+        env="DATABASE_TYPE"
+    )  # "mongodb" or "sqlite"
+    
+    # SQLite Database (fallback)
     DATABASE_URL: str = Field(
-        default="sqlite:///./tecsalud.db", 
+        default="sqlite:///./data/tecsalud.db", 
         env="DATABASE_URL"
     )
+    
+    # MongoDB/CosmosDB Configuration
+    MONGODB_CONNECTION_STRING: str = Field(
+        default="mongodb://localhost:27017", 
+        env="MONGODB_CONNECTION_STRING"
+    )
+    MONGODB_DATABASE_NAME: str = Field(
+        default="tecsalud", 
+        env="MONGODB_DATABASE_NAME"
+    )
+    
+    # MongoDB Collections (matching the image)
+    MONGODB_COLLECTIONS: Dict[str, str] = {
+        "patients": "patients",
+        "doctors": "doctors", 
+        "medical_documents": "medical_documents",
+        "diagnoses": "diagnoses",
+        "treatments": "treatments",
+        "vital_signs": "vital_signs",
+        "patient_interactions": "patient_interactions",
+        "batch_uploads": "batch_uploads",
+        "batch_files": "batch_files"
+    }
     
     # Chroma Vector Database
     CHROMA_PERSIST_DIRECTORY: str = Field(
