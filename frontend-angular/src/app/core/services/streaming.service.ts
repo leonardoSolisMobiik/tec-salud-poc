@@ -3,18 +3,98 @@ import { Observable } from 'rxjs';
 import { environment } from '@environments/environment';
 import { ChatRequest, StreamChunk } from '../models';
 
+/**
+ * Service for handling streaming responses from AI chat endpoints
+ * 
+ * @description Manages real-time streaming connections to the backend AI services.
+ * Handles Server-Sent Events (SSE) style streaming, chunk processing, and error handling.
+ * Uses NgZone for proper Angular change detection during streaming operations.
+ * 
+ * @example
+ * ```typescript
+ * constructor(private streamingService: StreamingService) {}
+ * 
+ * // Stream medical chat response
+ * const chatRequest: ChatRequest = {
+ *   messages: [{ role: 'user', content: '¿Cuáles son los síntomas?' }],
+ *   patient_id: 'patient-123',
+ *   stream: true
+ * };
+ * 
+ * this.streamingService.streamMedicalChat(chatRequest).subscribe({
+ *   next: (chunk) => {
+ *     if (chunk.type === 'content') {
+ *       console.log('New content:', chunk.content);
+ *     } else if (chunk.type === 'done') {
+ *       console.log('Streaming completed');
+ *     }
+ *   },
+ *   error: (error) => console.error('Stream error:', error),
+ *   complete: () => console.log('Stream finished')
+ * });
+ * ```
+ * 
+ * @since 1.0.0
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class StreamingService {
+  /** Base API URL from environment configuration */
   private readonly apiUrl = environment.apiUrl;
 
+  /**
+   * Creates an instance of StreamingService
+   * 
+   * @param zone - Angular NgZone for proper change detection during async operations
+   */
   constructor(private zone: NgZone) {}
 
   /**
    * Creates a streaming connection to the medical chat endpoint
-   * @param request The chat request with messages and optional patient context
-   * @returns Observable that emits stream chunks
+   * 
+   * @param request - Chat request containing messages and optional patient context
+   * @returns Observable that emits stream chunks as they arrive from the AI
+   * 
+   * @description Establishes a streaming connection to the backend AI service using
+   * the Fetch API with AbortController for cancellation. Processes Server-Sent Events
+   * style responses and emits parsed chunks through an Observable stream.
+   * 
+   * @example
+   * ```typescript
+   * const request: ChatRequest = {
+   *   messages: [
+   *     { role: 'user', content: 'Evalúa estos síntomas: fiebre, dolor de cabeza' }
+   *   ],
+   *   patient_id: 'patient-456',
+   *   include_context: true,
+   *   stream: true
+   * };
+   * 
+   * this.streamingService.streamMedicalChat(request).subscribe({
+   *   next: (chunk) => {
+   *     switch (chunk.type) {
+   *       case 'content':
+   *         // Handle incremental content
+   *         this.appendToMessage(chunk.content);
+   *         break;
+   *       case 'done':
+   *         // Handle completion
+   *         this.finalizeMessage();
+   *         break;
+   *       case 'error':
+   *         // Handle errors
+   *         this.showError(chunk.error);
+   *         break;
+   *     }
+   *   },
+   *   error: (error) => {
+   *     console.error('Streaming failed:', error);
+   *   }
+   * });
+   * ```
+   * 
+   * @throws Will emit error if network request fails or response cannot be processed
    */
   streamMedicalChat(request: ChatRequest): Observable<StreamChunk> {
     return new Observable(observer => {
@@ -41,6 +121,13 @@ export class StreamingService {
         const decoder = new TextDecoder();
         let streamComplete = false;
 
+        /**
+         * Processes the streaming response chunks
+         * 
+         * @private
+         * @description Reads chunks from the stream, parses Server-Sent Events format,
+         * and emits appropriate StreamChunk objects. Handles content chunks and completion signals.
+         */
         const processStream = async () => {
           try {
             while (true && !streamComplete) {
@@ -57,7 +144,7 @@ export class StreamingService {
               const chunk = decoder.decode(value);
               console.log('📥 Raw chunk received:', chunk.length, 'bytes');
               
-              // Use the same regex as React - find all data: lines
+              // Parse Server-Sent Events format - find all data: lines
               const dataRegex = /data: ({[^}]+})/g;
               let match;
               
@@ -88,6 +175,12 @@ export class StreamingService {
                 } catch (e) {
                   console.error('❌ Parse error:', e);
                   console.error('   Data was:', data);
+                  this.zone.run(() => {
+                    observer.next({
+                      type: 'error',
+                      error: `Parse error: ${e instanceof Error ? e.message : 'Unknown error'}`
+                    });
+                  });
                 }
               }
             }
@@ -109,14 +202,15 @@ export class StreamingService {
         });
       });
 
-      // Cleanup on unsubscribe
+      /**
+       * Cleanup function called when Observable is unsubscribed
+       * 
+       * @description Aborts the fetch request to prevent memory leaks
+       * and clean up resources when the component unsubscribes
+       */
       return () => {
         abortController.abort();
       };
     });
   }
-
-
-
-
 }

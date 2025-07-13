@@ -1,411 +1,403 @@
-/* TecSalud Medical System - Global Styles with Bamboo Design System */
+/* =============================================
+   TECSALUD MEDICAL ASSISTANT - GLOBAL STYLES
+   ============================================= */
 
-/* 🎯 IMPORTAR TOKENS OFICIALES DE BAMBOO */
-/* Usando ruta sin tilde para evitar errores de resolución */
-@import 'node_modules/@ti-tecnologico-de-monterrey-oficial/ds-ng/assets/styles/main.min.css';
+/* 🎨 BAMBOO DESIGN SYSTEM TOKENS */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
-/* VERIFICAR QUE LOS TOKENS BAMBOO ESTÁN DISPONIBLES */
+/* 🔧 BAMBOO CSS VARIABLES - GLOBAL OVERRIDE */
 :root {
-  /* Confirmar que los tokens están disponibles */
-  --test-bamboo-color: var(--color-blue-tec, #0066cc);
-  --test-bamboo-spacing: var(--bmb-spacing-m, 1rem);
-  --test-bamboo-radius: var(--bmb-radius-s, 0.5rem);
+  /* TYPOGRAPHY - BAMBOO TOKENS */
+  --font-display: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Monaco', 'Consolas', monospace;
   
-  /* Medical Status Colors usando tokens Bamboo */
-  --medical-success: var(--semantic-success, #28a745);
-  --medical-warning: var(--semantic-warning, #ffc107);
-  --medical-danger: var(--semantic-danger, #dc3545);
-  --medical-info: var(--semantic-info, #17a2b8);
+  /* COLOR SYSTEM - TECSALUD BRAND */
+  --color-blue-tec: 0, 57, 166;          /* #0039A6 - TecSalud Primary */
+  --color-mariner-50: 224, 242, 254;     /* #E0F2FE - Light Blue */
+  --color-mariner-100: 186, 230, 253;    /* #BAE6FD - Lighter Blue */
+  --color-mariner-500: 14, 165, 233;     /* #0EA5E9 - Medium Blue */
   
-  /* Medical Typography con tokens Bamboo */
-  --medical-font-family: var(--font-display, 'Montserrat', 'Helvetica Neue', Arial, sans-serif);
-  --medical-font-size-base: 14px;
+  /* SPACING SYSTEM - BAMBOO TOKENS */
+  --bmb-spacing-xs: 0.25rem;     /* 4px */
+  --bmb-spacing-s: 0.5rem;       /* 8px */
+  --bmb-spacing-m: 1rem;         /* 16px */
+  --bmb-spacing-l: 1.5rem;       /* 24px */
+  --bmb-spacing-xl: 2rem;        /* 32px */
+  --bmb-spacing-xxl: 3rem;       /* 48px */
+  --bmb-spacing-xxxl: 4rem;      /* 64px */
   
-  /* Medical Spacing & Layout con tokens Bamboo */
-  --medical-border-radius: var(--bmb-radius-s, 0.5rem);
-  --medical-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --medical-box-shadow-hover: 0 4px 12px rgba(var(--color-blue-tec), 0.15);
+  /* BORDER RADIUS - BAMBOO TOKENS */
+  --bmb-radius-xs: 0.125rem;     /* 2px */
+  --bmb-radius-s: 0.25rem;       /* 4px */
+  --bmb-radius-m: 0.5rem;        /* 8px */
+  --bmb-radius-l: 0.75rem;       /* 12px */
+  --bmb-radius-xl: 1rem;         /* 16px */
+  --bmb-radius-full: 9999px;     /* Full radius */
+  
+  /* SEMANTIC COLORS - BAMBOO TOKENS */
+  --semantic-success: #10B981;   /* Green */
+  --semantic-error: #EF4444;     /* Red */
+  --semantic-warning: #F59E0B;   /* Amber */
+  --semantic-info: #3B82F6;      /* Blue */
+  
+  /* GENERAL CONTRASTS - BAMBOO TOKENS */
+  --general_contrasts-100: #1F2937;      /* Dark text */
+  --general_contrasts-75: #4B5563;       /* Medium text */
+  --general_contrasts-50: #9CA3AF;       /* Light text */
+  --general_contrasts-25: #E5E7EB;       /* Very light */
+  --general_contrasts-15: #F3F4F6;       /* Background */
+  --general_contrasts-5: #F9FAFB;        /* Light background */
+  --general_contrasts-input-background: #FFFFFF;
+  --general_contrasts-container-outline: #E5E7EB;
+  --general_contrasts-surface: #FFFFFF;
+  --general_contrasts-text-primary: #1F2937;
+  --general_contrasts-text-secondary: #6B7280;
+  
+  /* BUTTON TOKENS - BAMBOO SYSTEM */
+  --buttons-primary-normal: rgb(var(--color-blue-tec));
+  --buttons-primary-hover: rgba(var(--color-blue-tec), 0.9);
+  --buttons-primary-active: rgba(var(--color-blue-tec), 0.8);
+  --buttons-primary-disabled: rgba(var(--color-blue-tec), 0.5);
+  
+  /* TOUCH TARGETS - ACCESSIBILITY */
+  --touch-target-min: 44px;
+  --touch-spacing: 12px;
+  
+  /* MEDICAL SPECIFIC TOKENS */
+  --medical-border-radius: var(--bmb-radius-m);
+  --medical-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --medical-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
-/* Global Base Styles */
+/* 🔧 GLOBAL RESET & BASE STYLES */
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  font-family: var(--medical-font-family);
-  font-size: var(--medical-font-size-base);
+  font-family: var(--font-body);
+  color: var(--general_contrasts-text-primary);
+  background-color: var(--general_contrasts-surface);
   line-height: 1.6;
-  color: #333;
-  margin: 0;
-  padding: 0;
-  background-color: #f8f9fa;
+  font-weight: 400;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
 }
 
-/* Medical Component Themes */
-.medical-active {
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-  border-color: var(--bmb-color-primary) !important;
-  box-shadow: var(--medical-box-shadow-hover);
+/* 🎨 TYPOGRAPHY SYSTEM - BAMBOO CONSISTENCY */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: var(--bmb-spacing-m);
+  color: var(--general_contrasts-100);
 }
 
-.medical-sidebar {
-  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
-  border-right: 2px solid #e9ecef;
+h1 { font-size: 2.25rem; font-weight: 700; }
+h2 { font-size: 1.875rem; font-weight: 600; }
+h3 { font-size: 1.5rem; font-weight: 600; }
+h4 { font-size: 1.25rem; font-weight: 500; }
+h5 { font-size: 1.125rem; font-weight: 500; }
+h6 { font-size: 1rem; font-weight: 500; }
+
+p {
+  margin-bottom: var(--bmb-spacing-m);
+  color: var(--general_contrasts-text-primary);
+  line-height: 1.6;
 }
 
-.medical-chat {
-  background: linear-gradient(135deg, #fafbfc 0%, #f1f3f4 100%);
-}
-
-/* Bamboo Component Customizations for Medical Theme */
-.bmb-card {
-  border-radius: var(--medical-border-radius);
-  box-shadow: var(--medical-box-shadow);
-  transition: all 0.2s ease;
+/* 🔧 BAMBOO COMPONENT CLASSES - CONSISTENT STYLING */
+.bamboo-input,
+.bamboo-select,
+.bamboo-textarea {
+  width: 100%;
+  padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+  border: 1px solid var(--general_contrasts-container-outline);
+  border-radius: var(--bmb-radius-s);
+  background: var(--general_contrasts-input-background);
+  color: var(--general_contrasts-100);
+  font-size: 1rem;
+  font-family: var(--font-body);
+  transition: all 0.3s ease;
+  outline: none;
   
-  &:hover {
-    box-shadow: var(--medical-box-shadow-hover);
+  &:focus {
+    border-color: rgb(var(--color-blue-tec));
+    box-shadow: 0 0 0 2px rgba(var(--color-blue-tec), 0.2);
+  }
+  
+  &:disabled {
+    background: var(--general_contrasts-15);
+    color: var(--general_contrasts-50);
+    cursor: not-allowed;
+  }
+  
+  &::placeholder {
+    color: var(--general_contrasts-75);
   }
 }
 
-.bmb-search-input {
-  border-radius: var(--medical-border-radius);
+/* 🎯 BAMBOO BUTTON CLASSES - CONSISTENT STYLING */
+.bamboo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bmb-spacing-s);
+  padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+  border: none;
+  border-radius: var(--bmb-radius-s);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  min-height: var(--touch-target-min);
+  
+  &.primary {
+    background: var(--buttons-primary-normal);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: var(--buttons-primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.3);
+    }
+    
+    &:active {
+      background: var(--buttons-primary-active);
+      transform: translateY(0);
+    }
+  }
+  
+  &.secondary {
+    background: transparent;
+    color: var(--buttons-primary-normal);
+    border: 1px solid var(--buttons-primary-normal);
+    
+    &:hover:not(:disabled) {
+      background: rgba(var(--color-blue-tec), 0.1);
+      transform: translateY(-2px);
+    }
+  }
+  
+  &.success {
+    background: var(--semantic-success);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: #059669;
+      transform: translateY(-2px);
+    }
+  }
+  
+  &.error {
+    background: var(--semantic-error);
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: #DC2626;
+      transform: translateY(-2px);
+    }
+  }
+  
+  &:disabled {
+    background: var(--buttons-primary-disabled);
+    color: var(--general_contrasts-50);
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  &:focus {
+    outline: 2px solid var(--buttons-primary-normal);
+    outline-offset: 2px;
+  }
 }
 
-.bmb-badge {
-  font-weight: 600;
+/* 🏷️ BAMBOO BADGE CLASSES - CONSISTENT STYLING */
+.bamboo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bmb-spacing-xs);
+  padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
+  border-radius: var(--bmb-radius-s);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: var(--font-body);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-radius: 4px;
+  
+  &.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--semantic-success);
+  }
+  
+  &.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--semantic-error);
+  }
+  
+  &.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--semantic-warning);
+  }
+  
+  &.info {
+    background: rgba(var(--color-blue-tec), 0.1);
+    color: rgb(var(--color-blue-tec));
+  }
 }
 
-.bmb-button {
-  border-radius: var(--medical-border-radius);
-  font-weight: 500;
-  transition: all 0.2s ease;
+/* 📦 BAMBOO CARD CLASSES - CONSISTENT STYLING */
+.bamboo-card {
+  background: var(--general_contrasts-surface);
+  border: 1px solid var(--general_contrasts-container-outline);
+  border-radius: var(--bmb-radius-m);
+  padding: var(--bmb-spacing-l);
+  box-shadow: var(--medical-shadow);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: var(--medical-shadow-hover);
+    transform: translateY(-2px);
+  }
+  
+  &.elevated {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    
+    &:hover {
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+  }
 }
 
-.bmb-avatar {
+/* 🔄 BAMBOO LOADER CLASSES - CONSISTENT STYLING */
+.bamboo-loader {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--general_contrasts-25);
+  border-top: 2px solid var(--buttons-primary-normal);
   border-radius: 50%;
-  font-weight: 600;
+  animation: bamboo-spin 1s linear infinite;
 }
 
-/* Medical Status Classes */
-.status-active { color: var(--bmb-color-success); }
-.status-inactive { color: var(--bmb-color-danger); }
-.status-pending { color: var(--bmb-color-warning); }
-.status-info { color: var(--bmb-color-info); }
+@keyframes bamboo-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 
-/* Utility Classes for Medical UI */
-.medical-text-primary { color: var(--bmb-color-primary); }
-.medical-text-secondary { color: #6c757d; }
-.medical-bg-primary { background-color: var(--bmb-color-primary); }
-.medical-border-primary { border-color: var(--bmb-color-primary); }
+/* 📱 RESPONSIVE BREAKPOINTS - BAMBOO SYSTEM */
+@media (max-width: 767px) {
+  :root {
+    --bmb-spacing-xs: 0.25rem;
+    --bmb-spacing-s: 0.5rem;
+    --bmb-spacing-m: 0.75rem;
+    --bmb-spacing-l: 1rem;
+    --bmb-spacing-xl: 1.5rem;
+    --bmb-spacing-xxl: 2rem;
+  }
+  
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+  
+  .bamboo-input,
+  .bamboo-select,
+  .bamboo-textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
 
-/* Accessibility & Focus States */
-.bmb-button:focus,
-.bmb-card:focus,
-.medical-interactive:focus {
-  outline: 2px solid var(--bmb-color-primary);
+@media (min-width: 768px) and (max-width: 1024px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+}
+
+/* 🎯 UTILITY CLASSES - BAMBOO CONSISTENCY */
+.text-primary { color: var(--general_contrasts-100); }
+.text-secondary { color: var(--general_contrasts-75); }
+.text-muted { color: var(--general_contrasts-50); }
+.text-brand { color: rgb(var(--color-blue-tec)); }
+.text-success { color: var(--semantic-success); }
+.text-error { color: var(--semantic-error); }
+.text-warning { color: var(--semantic-warning); }
+
+.bg-primary { background-color: var(--general_contrasts-surface); }
+.bg-secondary { background-color: var(--general_contrasts-15); }
+.bg-brand { background-color: rgb(var(--color-blue-tec)); }
+.bg-success { background-color: var(--semantic-success); }
+.bg-error { background-color: var(--semantic-error); }
+.bg-warning { background-color: var(--semantic-warning); }
+
+.border-primary { border-color: var(--general_contrasts-container-outline); }
+.border-brand { border-color: rgb(var(--color-blue-tec)); }
+.border-success { border-color: var(--semantic-success); }
+.border-error { border-color: var(--semantic-error); }
+.border-warning { border-color: var(--semantic-warning); }
+
+.shadow-sm { box-shadow: var(--medical-shadow); }
+.shadow-md { box-shadow: var(--medical-shadow-hover); }
+.shadow-lg { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2); }
+
+/* 🔍 ACCESSIBILITY IMPROVEMENTS */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* 🎨 FOCUS STYLES - ACCESSIBILITY */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+[tabindex]:focus {
+  outline: 2px solid var(--buttons-primary-normal);
   outline-offset: 2px;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  body {
-    font-size: 13px;
+/* 🖱️ TOUCH DEVICE OPTIMIZATIONS */
+@media (hover: none) and (pointer: coarse) {
+  .bamboo-button,
+  .bamboo-card {
+    transform: none !important;
   }
   
-  .medical-sidebar {
-    width: 280px !important;
+  .bamboo-input,
+  .bamboo-select,
+  .bamboo-textarea {
+    min-height: var(--touch-target-min);
   }
 }
 
-/* Animation Enhancements */
-@keyframes medical-fade-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.medical-fade-in {
-  animation: medical-fade-in 0.3s ease-out;
-}
-
-/* ✈️ BOTÓN PREMIUM AVIONCITO - ESTILO ULTRA ELEGANTE CON TOKENS BAMBOO */
-.send-btn-premium {
-  /* Reset de estilos anteriores */
-  all: unset;
+/* 🌐 PRINT STYLES */
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
   
-  /* Base Premium */
-  position: relative !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: 140px !important;
-  height: 52px !important;
-  padding: 0 var(--bmb-spacing-xl, 2rem) !important;
-  
-  /* Diseño Premium */
-  background: linear-gradient(145deg, 
-    rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
-    rgba(var(--color-blue-tec, 0, 57, 166), 0.88) 100%
-  ) !important;
-  border: none !important;
-  border-radius: 26px !important;
-  cursor: pointer !important;
-  
-  /* Tipografía Premium */
-  color: white !important;
-  font-family: var(--font-display, 'Poppins-SemiBold', sans-serif) !important;
-  font-weight: 600 !important;
-  font-size: 0.95rem !important;
-  letter-spacing: 0.5px !important;
-  
-  /* Efectos Premium */
-  box-shadow: 
-    0 8px 24px rgba(var(--color-blue-tec, 0, 57, 166), 0.35),
-    0 3px 8px rgba(0, 0, 0, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.1) !important;
-  backdrop-filter: blur(12px) !important;
-  overflow: hidden !important;
-  transform: scale(1) translateY(0) !important;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-}
-
-/* Efecto de brillo animado */
-.send-btn-premium::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, 
-    transparent 30%,
-    rgba(255, 255, 255, 0.1) 50%,
-    transparent 70%
-  );
-  transform: translateX(-100%);
-  transition: transform 0.6s;
-  z-index: 1;
-}
-
-/* Efecto de onda al hacer clic */
-.send-btn-premium::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-/* Estado Hover Premium */
-.send-btn-premium:hover {
-  transform: translateY(-3px) scale(1.02) !important;
-  background: linear-gradient(145deg, 
-    rgba(var(--color-blue-tec, 0, 57, 166), 0.95) 0%, 
-    rgb(var(--color-blue-tec, 0, 57, 166)) 100%
-  ) !important;
-  box-shadow: 
-    0 12px 32px rgba(var(--color-blue-tec, 0, 57, 166), 0.45),
-    0 5px 12px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.15) !important;
-}
-
-.send-btn-premium:hover::before {
-  transform: translateX(100%);
-}
-
-/* Estado Active */
-.send-btn-premium:active {
-  transform: translateY(-1px) scale(0.98) !important;
-  transition: all 0.1s ease !important;
-}
-
-.send-btn-premium:active::after {
-  width: 200px;
-  height: 200px;
-}
-
-/* Estado Disabled */
-.send-btn-premium:disabled {
-  background: linear-gradient(135deg, 
-    rgba(var(--general_contrasts-container-outline, 173, 182, 204), 0.4) 0%, 
-    rgba(var(--general_contrasts-container-outline, 173, 182, 204), 0.25) 100%
-  ) !important;
-  color: rgba(255, 255, 255, 0.6) !important;
-  cursor: not-allowed !important;
-  transform: none !important;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Animación para estado activo */
-@keyframes premiumPulse {
-  0%, 100% { 
-    box-shadow: 
-      0 8px 24px rgba(var(--color-blue-tec, 0, 57, 166), 0.35),
-      0 3px 8px rgba(0, 0, 0, 0.12);
+  .bamboo-button,
+  .bamboo-badge {
+    border: 1px solid black !important;
   }
-  50% { 
-    box-shadow: 
-      0 10px 28px rgba(var(--color-blue-tec, 0, 57, 166), 0.4),
-      0 4px 10px rgba(0, 0, 0, 0.15);
-  }
-}
-
-.send-btn-premium.active {
-  animation: premiumPulse 2s infinite;
-}
-
-.bamboo-verification-banner strong {
-  color: white !important;
-  font-size: 20px !important;
-  font-weight: 900 !important;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 2px !important;
-}
-
-.bamboo-verification-banner span {
-  color: #fff !important;
-  font-size: 14px !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
-}
-
-
-
-
-
-
-
-
-
-
-/* 🌟 ANIMACIONES PREMIUM BAMBOO */
-
-
-
-/* Animación floating para elementos premium */
-@keyframes premiumFloat {
-  0%, 100% { 
-    transform: translateY(0px);
-  }
-  50% { 
-    transform: translateY(-3px);
-  }
-}
-
-/* Animación shimmer para efectos premium */
-@keyframes premiumShimmer {
-  0% { 
-    background-position: -200% 0;
-  }
-  100% { 
-    background-position: 200% 0;
-  }
-}
-
-/* Animación glow para elementos interactivos */
-@keyframes premiumGlow {
-  0%, 100% { 
-    box-shadow: 
-      0 4px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.2),
-      0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  50% { 
-    box-shadow: 
-      0 8px 32px rgba(var(--color-blue-tec, 0, 57, 166), 0.4),
-      0 4px 16px rgba(0, 0, 0, 0.15);
-  }
-}
-
-/* Animación fade-in premium */
-@keyframes premiumFadeIn {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px) scale(0.95);
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Animación slide-in premium */
-@keyframes premiumSlideIn {
-  from { 
-    opacity: 0; 
-    transform: translateX(-30px);
-  }
-  to { 
-    opacity: 1; 
-    transform: translateX(0);
-  }
-}
-
-/* 🎨 BODY PREMIUM CON TOKENS BAMBOO */
-body {
-  font-family: var(--font-display, 'Poppins-Regular', sans-serif) !important;
-  background: linear-gradient(135deg, 
-    rgb(var(--color-mariner-50, 240, 248, 254)) 0%, 
-    rgb(var(--general_contrasts-surface, 255, 255, 255)) 100%
-  ) !important;
-  color: rgb(var(--general_contrasts-100, 0, 0, 0)) !important;
-  margin: 0;
-  padding: 0;
-}
-
-/* 🌟 ESTILOS PREMIUM ESPECÍFICOS PARA ELEMENTOS CLAVE */
-
-/* Solo aplicar estilos premium a elementos específicos */
-.premium-card {
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.95) 0%, 
-    rgba(255, 255, 255, 0.85) 100%
-  );
-  backdrop-filter: blur(15px);
-  border: 1px solid rgba(var(--general_contrasts-container-outline, 173, 182, 204), 0.3);
-  border-radius: var(--bmb-radius-m, 1rem);
-  box-shadow: 
-    0 8px 32px rgba(var(--color-blue-tec, 0, 57, 166), 0.1),
-    0 4px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 2px rgba(255, 255, 255, 0.8);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.premium-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 12px 40px rgba(var(--color-blue-tec, 0, 57, 166), 0.15),
-    0 6px 20px rgba(0, 0, 0, 0.1),
-    inset 0 1px 2px rgba(255, 255, 255, 0.9);
-}
-
-/* Scrollbar sutil mejorado */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(var(--color-blue-tec, 0, 57, 166), 0.3);
-  border-radius: var(--bmb-radius-s, 0.5rem);
-  transition: all 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--color-blue-tec, 0, 57, 166), 0.5);
 }

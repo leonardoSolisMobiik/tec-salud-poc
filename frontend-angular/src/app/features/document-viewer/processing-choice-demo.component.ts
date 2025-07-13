@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 import { BambooModule } from '../../shared/bamboo.module';
 import { ProcessingChoiceComponent } from './processing-choice.component';
@@ -540,6 +541,7 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   constructor(
     private router: Router,
+    private location: Location,
     private processingTypeService: ProcessingTypeService
   ) {}
 
@@ -656,6 +658,6 @@ export class ProcessingChoiceDemoComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    this.location.back();
   }
 } 

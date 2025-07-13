@@ -13,6 +13,49 @@ import { ApiService } from './core/services/api.service';
 import { StreamingService } from './core/services/streaming.service';
 import { MarkdownPipe } from './shared/pipes/markdown.pipe';
 
+/**
+ * Main application component for TecSalud Medical Assistant
+ * 
+ * @description Root component that provides the complete medical assistant interface
+ * including sidebar patient management, medical AI chat, navigation, and responsive design.
+ * Combines chat functionality with patient context management.
+ * 
+ * @example
+ * ```typescript
+ * // Used as the root component in main.ts
+ * bootstrapApplication(AppComponent, appConfig);
+ * 
+ * // Provides the complete medical interface:
+ * // - Patient search and selection
+ * // - Medical AI chat with streaming responses
+ * // - Navigation to different modules
+ * // - Responsive sidebar design
+ * ```
+ * 
+ * @features
+ * - **Patient Management**: Search, select, and manage patient context
+ * - **Medical AI Chat**: Streaming responses with markdown support
+ * - **Navigation**: Dropdown menu for all application modules
+ * - **Responsive Design**: Collapsible sidebar for mobile/tablet
+ * - **Real-time Updates**: Live patient search and chat streaming
+ * - **Context Awareness**: Patient-specific medical consultations
+ * 
+ * @userInterface
+ * - Collapsible sidebar with patient search
+ * - Main chat area with AI responses
+ * - Header with navigation and patient context
+ * - Premium send button with airplane animation
+ * - Loading states and error handling
+ * 
+ * @state
+ * - activePatient: Currently selected patient for medical context
+ * - currentChat: Chat message history with AI
+ * - searchResults: Real-time patient search results
+ * - streamingMessage: Live AI response being typed
+ * - sidebarCollapsed: Responsive sidebar state
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -54,11 +97,14 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
           <div class="search-container">
             <div class="bamboo-search-group">
             <input 
+                #searchInput
                 class="search-input bamboo-search-input"
               placeholder="Buscar paciente..."
                 name="searchInput"
-              [(ngModel)]="searchQuery"
-              (ngModelChange)="onSearchChange()"
+              [value]="searchQuery"
+              (input)="onSearchInput($event)"
+              (focus)="onSearchFocus()"
+              (blur)="onSearchBlur()"
                 [disabled]="isSearching"
               type="text"
             />
@@ -225,20 +271,14 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                     </div>
                   </button>
                   
-                  <button class="dropdown-item" (click)="navigateTo('/test-bamboo')">
-                    <span class="dropdown-icon">🧪</span>
-                    <div class="dropdown-text">
-                      <div class="dropdown-title">Test Bamboo</div>
-                      <div class="dropdown-subtitle">Pruebas de componentes</div>
-                    </div>
-                  </button>
+
                   
                   <div class="dropdown-separator"></div>
                   
                   <button class="dropdown-item" (click)="navigateTo('/admin-bulk-upload')">
                     <span class="dropdown-icon">🔧</span>
                     <div class="dropdown-text">
-                      <div class="dropdown-title">Admin: Carga Masiva</div>
+                      <div class="dropdown-title">Carga Masiva</div>
                       <div class="dropdown-subtitle">Procesamiento de lotes TecSalud</div>
                     </div>
                   </button>
@@ -251,6 +291,8 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                     </div>
                   </button>
                   
+                  <!-- DISABLED: Expedientes Vectorizados -->
+                  <!--
                   <button class="dropdown-item" (click)="navigateTo('/documents/list')">
                     <span class="dropdown-icon">📋</span>
                     <div class="dropdown-text">
@@ -258,6 +300,7 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                       <div class="dropdown-subtitle">Ver documentos vectorizados</div>
                     </div>
                   </button>
+                  -->
                 </div>
               </div>
             </div>
@@ -290,45 +333,83 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
                 </div>
               </div>
               
-              <!-- Chat Messages -->
-              <div *ngFor="let message of currentChat; trackBy: trackMessage" class="message-wrapper">
-                <div class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
-                  <div class="message-avatar">
-                    <span *ngIf="message.role === 'user'">👤</span>
-                    <span *ngIf="message.role === 'assistant'">AI</span>
+              <!-- Chat Messages with Bubble Design -->
+              <div *ngFor="let message of currentChat; trackBy: trackMessage" 
+                   class="message-wrapper"
+                   [class.user-wrapper]="message.role === 'user'"
+                   [class.assistant-wrapper]="message.role === 'assistant'">
+                
+                <!-- Avatar -->
+                <div class="message-avatar" 
+                     [class.user-avatar]="message.role === 'user'"
+                     [class.assistant-avatar]="message.role === 'assistant'">
+                  <span *ngIf="message.role === 'user'">👨‍⚕️</span>
+                  <span *ngIf="message.role === 'assistant'">🤖</span>
+                </div>
+                
+                <!-- Bubble Container -->
+                <div class="bubble-container">
+                  <!-- Speech Bubble -->
+                  <div class="speech-bubble"
+                       [class.user-bubble]="message.role === 'user'"
+                       [class.assistant-bubble]="message.role === 'assistant'">
+                    
+                    <!-- Message Content -->
+                    <div class="bubble-content">
+                      <div class="message-text">
+                        <div *ngIf="message.role === 'assistant'" [innerHTML]="message.content | markdown"></div>
+                        <div *ngIf="message.role === 'user'">{{message.content}}</div>
+                      </div>
+                    </div>
+                    
+                    <!-- Bubble Tail -->
+                    <div class="bubble-tail"
+                         [class.user-tail]="message.role === 'user'"
+                         [class.assistant-tail]="message.role === 'assistant'">
+                    </div>
                   </div>
-                                     <div class="message-content">
-                     <div class="message-bubble">
-                       <div *ngIf="message.role === 'assistant'" [innerHTML]="message.content | markdown"></div>
-                       <div *ngIf="message.role === 'user'">{{message.content}}</div>
-                     </div>
-                   </div>
+                  
+                  <!-- Timestamp -->
+                  <div class="message-timestamp"
+                       [class.user-timestamp]="message.role === 'user'"
+                       [class.assistant-timestamp]="message.role === 'assistant'">
+                    {{getCurrentTime()}}
+                  </div>
                 </div>
               </div>
               
-              <!-- Streaming Message -->
-              <div *ngIf="isStreaming" class="message-wrapper">
-                <div class="message assistant">
-                  <div class="message-avatar">
-                    <span>AI</span>
-                  </div>
-                                     <div class="message-content">
-                     <div class="message-bubble">
-                      <div class="streaming-text" [title]="'Length: ' + streamingMessage.length">
-                        {{ streamingMessage }}
-                        <span *ngIf="streamingMessage.length === 0" class="thinking-text">
-                          <span class="thinking-icon">🧠</span>
-                          Pensando
-                          <span class="thinking-dots">
-                            <span class="thinking-dot">.</span>
-                            <span class="thinking-dot">.</span>
-                            <span class="thinking-dot">.</span>
-                          </span>
+              <!-- Streaming Message with Bubble Design -->
+              <div *ngIf="isStreaming" class="message-wrapper assistant-wrapper">
+                <!-- Avatar -->
+                <div class="message-avatar assistant-avatar">
+                  <span class="typing-indicator">🤖</span>
+                </div>
+                
+                <!-- Bubble Container -->
+                <div class="bubble-container">
+                  <!-- Speech Bubble -->
+                  <div class="speech-bubble assistant-bubble streaming-bubble">
+                    <!-- Message Content -->
+                    <div class="bubble-content">
+                      <div class="message-text">
+                        <span *ngIf="streamingMessage">{{ streamingMessage }}</span>
+                        <span *ngIf="!streamingMessage" class="thinking-dots">
+                          <span class="dot">.</span>
+                          <span class="dot">.</span>
+                          <span class="dot">.</span>
                         </span>
+                        <span class="typing-cursor">|</span>
                       </div>
-                       <span class="cursor-blink">|</span>
-                     </div>
-                   </div>
+                    </div>
+                    
+                    <!-- Bubble Tail -->
+                    <div class="bubble-tail assistant-tail"></div>
+                  </div>
+                  
+                  <!-- Timestamp -->
+                  <div class="message-timestamp assistant-timestamp">
+                    Escribiendo...
+                  </div>
                 </div>
               </div>
               
@@ -427,34 +508,92 @@ import { MarkdownPipe } from './shared/pipes/markdown.pipe';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
+  /** Reference to the messages area for auto-scrolling */
   @ViewChild('messagesArea') messagesArea!: ElementRef;
+  @ViewChild('searchInput') searchInput!: ElementRef;
   
+  /** Subject for component cleanup and unsubscription */
   private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<string>();
   private shouldScrollToBottom = false;
   
-  // Component State
+  // =====================================
+  // COMPONENT STATE PROPERTIES
+  // =====================================
+  
+  /** Whether the sidebar is collapsed (responsive design) */
   sidebarCollapsed = false;
+  
+  /** Current search query for patient lookup */
   searchQuery = '';
+  
+  /** Debounced search query to prevent excessive API calls */
   debouncedSearchQuery = '';
+  
+  /** Search results from patient lookup API */
   searchResults: Patient[] = [];
+  
+  /** Flag indicating if user is currently searching */
   isSearching = false;
+  
+  /** Flag indicating if user is currently typing in search */
+  isTyping = false;
+  
+  /** Flag indicating if search input has focus */
+  searchInputHasFocus = false;
+  
+  /** Current search error message, if any */
   searchError: string | null = null;
   
-  // Window reference for TypeScript
+  /** Window reference for TypeScript compatibility */
   window = window;
   
-  // Chat State
-  inputMessage = '';
-  isLoading = false;
-  streamingMessage = '';
-  isStreaming = false;
-  private streamingContentRef = ''; // Like React's useRef
+  // =====================================
+  // CHAT STATE PROPERTIES
+  // =====================================
   
-  // Data State
+  /** Current message being typed by user */
+  inputMessage = '';
+  
+  /** Loading state for API calls */
+  isLoading = false;
+  
+  /** Current streaming message from AI (live typing effect) */
+  streamingMessage = '';
+  
+  /** Whether AI is currently streaming a response */
+  isStreaming = false;
+  
+  /** Internal reference for streaming content management */
+  private streamingContentRef = '';
+  
+  // =====================================
+  // DATA STATE PROPERTIES
+  // =====================================
+  
+  /** Currently selected patient for medical context */
   activePatient: Patient | null = null;
+  
+  /** List of recent patients loaded on component initialization */
   recentPatients: Patient[] = [];
+  
+  /** List of patients to show in the UI (either search results or recent patients) */
+  patientsToShow: Patient[] = [];
+  
+  /** Array of chat messages for the current conversation */
   currentChat: ChatMessage[] = [];
   
+  /**
+   * Creates an instance of AppComponent
+   * 
+   * @param medicalStateService - Service for medical state management
+   * @param apiService - Service for API communication
+   * @param streamingService - Service for AI response streaming
+   * @param cdr - Angular change detector
+   * @param ngZone - Angular zone for performance optimization
+   * @param router - Angular router for navigation
+   * @param document - Document reference for DOM manipulation
+   */
   constructor(
     private medicalStateService: MedicalStateService,
     private apiService: ApiService,
@@ -465,17 +604,33 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     @Inject(DOCUMENT) private document: Document
   ) {}
   
+  /**
+   * Component initialization lifecycle hook
+   * 
+   * @description Initializes all component functionality including subscriptions,
+   * search debouncing, and initial state setup.
+   */
   ngOnInit() {
     this.initializeComponent();
     this.setupSubscriptions();
     this.setupSearchDebounce();
   }
   
+  /**
+   * Component destruction lifecycle hook
+   * 
+   * @description Cleans up subscriptions to prevent memory leaks
+   */
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
   
+  /**
+   * After view checked lifecycle hook
+   * 
+   * @description Handles auto-scrolling to bottom when new messages arrive
+   */
   ngAfterViewChecked() {
     if (this.shouldScrollToBottom) {
       this.scrollToBottom();
@@ -483,11 +638,38 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
   
+  /**
+   * Initializes component state and dependencies
+   * 
+   * @private
+   * @description Sets up initial patient state and loads recent patients.
+   * Now preserves persisted state from localStorage.
+   */
   private initializeComponent() {
-    this.medicalStateService.setActivePatient(null);
+    // Check if there's persisted state
+    const stateInfo = this.medicalStateService.getPersistedStateInfo();
+    
+    if (stateInfo.hasActivePatient) {
+      console.log('🔄 TecSalud: Estado restaurado desde localStorage', {
+        pacienteActivo: stateInfo.hasActivePatient,
+        pacientesRecientes: stateInfo.recentPatientsCount,
+        historialesChat: stateInfo.chatHistoryEntries,
+        tamañoStorage: `${Math.round(stateInfo.storageSize / 1024)}KB`
+      });
+    } else {
+      console.log('🆕 TecSalud: Sesión nueva iniciada');
+    }
+    
+    // Don't clear active patient - let persistence handle it
     // Recent patients are loaded automatically by the service
   }
   
+  /**
+   * Sets up reactive subscriptions for component state management
+   * 
+   * @private
+   * @description Subscribes to active patient, recent patients, and chat state changes
+   */
   private setupSubscriptions() {
     // Active Patient
     this.medicalStateService.activePatient$
@@ -501,6 +683,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       .pipe(takeUntil(this.destroy$))
       .subscribe(patients => {
         this.recentPatients = patients;
+        this.updatePatientsToShow();
       });
     
     // Chat Messages
@@ -519,79 +702,143 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       )
       .subscribe((event: NavigationEnd) => {
         // Show router-outlet for specific routes, hide for chat
-        const showRouterOutletRoutes = ['/documents', '/documents/list', '/dashboard', '/patients', '/test-bamboo', '/admin-bulk-upload'];
+        const showRouterOutletRoutes = ['/documents', '/dashboard', '/patients', '/admin-bulk-upload'];
         this.shouldShowRouterOutlet = showRouterOutletRoutes.some(route => event.url.startsWith(route));
       });
   }
   
   private setupSearchDebounce() {
     // Debounce search query
-    const searchSubject = new Subject<string>();
-    searchSubject.pipe(
+    this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       takeUntil(this.destroy$)
     ).subscribe(query => {
+      this.isTyping = false;
       this.debouncedSearchQuery = query;
       this.performSearch(query);
     });
-    
-    // Store reference for onSearchChange
-    (this as any).searchSubject = searchSubject;
   }
   
-  onSearchChange() {
-    (this as any).searchSubject.next(this.searchQuery);
+  onSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.searchQuery = target.value;
+    this.isTyping = true;
+    
+    // If field is completely empty, immediately show recent patients
+    if (!this.searchQuery.trim()) {
+      this.searchResults = [];
+      this.searchError = null;
+      this.isSearching = false;
+      this.updatePatientsToShow();
+      console.log('🔍 Campo vaciado - mostrando pacientes recientes inmediatamente');
+    }
+    
+    // Use setTimeout to avoid blocking the input
+    setTimeout(() => {
+      this.searchSubject.next(this.searchQuery);
+    }, 0);
+  }
+
+  onSearchFocus() {
+    this.isTyping = true;
+    this.searchInputHasFocus = true;
+  }
+
+  onSearchBlur() {
+    this.isTyping = false;
+    this.searchInputHasFocus = false;
   }
 
   clearSearch() {
     this.searchQuery = '';
-    this.onSearchChange();
+    this.searchResults = [];
+    this.searchError = null;
+    this.isSearching = false;
+    this.isTyping = false;
+    this.updatePatientsToShow(); // Use the improved logic instead of force update
+    
+    // Maintain focus on the input
+    if (this.searchInput?.nativeElement) {
+      this.searchInput.nativeElement.value = '';
+      setTimeout(() => {
+        this.searchInput.nativeElement.focus();
+      }, 0);
+    }
+    
+    this.searchSubject.next('');
+    console.log('🧹 Búsqueda limpiada - mostrando pacientes recientes');
   }
   
   private async performSearch(query: string) {
     if (!query.trim()) {
       this.searchResults = [];
       this.searchError = null;
+      this.isSearching = false;
+      this.updatePatientsToShow(); // This will now show recent patients immediately
+      console.log('🔍 Búsqueda vacía - mostrando pacientes recientes');
       return;
     }
     
     this.isSearching = true;
     this.searchError = null;
+    console.log('🔍 Buscando pacientes:', query);
     
     try {
       const response = await this.apiService.searchPatients(query).toPromise();
       this.searchResults = response || [];
+      this.isSearching = false;
+      this.updatePatientsToShow();
+      console.log('✅ Búsqueda completada:', this.searchResults.length, 'resultados');
     } catch (error) {
       console.error('❌ Search error:', error);
       this.searchError = 'Error al buscar pacientes';
       this.searchResults = [];
-    } finally {
       this.isSearching = false;
+      this.updatePatientsToShow();
     }
   }
   
-  get patientsToShow(): Patient[] {
-    return this.searchQuery.trim() ? this.searchResults : this.recentPatients;
+  private updatePatientsToShow() {
+    // Only block updates when user is typing AND there's text in the search
+    // Allow updates when search is empty to show recent patients
+    if ((this.isTyping || this.searchInputHasFocus) && this.searchQuery.trim()) {
+      return;
+    }
+    
+    // Only update if the list would actually change
+    const newList = this.searchQuery.trim() ? this.searchResults : this.recentPatients;
+    if (JSON.stringify(this.patientsToShow) !== JSON.stringify(newList)) {
+      this.patientsToShow = newList;
+      console.log('📋 Lista de pacientes actualizada:', this.searchQuery.trim() ? 'Resultados de búsqueda' : 'Pacientes recientes', newList.length);
+    }
+  }
+  
+  private forceUpdatePatientsToShow() {
+    this.patientsToShow = this.searchQuery.trim() ? this.searchResults : this.recentPatients;
   }
   
   selectPatient(patient: Patient) {
-    this.medicalStateService.setActivePatient(patient);
+    console.log('🎯 AppComponent.selectPatient called for:', patient.name);
     
-    // Record interaction using ApiService directly
-    this.apiService.recordPatientInteraction(patient.id, {
-      interaction_type: 'chat',
-      summary: `Doctor accessed patient record`,
-      timestamp: new Date().toISOString()
-    }).subscribe({
-      next: () => {}, // Silent success
-      error: (error) => console.error('❌ Error recording interaction:', error)
+    // Use the centralized method that guarantees state preservation
+    this.medicalStateService.selectPatientAndNavigate(patient, this.router).then((success) => {
+      if (success) {
+        console.log('✅ Patient selection successful:', patient.name);
+        
+        // Record interaction using ApiService directly
+        this.apiService.recordPatientInteraction(patient.id, {
+          interaction_type: 'chat',
+          summary: `Doctor accessed patient record from main interface`,
+          timestamp: new Date().toISOString()
+        }).subscribe({
+          next: () => {}, // Silent success
+          error: (error) => console.error('❌ Error recording interaction:', error)
+        });
+      } else {
+        console.error('❌ Patient selection failed for:', patient.name);
+      }
     });
-    
-    // Navigate to chat if not already there
-    if (window.location.pathname !== '/chat') {
-      window.location.href = '/chat';
-    }
   }
   
   async sendMessage() {
@@ -770,6 +1017,38 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   onDropdownClick(route: string): void {
     this.navigateTo(route);
+  }
+  
+  getCurrentTime(): string {
+    return new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+  }
+
+  /**
+   * Clears all persisted state and resets the application
+   * 
+   * @description Useful for logout or reset functionality
+   */
+  clearPersistedState(): void {
+    this.medicalStateService.clearPersistedState();
+    console.log('🧹 Estado de la aplicación limpiado');
+  }
+
+  /**
+   * Gets information about current persisted state
+   * 
+   * @returns Object with state persistence information
+   */
+  getPersistedStateInfo() {
+    return this.medicalStateService.getPersistedStateInfo();
+  }
+
+  /**
+   * Checks if the application has persisted state
+   * 
+   * @returns True if there's saved state in localStorage
+   */
+  hasPersistedState(): boolean {
+    return this.medicalStateService.hasPersistedState();
   }
 
 }

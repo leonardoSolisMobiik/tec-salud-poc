@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 import { BambooModule } from '../../shared/bamboo.module';
 import { ApiService } from '../../core/services/api.service';
@@ -34,6 +35,23 @@ interface BatchUpload {
   files: BatchFile[];
 }
 
+/**
+ * Admin Bulk Upload Component for batch processing medical documents
+ * 
+ * @description Administrative interface for bulk uploading and processing
+ * medical documents with automatic patient extraction and matching.
+ * Provides drag & drop functionality and batch processing configuration.
+ * 
+ * @features
+ * - Bulk document upload with drag & drop
+ * - Automatic filename parsing for TecSalud format
+ * - Patient matching and creation
+ * - Processing type configuration
+ * - Real-time progress tracking
+ * - Responsive design for all devices
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-admin-bulk-upload',
   standalone: true,
@@ -42,24 +60,32 @@ interface BatchUpload {
     <div class="admin-bulk-container">
       <!-- Header -->
       <div class="admin-header">
-        <button 
-          class="back-button"
-          (click)="goBack()"
-          title="Volver">
-          ← Volver
-        </button>
-        <h1 class="admin-title">🔧 Admin: Carga Masiva de Expedientes</h1>
-        <div class="admin-subtitle">
-          Procesamiento automático de expedientes TecSalud con extracción de pacientes
+        <div class="header-top">
+          <button 
+            class="back-button"
+            (click)="goBack()"
+            title="Volver al dashboard">
+            <span class="back-icon">←</span>
+            <span class="back-text">Volver</span>
+          </button>
+          
+          <div class="header-content">
+            <h1 class="admin-title">🔧 Carga Masiva de Expedientes</h1>
+            <div class="admin-subtitle">
+              Procesamiento automático de expedientes TecSalud con extracción de pacientes
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Configuration Panel -->
       <div class="config-panel">
-        <h3>⚙️ Configuración de Procesamiento</h3>
+        <h3 class="config-title">⚙️ Configuración de Procesamiento</h3>
         
+        <div class="config-form">
         <div class="config-row">
           <label class="config-label">🔄 Tipo de Procesamiento:</label>
+            <div class="select-wrapper">
           <select 
             class="bamboo-select"
             [(ngModel)]="selectedProcessingType">
@@ -67,10 +93,12 @@ interface BatchUpload {
             <option value="complete">📄 Solo Almacenamiento Completo</option>
             <option value="both">⚡ Híbrido (Recomendado)</option>
           </select>
+            </div>
         </div>
 
         <div class="config-row">
           <label class="config-label">📋 Tipo de Documento por Defecto:</label>
+            <div class="select-wrapper">
           <select 
             class="bamboo-select"
             [(ngModel)]="defaultDocumentType">
@@ -81,6 +109,8 @@ interface BatchUpload {
             <option value="radiologia">🩻 Radiología (IMG)</option>
             <option value="cirugia">🏥 Cirugía</option>
           </select>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -97,15 +127,21 @@ interface BatchUpload {
           
           <div class="drop-zone-content">
             <div class="bulk-icon">📂</div>
-            <h3>Arrastra múltiples expedientes TecSalud aquí</h3>
-            <p>Formato: ID_APELLIDO APELLIDO, NOMBRE_NUM_TIPO.pdf</p>
+            <h3 class="drop-title">Arrastra múltiples expedientes TecSalud aquí</h3>
+            <p class="drop-description">Formato: ID_APELLIDO APELLIDO, NOMBRE_NUM_TIPO.pdf</p>
+            
             <div class="example-filename">
               <strong>Ejemplo:</strong> 3000003799_GARZA TIJERINA, MARIA ESTHER_6001467010_CONS.pdf
             </div>
+            
             <div class="bulk-benefits">
               <span class="benefit">✅ Extracción automática de pacientes</span>
               <span class="benefit">✅ Matching inteligente</span>
               <span class="benefit">✅ Procesamiento masivo</span>
+            </div>
+            
+            <div class="upload-hint">
+              <span class="hint-text">Haz clic aquí o arrastra archivos</span>
             </div>
           </div>
           
@@ -119,12 +155,14 @@ interface BatchUpload {
         </div>
 
         <!-- Start Batch Processing Button -->
+        <div class="batch-actions" *ngIf="batchFiles.length > 0 && !isProcessing">
         <button 
-          *ngIf="batchFiles.length > 0 && !isProcessing"
           class="start-batch-button"
           (click)="startBatchProcessing()">
-          🚀 Procesar {{ batchFiles.length }} Expediente(s)
+            <span class="button-icon">🚀</span>
+            <span class="button-text">Procesar {{ batchFiles.length }} Expediente(s)</span>
         </button>
+        </div>
       </div>
 
       <!-- Files Preview -->
@@ -284,59 +322,98 @@ interface BatchUpload {
     </div>
   `,
   styles: [`
+    /* 📱 CONTENEDOR PRINCIPAL RESPONSIVE CON SCROLL - TASK-UI-004 */
     .admin-bulk-container {
       min-height: 100vh;
+      max-height: 100vh;
       background: linear-gradient(135deg, 
         var(--general_contrasts-15) 0%, 
         var(--general_contrasts-5) 100%
       );
       padding: var(--bmb-spacing-l);
+      padding-bottom: calc(var(--bmb-spacing-xxl) * 2);
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
     }
 
+    /* 🎯 HEADER MEJORADO SIN POSITION ABSOLUTE */
     .admin-header {
-      text-align: center;
       margin-bottom: var(--bmb-spacing-xl);
+      flex-shrink: 0;
       
-      .back-button {
-        position: absolute;
-        top: var(--bmb-spacing-l);
-        left: var(--bmb-spacing-l);
-        background: var(--general_contrasts-15);
-        border: 1px solid var(--general_contrasts-container-outline);
-        border-radius: var(--bmb-radius-s);
-        padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-        color: var(--general_contrasts-100);
-        cursor: pointer;
-        transition: all 0.3s ease;
+      .header-top {
+        display: flex;
+        align-items: center;
+        gap: var(--bmb-spacing-l);
+        margin-bottom: var(--bmb-spacing-m);
         
-        &:hover {
-          background: var(--general_contrasts-25);
-          transform: translateX(-4px);
+        .back-button {
+          display: inline-flex;
+          align-items: center;
+          gap: var(--bmb-spacing-xs);
+          background: var(--general_contrasts-15);
+          border: 1px solid var(--general_contrasts-container-outline);
+          border-radius: var(--bmb-radius-s);
+          padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+          color: var(--general_contrasts-100);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 0.9rem;
+          font-weight: 500;
+          text-decoration: none;
+          flex-shrink: 0;
+          
+          .back-icon {
+            font-size: 1.2rem;
+            line-height: 1;
+          }
+          
+          .back-text {
+            line-height: 1;
+          }
+          
+          &:hover {
+            background: var(--general_contrasts-25);
+            transform: translateX(-4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          }
+        }
+        
+        .header-content {
+          flex: 1;
+          text-align: center;
+          
+          .admin-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--general_contrasts-100);
+            margin: 0 0 var(--bmb-spacing-s) 0;
+            font-family: var(--font-display, 'Poppins', sans-serif);
+            background: linear-gradient(135deg, 
+              rgb(var(--color-blue-tec)) 0%, 
+              rgb(var(--color-mariner-100)) 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+          }
+          
+          .admin-subtitle {
+            color: var(--general_contrasts-75);
+            font-size: 1.1rem;
+            margin: 0;
+            line-height: 1.4;
+            max-width: 600px;
+            margin: 0 auto;
+          }
         }
       }
-      
-      .admin-title {
-        font-size: 2.2rem;
-        font-weight: 700;
-        color: var(--general_contrasts-100);
-        margin: 0 0 var(--bmb-spacing-s) 0;
-        font-family: var(--font-display);
-        background: linear-gradient(135deg, 
-          rgb(var(--color-blue-tec)) 0%, 
-          rgb(var(--color-mariner-100)) 100%
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-      
-      .admin-subtitle {
-        color: var(--general_contrasts-75);
-        font-size: 1.1rem;
-        margin: 0;
-      }
     }
 
+    /* 🎛️ PANEL DE CONFIGURACIÓN MEJORADO */
     .config-panel {
       background: linear-gradient(135deg, 
         rgba(var(--color-blue-tec), 0.08) 0%, 
@@ -346,55 +423,66 @@ interface BatchUpload {
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-l);
       margin-bottom: var(--bmb-spacing-xl);
-      max-width: 800px;
+      max-width: 900px;
       margin-left: auto;
       margin-right: auto;
+      flex-shrink: 0;
       
-      h3 {
+      .config-title {
         color: var(--general_contrasts-100);
         margin: 0 0 var(--bmb-spacing-l) 0;
         font-size: 1.3rem;
         font-weight: 600;
       }
+      
+      .config-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--bmb-spacing-m);
+      }
     }
 
     .config-row {
       display: flex;
-      align-items: center;
-      gap: var(--bmb-spacing-m);
-      margin-bottom: var(--bmb-spacing-m);
-      
-      &:last-child {
-        margin-bottom: 0;
-      }
+      flex-direction: column;
+      gap: var(--bmb-spacing-s);
       
       .config-label {
-        min-width: 200px;
         font-weight: 600;
         color: var(--general_contrasts-100);
         font-size: 1rem;
       }
       
-      .bamboo-select {
-        flex: 1;
-        padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-        border: 1px solid var(--general_contrasts-container-outline);
-        border-radius: var(--bmb-radius-s);
-        background: var(--general_contrasts-input-background);
-        color: var(--general_contrasts-100);
-        font-size: 1rem;
+      .select-wrapper {
+        position: relative;
+        width: 100%;
         
-        &:focus {
-          outline: none;
-          border-color: rgb(var(--color-blue-tec));
-          box-shadow: 0 0 0 2px rgba(var(--color-blue-tec), 0.2);
+        .bamboo-select {
+          width: 100%;
+          padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+          border: 1px solid var(--general_contrasts-container-outline);
+          border-radius: var(--bmb-radius-s);
+          background: var(--general_contrasts-input-background);
+          color: var(--general_contrasts-100);
+          font-size: 1rem;
+          appearance: none;
+          cursor: pointer;
+          
+          &:focus {
+            outline: none;
+            border-color: rgb(var(--color-blue-tec));
+            box-shadow: 0 0 0 2px rgba(var(--color-blue-tec), 0.2);
+          }
         }
       }
     }
 
+    /* 📂 ZONA DE DRAG & DROP MEJORADA CON SCROLL */
     .bulk-upload-section {
       max-width: 1000px;
-      margin: 0 auto var(--bmb-spacing-xl) auto;
+      margin: 0 auto;
+      margin-bottom: var(--bmb-spacing-xxl);
+      flex-shrink: 0;
     }
 
     .bulk-drop-zone {
@@ -407,6 +495,11 @@ interface BatchUpload {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
+      min-height: 500px;
+      margin-bottom: var(--bmb-spacing-xl);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       
       &::before {
         content: '';
@@ -421,6 +514,7 @@ interface BatchUpload {
           transparent 100%
         );
         transition: left 0.8s ease;
+        z-index: 1;
       }
       
       &:hover {
@@ -430,9 +524,14 @@ interface BatchUpload {
           rgb(var(--color-mariner-50)) 100%
         );
         transform: translateY(-6px);
+        box-shadow: 0 8px 24px rgba(var(--color-blue-tec), 0.15);
         
         &::before {
           left: 100%;
+        }
+        
+        .bulk-icon {
+          transform: scale(1.1);
         }
       }
       
@@ -441,6 +540,10 @@ interface BatchUpload {
         background: rgb(var(--color-mariner-50));
         transform: scale(1.02);
         border-width: 4px;
+        
+        .drop-zone-content {
+          transform: scale(1.05);
+        }
       }
       
       &.has-files {
@@ -450,86 +553,134 @@ interface BatchUpload {
     }
 
     .drop-zone-content {
+      position: relative;
+      z-index: 2;
+      max-width: 100%;
+      transition: all 0.3s ease;
+      padding: var(--bmb-spacing-l);
+      
       .bulk-icon {
         font-size: 5rem;
         margin-bottom: var(--bmb-spacing-l);
         opacity: 0.8;
+        transition: all 0.3s ease;
+        display: block;
       }
       
-      h3 {
+      .drop-title {
         color: var(--general_contrasts-100);
-        margin: 0 0 var(--bmb-spacing-s) 0;
+        margin: 0 0 var(--bmb-spacing-m) 0;
         font-size: 1.8rem;
         font-weight: 600;
+        line-height: 1.3;
       }
       
-      p {
+      .drop-description {
         color: var(--general_contrasts-75);
-        margin: 0 0 var(--bmb-spacing-m) 0;
+        margin: 0 0 var(--bmb-spacing-l) 0;
         font-size: 1.1rem;
+        line-height: 1.4;
       }
       
       .example-filename {
         background: rgba(var(--color-blue-tec), 0.1);
         border-radius: var(--bmb-radius-s);
-        padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-        margin: var(--bmb-spacing-m) 0;
-        font-family: monospace;
+        padding: var(--bmb-spacing-m);
+        margin: var(--bmb-spacing-l) 0;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
         font-size: 0.9rem;
         color: var(--general_contrasts-100);
         word-break: break-all;
+        line-height: 1.4;
+        border: 1px solid rgba(var(--color-blue-tec), 0.2);
       }
       
       .bulk-benefits {
         display: flex;
         justify-content: center;
         gap: var(--bmb-spacing-l);
-        margin-top: var(--bmb-spacing-l);
+        margin: var(--bmb-spacing-xl) 0;
         flex-wrap: wrap;
         
         .benefit {
           background: var(--semantic-success);
           color: white;
-          padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
+          padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
           border-radius: var(--bmb-radius-s);
-          font-size: 0.875rem;
+          font-size: 0.9rem;
+          font-weight: 600;
+          white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+        }
+      }
+      
+      .upload-hint {
+        margin-top: var(--bmb-spacing-xl);
+        margin-bottom: var(--bmb-spacing-l);
+        
+        .hint-text {
+          color: var(--general_contrasts-75);
+          font-size: 1rem;
+          font-style: italic;
           font-weight: 500;
         }
       }
     }
 
-    .start-batch-button {
-      width: 100%;
-      max-width: 400px;
-      margin: var(--bmb-spacing-l) auto 0 auto;
-      display: block;
-      background: linear-gradient(135deg, 
-        var(--semantic-success) 0%, 
-        #45A049 100%
-      );
-      color: white;
-      border: none;
-      border-radius: var(--bmb-radius-m);
-      padding: var(--bmb-spacing-l) var(--bmb-spacing-xl);
-      font-size: 1.2rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    /* 🚀 BOTÓN DE PROCESAMIENTO MEJORADO */
+    .batch-actions {
+      margin-top: var(--bmb-spacing-xl);
+      margin-bottom: var(--bmb-spacing-xxl);
+      text-align: center;
+      flex-shrink: 0;
       
-      &:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(76, 175, 80, 0.5);
+      .start-batch-button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--bmb-spacing-s);
+        background: linear-gradient(135deg, 
+          rgb(var(--color-blue-tec)) 0%, 
+          rgba(var(--color-blue-tec), 0.9) 100%
+        );
+        border: none;
+        border-radius: var(--bmb-radius-m);
+        padding: var(--bmb-spacing-l) var(--bmb-spacing-xxl);
+        color: white;
+        font-size: 1.2rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(var(--color-blue-tec), 0.3);
+        
+        .button-icon {
+          font-size: 1.5rem;
+        }
+        
+        .button-text {
+          line-height: 1;
+        }
+        
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px rgba(var(--color-blue-tec), 0.4);
+        }
+        
+        &:active {
+          transform: translateY(-1px);
+        }
       }
     }
 
+    /* 📋 VISTA PREVIA DE ARCHIVOS */
     .files-preview {
       max-width: 1200px;
-      margin: 0 auto var(--bmb-spacing-xl) auto;
+      margin: var(--bmb-spacing-xl) auto;
+      margin-bottom: var(--bmb-spacing-xxl);
+      flex-shrink: 0;
       
       .preview-title {
         color: var(--general_contrasts-100);
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 600;
         margin-bottom: var(--bmb-spacing-l);
         text-align: center;
@@ -538,182 +689,160 @@ interface BatchUpload {
 
     .files-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
       gap: var(--bmb-spacing-l);
     }
 
     .file-preview-card {
-      background: var(--general_contrasts-15);
+      background: var(--general_contrasts-input-background);
       border: 1px solid var(--general_contrasts-container-outline);
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-l);
       transition: all 0.3s ease;
       
-      &.status-matched {
-        border-color: var(--semantic-success);
-        background: rgba(76, 175, 80, 0.1);
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
       
-      &.status-review_needed {
-        border-color: var(--semantic-warning);
-        background: rgba(255, 152, 0, 0.1);
-      }
-      
-      &.status-processing {
-        border-color: rgb(var(--color-blue-tec));
-        background: rgba(var(--color-blue-tec), 0.1);
-      }
-      
-      &.status-completed {
-        border-color: var(--semantic-success);
-        background: rgba(76, 175, 80, 0.15);
-      }
-      
-      &.status-error {
-        border-color: var(--semantic-error);
-        background: rgba(244, 67, 54, 0.1);
-      }
-    }
-
-    .file-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: var(--bmb-spacing-m);
-      
-      .file-name {
-        font-weight: 600;
-        color: var(--general_contrasts-100);
-        font-size: 0.9rem;
-        word-break: break-all;
-        flex: 1;
-        margin-right: var(--bmb-spacing-s);
-      }
-    }
-
-    .status-badge {
-      padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
-      border-radius: var(--bmb-radius-s);
-      font-size: 0.75rem;
-      font-weight: 600;
-      white-space: nowrap;
-      
-      &.pending { background: var(--general_contrasts-25); color: var(--general_contrasts-100); }
-      &.parsing { background: rgb(var(--color-blue-tec)); color: white; }
-      &.matched { background: var(--semantic-success); color: white; }
-      &.review { background: var(--semantic-warning); color: white; }
-      &.processing { background: rgb(var(--color-blue-tec)); color: white; }
-      &.completed { background: var(--semantic-success); color: white; }
-      &.error { background: var(--semantic-error); color: white; }
-    }
-
-    .patient-info {
-      margin-bottom: var(--bmb-spacing-m);
-      
-      .info-row {
+      .file-header {
         display: flex;
-        justify-content: space-between;
-        margin-bottom: var(--bmb-spacing-xs);
+        flex-direction: column;
+        gap: var(--bmb-spacing-s);
+        margin-bottom: var(--bmb-spacing-m);
         
-        &:last-child {
-          margin-bottom: 0;
-        }
-        
-        .info-label {
-          color: var(--general_contrasts-75);
-          font-size: 0.875rem;
-          font-weight: 500;
-          min-width: 80px;
-        }
-        
-        .info-value {
-          color: var(--general_contrasts-100);
-          font-size: 0.875rem;
+        .file-name {
           font-weight: 600;
-          text-align: right;
-          flex: 1;
+          color: var(--general_contrasts-100);
+          word-break: break-all;
+          font-size: 0.9rem;
+        }
+        
+        .file-status {
+          .status-badge {
+            padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
+            border-radius: var(--bmb-radius-s);
+            font-size: 0.8rem;
+            font-weight: 500;
+            
+            &.pending { background: #fbbf24; color: white; }
+            &.parsing { background: #3b82f6; color: white; }
+            &.matched { background: #10b981; color: white; }
+            &.review { background: #f59e0b; color: white; }
+            &.processing { background: #8b5cf6; color: white; }
+            &.completed { background: #059669; color: white; }
+            &.error { background: #ef4444; color: white; }
+          }
+        }
+      }
+      
+      .patient-info {
+        background: rgba(var(--color-blue-tec), 0.05);
+        border-radius: var(--bmb-radius-s);
+        padding: var(--bmb-spacing-s);
+        margin-bottom: var(--bmb-spacing-m);
+        
+        .info-row {
+          display: flex;
+          gap: var(--bmb-spacing-s);
+          margin-bottom: var(--bmb-spacing-xs);
+          font-size: 0.85rem;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .info-label {
+            font-weight: 600;
+            color: var(--general_contrasts-100);
+            min-width: 70px;
+          }
+          
+          .info-value {
+            color: var(--general_contrasts-75);
+            word-break: break-word;
+          }
+        }
+      }
+      
+      .file-actions {
+        text-align: right;
+        
+        .remove-button {
+          background: #ef4444;
+          color: white;
+          border: none;
+          border-radius: var(--bmb-radius-s);
+          padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
+          font-size: 0.8rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            background: #dc2626;
+          }
         }
       }
     }
 
+    /* 📊 RESUMEN DE PROCESAMIENTO */
     .processing-summary, .results-summary {
       max-width: 800px;
-      margin: 0 auto var(--bmb-spacing-xl) auto;
-      background: var(--general_contrasts-15);
+      margin: var(--bmb-spacing-xl) auto;
+      margin-bottom: var(--bmb-spacing-xxl);
+      background: var(--general_contrasts-input-background);
       border: 1px solid var(--general_contrasts-container-outline);
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-l);
+      text-align: center;
+      flex-shrink: 0;
       
       .summary-title, .results-title {
         color: var(--general_contrasts-100);
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 600;
         margin-bottom: var(--bmb-spacing-l);
-        text-align: center;
       }
     }
 
     .progress-stats, .results-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: var(--bmb-spacing-m);
       margin-bottom: var(--bmb-spacing-l);
     }
 
     .stat-card, .result-card {
-      text-align: center;
-      padding: var(--bmb-spacing-m);
+      background: var(--general_contrasts-15);
       border-radius: var(--bmb-radius-s);
+      padding: var(--bmb-spacing-m);
       
       .stat-number, .result-number {
         font-size: 2rem;
         font-weight: 700;
-        color: var(--general_contrasts-100);
+        color: rgb(var(--color-blue-tec));
         margin-bottom: var(--bmb-spacing-xs);
       }
       
       .stat-label, .result-label {
         color: var(--general_contrasts-75);
-        font-size: 0.875rem;
+        font-size: 0.85rem;
         font-weight: 500;
       }
     }
 
-    .stat-card {
-      background: rgba(var(--color-blue-tec), 0.1);
-      border: 1px solid rgba(var(--color-blue-tec), 0.2);
-    }
-
-    .result-card {
-      &.success {
-        background: rgba(76, 175, 80, 0.1);
-        border: 1px solid rgba(76, 175, 80, 0.3);
-      }
-      
-      &.info {
-        background: rgba(var(--color-blue-tec), 0.1);
-        border: 1px solid rgba(var(--color-blue-tec), 0.2);
-      }
-      
-      .result-icon {
-        font-size: 1.5rem;
-        margin-bottom: var(--bmb-spacing-xs);
-      }
-    }
-
     .progress-bar {
-      width: 100%;
-      height: 12px;
       background: var(--general_contrasts-25);
-      border-radius: var(--bmb-radius-full);
+      border-radius: var(--bmb-radius-s);
+      height: 8px;
       overflow: hidden;
       
       .progress-fill {
-        height: 100%;
         background: linear-gradient(90deg, 
-          var(--semantic-success) 0%, 
-          #45A049 100%
+          rgb(var(--color-blue-tec)) 0%, 
+          var(--semantic-success) 100%
         );
+        height: 100%;
         transition: width 0.3s ease;
       }
     }
@@ -722,23 +851,23 @@ interface BatchUpload {
       display: flex;
       gap: var(--bmb-spacing-m);
       justify-content: center;
+      flex-wrap: wrap;
       margin-top: var(--bmb-spacing-l);
       
       button {
-        padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
-        border-radius: var(--bmb-radius-s);
+        padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
         border: none;
-        font-weight: 600;
+        border-radius: var(--bmb-radius-s);
+        font-weight: 500;
         cursor: pointer;
         transition: all 0.3s ease;
         
         &.test-search-button {
-          background: rgb(var(--color-blue-tec));
+          background: var(--semantic-info);
           color: white;
           
           &:hover {
-            background: rgb(var(--color-mariner-100));
-            transform: translateY(-2px);
+            background: #0284c7;
           }
         }
         
@@ -747,50 +876,258 @@ interface BatchUpload {
           color: white;
           
           &:hover {
-            background: #45A049;
-            transform: translateY(-2px);
+            background: #059669;
           }
         }
       }
     }
 
-    .remove-button {
-      background: var(--semantic-error);
-      color: white;
-      border: none;
-      border-radius: var(--bmb-radius-s);
-      padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      
-      &:hover {
-        background: #d32f2f;
-        transform: translateY(-1px);
+    /* 📱 RESPONSIVE DESIGN - TASK-UI-004 */
+    
+    /* Mobile Styles (<768px) */
+    @media (max-width: 767px) {
+      .admin-bulk-container {
+        padding: var(--bmb-spacing-m);
+        padding-bottom: calc(var(--bmb-spacing-xxl) * 2 + var(--bmb-spacing-l));
+        min-height: 100vh;
+        max-height: 100vh;
       }
-    }
-
-    @media (max-width: 768px) {
-      .config-row {
-        flex-direction: column;
-        align-items: flex-start;
+      
+      .admin-header {
+        .header-content {
+          .admin-title {
+            font-size: 1.6rem;
+            line-height: 1.2;
+          }
+          
+          .admin-subtitle {
+            font-size: 0.95rem;
+            line-height: 1.3;
+          }
+        }
+      }
+      
+      .config-panel {
+        padding: var(--bmb-spacing-m);
+        margin-bottom: var(--bmb-spacing-l);
         
+        .config-title {
+          font-size: 1.1rem;
+        }
+      }
+      
+      .config-row {
         .config-label {
-          min-width: auto;
-          margin-bottom: var(--bmb-spacing-xs);
+          font-size: 0.9rem;
+        }
+        
+        .select-wrapper .bamboo-select {
+          font-size: 0.9rem;
+          padding: var(--touch-spacing, 12px);
+        }
+      }
+      
+      .bulk-upload-section {
+        margin-bottom: var(--bmb-spacing-xl);
+      }
+      
+      .bulk-drop-zone {
+        padding: var(--bmb-spacing-l);
+        min-height: 400px;
+        margin-bottom: var(--bmb-spacing-l);
+        
+        .drop-zone-content {
+          padding: var(--bmb-spacing-m);
+          
+          .bulk-icon {
+            font-size: 3.5rem;
+          }
+          
+          .drop-title {
+            font-size: 1.4rem;
+          }
+          
+          .drop-description {
+            font-size: 0.95rem;
+          }
+          
+          .example-filename {
+            font-size: 0.8rem;
+            padding: var(--bmb-spacing-s);
+          }
+          
+          .bulk-benefits {
+            flex-direction: column;
+            align-items: center;
+            gap: var(--bmb-spacing-s);
+            
+            .benefit {
+              font-size: 0.85rem;
+            }
+          }
+          
+          .upload-hint {
+            margin-bottom: var(--bmb-spacing-m);
+            
+            .hint-text {
+              font-size: 0.9rem;
+            }
+          }
+        }
+      }
+      
+      .batch-actions {
+        margin-bottom: var(--bmb-spacing-xl);
+        
+        .start-batch-button {
+          font-size: 1rem;
+          padding: var(--touch-spacing, 12px) var(--bmb-spacing-l);
         }
       }
       
       .files-grid {
         grid-template-columns: 1fr;
+        gap: var(--bmb-spacing-m);
+      }
+      
+      .files-preview {
+        margin-bottom: var(--bmb-spacing-xl);
       }
       
       .progress-stats, .results-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--bmb-spacing-s);
+      }
+      
+      .processing-summary, .results-summary {
+        margin-bottom: var(--bmb-spacing-xl);
       }
       
       .next-actions {
         flex-direction: column;
+        
+        button {
+          width: 100%;
+          padding: var(--touch-spacing, 12px);
+        }
+      }
+    }
+    
+    /* Tablet Styles (768px-1024px) - TASK-UI-004 */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .admin-bulk-container {
+        padding: var(--bmb-spacing-l);
+        padding-bottom: calc(var(--bmb-spacing-xxl) * 2);
+        min-height: 100vh;
+        max-height: 100vh;
+      }
+      
+      .admin-header {
+        .header-content {
+          .admin-title {
+            font-size: 2rem;
+          }
+          
+          .admin-subtitle {
+            font-size: 1rem;
+          }
+        }
+      }
+      
+      .config-row {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--bmb-spacing-m);
+        
+        .config-label {
+          min-width: 250px;
+          flex-shrink: 0;
+        }
+      }
+      
+      .bulk-drop-zone {
+        min-height: 450px;
+        
+        .drop-zone-content {
+          .bulk-icon {
+            font-size: 4.5rem;
+          }
+          
+          .drop-title {
+            font-size: 1.7rem;
+          }
+          
+          .drop-description {
+            font-size: 1.05rem;
+          }
+          
+          .bulk-benefits {
+            gap: var(--bmb-spacing-m);
+          }
+        }
+      }
+      
+      .files-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .progress-stats, .results-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    
+    /* Desktop Styles (1025px+) */
+    @media (min-width: 1025px) {
+      .admin-bulk-container {
+        min-height: 100vh;
+        max-height: 100vh;
+        padding-bottom: calc(var(--bmb-spacing-xxl) * 2);
+      }
+      
+      .config-row {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--bmb-spacing-l);
+        
+        .config-label {
+          min-width: 300px;
+          flex-shrink: 0;
+        }
+      }
+      
+      .bulk-drop-zone {
+        min-height: 500px;
+      }
+      
+      .files-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    /* 🖱️ TOUCH DEVICE OPTIMIZATIONS - TASK-UI-004 */
+    @media (hover: none) and (pointer: coarse) {
+      .admin-bulk-container {
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      .bulk-drop-zone:hover {
+        transform: none;
+        
+        .bulk-icon {
+          transform: none;
+        }
+      }
+      
+      .file-preview-card:hover {
+        transform: none;
+      }
+      
+      .start-batch-button:hover {
+        transform: none;
+      }
+      
+      .back-button:hover {
+        transform: none;
       }
     }
   `]
@@ -798,6 +1135,7 @@ interface BatchUpload {
 export class AdminBulkUploadComponent implements OnInit {
   private apiService = inject(ApiService);
   private router = inject(Router);
+  private location = inject(Location);
 
   selectedProcessingType: string = 'both';
   defaultDocumentType: string = 'expediente_medico';
@@ -981,7 +1319,7 @@ export class AdminBulkUploadComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/']);
+    this.location.back();
   }
 
   trackByFile(index: number, batchFile: BatchFile): string {

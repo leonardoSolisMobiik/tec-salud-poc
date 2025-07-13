@@ -44,6 +44,7 @@ import { BambooModule } from '../../shared/bamboo.module';
         </div>
 
         <!-- View Feature -->
+        <!--
         <div class="feature-card view-card">
           <div class="feature-icon">📚</div>
           <h3 class="feature-title">Ver Documentos</h3>
@@ -63,6 +64,7 @@ import { BambooModule } from '../../shared/bamboo.module';
             📚 Ver Documentos
           </button>
         </div>
+        -->
 
         <!-- Chat Feature -->
         <div class="feature-card chat-card">
@@ -189,10 +191,13 @@ import { BambooModule } from '../../shared/bamboo.module';
             <span class="action-text">Subir Expedientes</span>
           </button>
           
+          <!-- DISABLED: Ver Documentos -->
+          <!--
           <button class="quick-action" (click)="goToList()">
             <span class="action-icon">📚</span>
             <span class="action-text">Ver Documentos</span>
           </button>
+          -->
           
           <button class="quick-action" (click)="goToChat()">
             <span class="action-icon">💬</span>
@@ -578,9 +583,12 @@ export class DocumentSummaryComponent {
     this.router.navigate(['/documents']);
   }
 
+  // DISABLED: Document list functionality
+  /*
   goToList(): void {
     this.router.navigate(['/documents/list']);
   }
+  */
 
   goToChat(): void {
     this.router.navigate(['/chat']);

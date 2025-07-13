@@ -83,12 +83,12 @@ import { Patient } from '@core/models';
               <span>Gestión Pacientes</span>
             </a>
             
-            <a routerLink="/test-bamboo" 
+            <a routerLink="/documents" 
                (click)="closeNavDropdown()"
                class="nav-dropdown-item"
                style="display: flex !important; align-items: center !important; gap: 10px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: magenta !important; color: white !important; text-decoration: none !important; border: 2px solid #000 !important; font-weight: bold !important; transition: all 0.2s !important;">
-              <span style="font-size: 1.5rem !important;">🧪</span>
-              <span>Test Bamboo</span>
+              <span style="font-size: 1.5rem !important;">📄</span>
+              <span>Documentos</span>
             </a>
             
             <hr style="margin: 10px 0 !important; border: 1px solid #000 !important;">
@@ -272,11 +272,23 @@ import { Patient } from '@core/models';
       color: var(--medical-text-primary);
     }
     
-    /* Mobile Styles */
-    @media (max-width: 768px) {
+    /* 📱 MOBILE STYLES - TASK-UI-004 */
+    @media (max-width: 767px) {
       .app-header {
-        padding: 0 1rem;
-        gap: 1rem;
+        padding: 0 var(--bmb-spacing-m, 1rem);
+        gap: var(--bmb-spacing-s, 0.75rem);
+        height: 60px;
+        flex-wrap: wrap;
+      }
+      
+      .menu-toggle {
+        padding: var(--touch-spacing, 12px);
+        min-width: var(--touch-target-min, 44px);
+        min-height: var(--touch-target-min, 44px);
+        
+        .menu-icon {
+          font-size: 1.5rem;
+        }
       }
       
       .subtitle {
@@ -284,30 +296,131 @@ import { Patient } from '@core/models';
       }
       
       .app-title {
-        font-size: 1.125rem !important;
+        font-size: 1rem !important;
       }
       
       .patient-badge {
-        padding: 0.375rem 0.75rem;
+        padding: var(--bmb-spacing-xs, 0.5rem) var(--bmb-spacing-s, 0.75rem);
+        border-radius: var(--bmb-radius-s, 0.5rem);
         
         .patient-icon {
-          font-size: 1.25rem;
+          font-size: 1.2rem;
         }
         
         .patient-name {
-          font-size: 0.9375rem;
+          font-size: 0.875rem;
         }
         
         .patient-meta {
           font-size: 0.75rem;
         }
       }
-    }
-    
-    /* Tablet Styles */
-    @media (min-width: 768px) and (max-width: 1024px) {
+      
+      .header-actions {
+        gap: var(--bmb-spacing-xs, 0.5rem);
+      }
+      
+      .action-btn {
+        min-width: var(--touch-target-min, 44px);
+        min-height: var(--touch-target-min, 44px);
+        padding: var(--touch-spacing, 12px);
+        
+        .action-icon {
+          font-size: 1.3rem;
+        }
+      }
+      
+      .user-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 0.8rem;
+      }
+      
       .user-name {
         display: none;
+      }
+    }
+    
+    /* 📱 TABLET STYLES - TASK-UI-004 OPTIMIZACIÓN */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .app-header {
+        height: 64px;
+        padding: 0 var(--bmb-spacing-l, 1.5rem);
+        gap: var(--bmb-spacing-m, 1rem);
+      }
+      
+      .app-title {
+        font-size: 1.2rem !important;
+      }
+      
+      .subtitle {
+        font-size: 0.875rem;
+      }
+      
+      .patient-badge {
+        padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem);
+        
+        .patient-icon {
+          font-size: 1.4rem;
+        }
+        
+        .patient-name {
+          font-size: 1rem;
+        }
+        
+        .patient-meta {
+          font-size: 0.875rem;
+        }
+      }
+      
+      .action-btn {
+        min-width: var(--touch-target-min, 44px);
+        min-height: var(--touch-target-min, 44px);
+      }
+      
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+      }
+      
+      .user-name {
+        display: none;
+      }
+    }
+    
+    /* 📱 DESKTOP STYLES - TASK-UI-004 */
+    @media (min-width: 1025px) {
+      .app-header {
+        height: 68px;
+        padding: 0 var(--bmb-spacing-xl, 2rem);
+      }
+      
+      .user-name {
+        display: block;
+      }
+    }
+    
+    /* 🖱️ TOUCH DEVICE OPTIMIZATIONS - TASK-UI-004 */
+    @media (hover: none) and (pointer: coarse) {
+      .menu-toggle:active {
+        background: var(--medical-background);
+        transform: scale(0.95);
+      }
+      
+      .action-btn:active {
+        background: var(--medical-background);
+        transform: scale(0.95);
+      }
+      
+      .user-menu:active {
+        background: var(--medical-background);
+        transform: scale(0.98);
+      }
+      
+      .clear-context:active {
+        background: var(--medical-critical);
+        color: white;
+        transform: scale(0.9);
       }
     }
     

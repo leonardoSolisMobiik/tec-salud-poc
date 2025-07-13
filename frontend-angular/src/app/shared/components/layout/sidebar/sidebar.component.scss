@@ -720,15 +720,118 @@
   }
 }
 
-// Responsive styles
-@media (max-width: 768px) {
+// 📱 RESPONSIVE STYLES - TASK-UI-004 MEJORADO
+/* Mobile Styles (<768px) */
+@media (max-width: 767px) {
   .medical-sidebar {
-    position: fixed;
-    z-index: 50;
+    position: fixed !important;
+    z-index: 1000 !important;
+    width: 100% !important;
+    max-width: 300px !important;
+    left: -100% !important;
+    transition: left 0.3s ease, transform 0.3s ease !important;
+    
+    &.open {
+      left: 0 !important;
+    }
     
     &:not(.collapsed) {
       width: 100% !important;
-      max-width: 300px;
+      max-width: 300px !important;
+    }
+    
+    // Touch-friendly navigation items
+    .nav-item {
+      min-height: var(--touch-target-min, 44px) !important;
+      padding: var(--touch-spacing, 12px) var(--bmb-spacing-m, 1rem) !important;
+    }
+    
+    // Larger icons for touch
+    .nav-icon {
+      font-size: 1.5rem !important;
+      width: var(--touch-target-min, 44px) !important;
+      height: var(--touch-target-min, 44px) !important;
+    }
+    
+    // Mobile-specific spacing
+    .sidebar-header {
+      padding: var(--bmb-spacing-l, 1.5rem) var(--bmb-spacing-m, 1rem) !important;
+    }
+    
+    .sidebar-content {
+      padding: var(--bmb-spacing-s, 0.75rem) !important;
+    }
+  }
+}
+
+/* Tablet Styles (768px-1024px) - TASK-UI-004 */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .medical-sidebar {
+    width: var(--sidebar-width-tablet, 280px) !important;
+    
+    &.collapsed {
+      width: 70px !important;
+    }
+    
+    // Tablet-optimized navigation
+    .nav-item {
+      min-height: 42px !important;
+      padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem) !important;
+    }
+    
+    .nav-icon {
+      font-size: 1.3rem !important;
+      width: 40px !important;
+      height: 40px !important;
+    }
+    
+    // Tablet spacing
+    .sidebar-header {
+      padding: var(--bmb-spacing-m, 1rem) !important;
+    }
+    
+    .sidebar-content {
+      padding: var(--bmb-spacing-xs, 0.5rem) !important;
+    }
+  }
+}
+
+/* Desktop Styles (1025px+) - TASK-UI-004 */
+@media (min-width: 1025px) {
+  .medical-sidebar {
+    width: var(--sidebar-width-desktop, 320px) !important;
+    
+    &.collapsed {
+      width: 60px !important;
+    }
+    
+    // Desktop hover effects
+    .nav-item:hover {
+      transform: translateX(2px) !important;
+      box-shadow: var(--medical-box-shadow-hover) !important;
+    }
+  }
+}
+
+// 🖱️ TOUCH GESTURE SUPPORT - TASK-UI-004
+@media (hover: none) and (pointer: coarse) {
+  .medical-sidebar {
+    // Remove hover effects on touch devices
+    .nav-item:hover {
+      transform: none !important;
+      box-shadow: var(--medical-box-shadow) !important;
+    }
+    
+    // Add touch feedback
+    .nav-item:active {
+      background-color: var(--medical-active) !important;
+      transform: scale(0.98) !important;
+    }
+    
+    // Enable smooth scrolling
+    .sidebar-content {
+      -webkit-overflow-scrolling: touch !important;
+      scroll-behavior: smooth !important;
     }
   }
 }

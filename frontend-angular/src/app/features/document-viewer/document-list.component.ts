@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 import { BambooModule } from '../../shared/bamboo.module';
 import { ApiService } from '../../core/services/api.service';
@@ -40,15 +41,19 @@ interface SearchResult {
       
       <!-- Header -->
       <div class="list-header">
-        <button 
-          class="back-button"
-          (click)="goBack()"
-          title="Volver">
-          ← Volver
-        </button>
-        <h1 class="list-title">📚 Expedientes Vectorizados</h1>
-        <div class="list-subtitle">
-          Documentos indexados para búsqueda inteligente
+        <div class="header-top">
+          <button 
+            class="back-button"
+            (click)="goBack()"
+            title="Volver">
+            ← Volver
+          </button>
+          <div class="title-container">
+            <h1 class="list-title">📚 Expedientes Vectorizados</h1>
+            <div class="list-subtitle">
+              Documentos indexados para búsqueda inteligente
+            </div>
+          </div>
         </div>
       </div>
 
@@ -258,48 +263,74 @@ interface SearchResult {
   styles: [`
     .document-list-container {
       min-height: 100vh;
+      max-height: 100vh;
       background: linear-gradient(135deg, 
         var(--general_contrasts-15) 0%, 
         var(--general_contrasts-5) 100%
       );
       padding: var(--bmb-spacing-l);
+      padding-bottom: var(--bmb-spacing-xxl);
+      overflow-x: hidden;
+      overflow-y: auto;
+      box-sizing: border-box;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
     }
 
     .list-header {
-      text-align: center;
       margin-bottom: var(--bmb-spacing-xl);
-      position: relative;
       
-      .back-button {
-        position: absolute;
-        top: 0;
-        left: 0;
-        background: var(--general_contrasts-15);
-        border: 1px solid var(--general_contrasts-container-outline);
-        border-radius: var(--bmb-radius-s);
-        padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-        color: var(--general_contrasts-100);
-        cursor: pointer;
-        transition: all 0.3s ease;
+      .header-top {
+        display: flex;
+        align-items: center;
+        gap: var(--bmb-spacing-l);
+        margin-bottom: var(--bmb-spacing-m);
         
-        &:hover {
-          background: var(--general_contrasts-25);
-          transform: translateX(-4px);
+        .back-button {
+          background: var(--general_contrasts-15);
+          border: 1px solid var(--general_contrasts-container-outline);
+          border-radius: var(--bmb-radius-s);
+          padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+          color: var(--general_contrasts-100);
+          cursor: pointer;
+          transition: all 0.3s ease;
+          flex-shrink: 0;
+          
+          &:hover {
+            background: var(--general_contrasts-25);
+            transform: translateX(-4px);
+          }
         }
-      }
-      
-      .list-title {
-        font-size: 2rem;
-        font-weight: 600;
-        color: var(--general_contrasts-100);
-        margin: 0 0 var(--bmb-spacing-s) 0;
-        font-family: var(--font-display);
-      }
-      
-      .list-subtitle {
-        color: var(--general_contrasts-75);
-        font-size: 1.1rem;
-        margin: 0;
+        
+        .title-container {
+          flex: 1;
+          text-align: center;
+          
+          .list-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--general_contrasts-100);
+            margin: 0 0 var(--bmb-spacing-s) 0;
+            font-family: var(--font-display, 'Poppins', sans-serif);
+            background: linear-gradient(135deg, 
+              rgb(var(--color-blue-tec)) 0%, 
+              rgb(var(--color-mariner-100)) 100%
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+          }
+          
+          .list-subtitle {
+            color: var(--general_contrasts-75);
+            font-size: 1.1rem;
+            margin: 0;
+            line-height: 1.4;
+            max-width: 600px;
+            margin: 0 auto;
+          }
+        }
       }
     }
 
@@ -314,14 +345,19 @@ interface SearchResult {
       padding: var(--bmb-spacing-m);
       border-radius: var(--bmb-radius-m);
       border: 1px solid var(--general_contrasts-container-outline);
+      overflow: hidden;
+      box-sizing: border-box;
       
       .search-section {
         flex: 1;
-        min-width: 300px;
+        min-width: 280px;
+        max-width: 500px;
         
         .search-input-group {
           display: flex;
           gap: var(--bmb-spacing-s);
+          width: 100%;
+          box-sizing: border-box;
           
           .bamboo-search-input {
             flex: 1;
@@ -331,6 +367,8 @@ interface SearchResult {
             background: var(--general_contrasts-input-background);
             color: var(--general_contrasts-100);
             font-size: 1rem;
+            min-width: 0;
+            box-sizing: border-box;
             
             &:focus {
               outline: none;
@@ -347,6 +385,13 @@ interface SearchResult {
             padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
             cursor: pointer;
             transition: all 0.3s ease;
+            flex-shrink: 0;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
             
             &:hover:not(:disabled) {
               background: var(--buttons-primary-hover);
@@ -363,6 +408,7 @@ interface SearchResult {
       .filter-section {
         display: flex;
         gap: var(--bmb-spacing-s);
+        flex-shrink: 0;
         
         .bamboo-select {
           padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
@@ -371,7 +417,10 @@ interface SearchResult {
           background: var(--general_contrasts-input-background);
           color: var(--general_contrasts-100);
           font-size: 0.875rem;
-          min-width: 150px;
+          min-width: 140px;
+          max-width: 180px;
+          width: 160px;
+          box-sizing: border-box;
           
           &:focus {
             outline: none;
@@ -394,6 +443,7 @@ interface SearchResult {
         cursor: pointer;
         transition: all 0.3s ease;
         white-space: nowrap;
+        flex-shrink: 0;
         
         &:hover {
           transform: translateY(-2px);
@@ -681,28 +731,72 @@ interface SearchResult {
     @media (max-width: 768px) {
       .document-list-container {
         padding: var(--bmb-spacing-m);
+        padding-bottom: calc(var(--bmb-spacing-xxl) + var(--bmb-spacing-l));
+        max-height: 100vh;
+        overflow-y: auto;
+      }
+      
+      .list-header {
+        margin-bottom: var(--bmb-spacing-l);
+        
+        .header-top {
+          .title-container {
+            .list-title {
+              font-size: 1.5rem;
+            }
+            
+            .list-subtitle {
+              font-size: 1rem;
+            }
+          }
+        }
       }
       
       .action-bar {
         flex-direction: column;
         align-items: stretch;
+        gap: var(--bmb-spacing-m);
         
-        .search-section, .filter-section {
+        .search-section {
           width: 100%;
+          min-width: auto;
+          max-width: none;
         }
         
         .filter-section {
+          width: 100%;
           flex-direction: column;
+          gap: var(--bmb-spacing-s);
+          
+          .bamboo-select {
+            width: 100%;
+            min-width: auto;
+            max-width: none;
+          }
+        }
+        
+        .upload-new-button {
+          width: 100%;
         }
       }
       
       .stats-section {
         flex-direction: column;
         gap: var(--bmb-spacing-m);
+        margin-bottom: var(--bmb-spacing-l);
       }
       
       .documents-grid {
         grid-template-columns: 1fr;
+        gap: var(--bmb-spacing-m);
+      }
+      
+      .document-card {
+        margin-bottom: var(--bmb-spacing-m);
+      }
+      
+      .results-section, .documents-section {
+        margin-bottom: var(--bmb-spacing-xl);
       }
     }
   `]
@@ -711,6 +805,7 @@ export class DocumentListComponent implements OnInit {
   private apiService = inject(ApiService);
   private medicalStateService = inject(MedicalStateService);
   private router = inject(Router);
+  private location = inject(Location);
 
   // Data properties
   documents: DocumentItem[] = [];
@@ -909,7 +1004,7 @@ export class DocumentListComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    this.location.back();
   }
 
   trackByDocument(index: number, doc: DocumentItem): string {

@@ -2,6 +2,7 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 import { BambooModule } from '../../shared/bamboo.module';
 import { ApiService } from '../../core/services/api.service';
@@ -36,15 +37,19 @@ interface DocumentUpload {
     <div class="document-upload-container">
       <!-- Header -->
       <div class="upload-header">
-        <button 
-          class="back-button"
-          (click)="goBack()"
-          title="Volver">
-          ← Volver
-        </button>
-        <h1 class="upload-title">📤 Subir Expedientes Médicos</h1>
-        <div class="upload-subtitle">
-          Vectorización automática con IA para búsqueda inteligente
+        <div class="header-top">
+          <button 
+            class="back-button"
+            (click)="goBack()"
+            title="Volver">
+            ← Volver
+          </button>
+          <div class="title-container">
+            <h1 class="upload-title">📤 Subir Expedientes Médicos</h1>
+            <div class="upload-subtitle">
+              Vectorización automática con IA para búsqueda inteligente
+            </div>
+          </div>
         </div>
       </div>
 
@@ -221,21 +226,30 @@ interface DocumentUpload {
   styles: [`
     .document-upload-container {
       min-height: 100vh;
+      max-height: 100vh;
       background: linear-gradient(135deg, 
         var(--general_contrasts-15) 0%, 
         var(--general_contrasts-5) 100%
       );
       padding: var(--bmb-spacing-l);
+      padding-bottom: calc(var(--bmb-spacing-xxl) * 2);
+      overflow-x: hidden;
+      overflow-y: auto;
+      box-sizing: border-box;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
     }
 
     .upload-header {
-      text-align: center;
       margin-bottom: var(--bmb-spacing-xl);
       
+      .header-top {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--bmb-spacing-m);
+      }
+      
       .back-button {
-        position: absolute;
-        top: var(--bmb-spacing-l);
-        left: var(--bmb-spacing-l);
         background: var(--general_contrasts-15);
         border: 1px solid var(--general_contrasts-container-outline);
         border-radius: var(--bmb-radius-s);
@@ -243,6 +257,7 @@ interface DocumentUpload {
         color: var(--general_contrasts-100);
         cursor: pointer;
         transition: all 0.3s ease;
+        margin-right: var(--bmb-spacing-l);
         
         &:hover {
           background: var(--general_contrasts-25);
@@ -250,18 +265,34 @@ interface DocumentUpload {
         }
       }
       
-      .upload-title {
-        font-size: 2rem;
-        font-weight: 600;
-        color: var(--general_contrasts-100);
-        margin: 0 0 var(--bmb-spacing-s) 0;
-        font-family: var(--font-display);
-      }
-      
-      .upload-subtitle {
-        color: var(--general_contrasts-75);
-        font-size: 1.1rem;
-        margin: 0;
+      .title-container {
+        flex: 1;
+        text-align: center;
+        
+        .upload-title {
+          font-size: 2.2rem;
+          font-weight: 700;
+          color: var(--general_contrasts-100);
+          margin: 0 0 var(--bmb-spacing-s) 0;
+          font-family: var(--font-display, 'Poppins', sans-serif);
+          background: linear-gradient(135deg, 
+            rgb(var(--color-blue-tec)) 0%, 
+            rgb(var(--color-mariner-100)) 100%
+          );
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          line-height: 1.2;
+        }
+        
+        .upload-subtitle {
+          color: var(--general_contrasts-75);
+          font-size: 1.1rem;
+          margin: 0;
+          line-height: 1.4;
+          max-width: 600px;
+          margin: 0 auto;
+        }
       }
     }
 
@@ -609,26 +640,79 @@ interface DocumentUpload {
     @media (max-width: 768px) {
       .document-upload-container {
         padding: var(--bmb-spacing-m);
+        padding-bottom: calc(var(--bmb-spacing-xxl) * 2 + var(--bmb-spacing-l));
+        max-height: 100vh;
+        overflow-y: auto;
       }
       
-      .upload-header .upload-title {
-        font-size: 1.5rem;
+      .upload-header {
+        margin-bottom: var(--bmb-spacing-l);
+        
+        .header-top {
+          .title-container {
+            .upload-title {
+              font-size: 1.5rem;
+            }
+            
+            .upload-subtitle {
+              font-size: 1rem;
+            }
+          }
+        }
       }
       
-      .results-summary {
-          flex-direction: column;
-        gap: var(--bmb-spacing-m);
+      .upload-section {
+        margin-bottom: var(--bmb-spacing-xl);
+      }
+      
+      .config-panel {
+        margin-bottom: var(--bmb-spacing-l);
+        
+        .config-row {
+          margin-bottom: var(--bmb-spacing-m);
+          
+          .select-wrapper {
+            .bamboo-select {
+              width: 100%;
+            }
+          }
+        }
+        
+        .upload-button {
+          width: 100%;
+          margin-top: var(--bmb-spacing-m);
+        }
+      }
+      
+      .files-section {
+        margin-bottom: var(--bmb-spacing-xl);
       }
       
       .file-item {
         flex-direction: column;
         align-items: stretch;
         gap: var(--bmb-spacing-s);
+        margin-bottom: var(--bmb-spacing-m);
       }
       
       .file-status {
         min-width: auto;
         text-align: left;
+      }
+      
+      .results-summary {
+        flex-direction: column;
+        gap: var(--bmb-spacing-m);
+        margin-bottom: var(--bmb-spacing-l);
+      }
+      
+      .results-section {
+        margin-bottom: var(--bmb-spacing-xl);
+      }
+      
+      .test-search-button {
+        width: 100%;
+        margin-top: var(--bmb-spacing-m);
       }
     }
   `]
@@ -637,6 +721,7 @@ export class DocumentUploadComponent implements OnInit {
   private apiService = inject(ApiService);
   private medicalStateService = inject(MedicalStateService);
   private router = inject(Router);
+  private location = inject(Location);
   private cdr = inject(ChangeDetectorRef);
 
   selectedFiles: File[] = [];
@@ -838,7 +923,7 @@ export class DocumentUploadComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    this.location.back();
   }
 
   trackByFile(index: number, upload: DocumentUpload): string {

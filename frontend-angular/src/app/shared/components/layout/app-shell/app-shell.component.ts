@@ -45,6 +45,7 @@ import { GlobalLoaderComponent } from '../../global-loader/global-loader.compone
       min-height: 100vh;
       background-color: var(--medical-background);
       position: relative;
+      overflow-x: hidden;
     }
     
     .main-content {
@@ -52,29 +53,94 @@ import { GlobalLoaderComponent } from '../../global-loader/global-loader.compone
       display: flex;
       flex-direction: column;
       transition: margin-left 0.3s ease;
+      width: 100%;
     }
     
     .page-content {
       flex: 1;
-      padding: 1.5rem;
+      padding: var(--bmb-spacing-l, 1.5rem);
       overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      min-height: calc(100vh - 64px);
     }
     
-    /* Mobile Styles */
-    @media (max-width: 768px) {
+    /* 📱 MOBILE STYLES - TASK-UI-004 */
+    @media (max-width: 767px) {
       .main-content {
         margin-left: 0 !important;
+        width: 100% !important;
+        max-width: 100vw !important;
       }
       
       .page-content {
-        padding: 1rem;
+        padding: var(--bmb-spacing-m, 1rem);
+        min-height: calc(100vh - 70px);
+        
+        /* Touch scroll optimization */
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+      }
+      
+      .app-shell {
+        overflow-x: hidden !important;
       }
     }
     
-    /* Tablet Styles */
+    /* 📱 TABLET STYLES - TASK-UI-004 OPTIMIZACIÓN */
     @media (min-width: 768px) and (max-width: 1024px) {
+      .main-content {
+        margin-left: var(--sidebar-width-tablet, 280px) !important;
+        transition: margin-left 0.3s ease;
+      }
+      
       .page-content {
-        padding: 1.25rem;
+        padding: var(--bmb-spacing-l, 1.5rem);
+        min-height: calc(100vh - 72px);
+      }
+    }
+    
+    /* 📱 DESKTOP STYLES - TASK-UI-004 */
+    @media (min-width: 1025px) {
+      .main-content {
+        margin-left: var(--sidebar-width-desktop, 320px) !important;
+      }
+      
+      .page-content {
+        padding: var(--bmb-spacing-xl, 2rem);
+        min-height: calc(100vh - 74px);
+      }
+    }
+    
+    /* 🖱️ TOUCH DEVICE OPTIMIZATIONS - TASK-UI-004 */
+    @media (hover: none) and (pointer: coarse) {
+      .page-content {
+        /* Improve touch scrolling */
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        touch-action: pan-y;
+      }
+      
+      .app-shell {
+        /* Prevent overscroll bounce */
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+    }
+    
+    /* 📱 LANDSCAPE ORIENTATION - TASK-UI-004 */
+    @media (max-width: 1024px) and (orientation: landscape) {
+      .page-content {
+        padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem);
+      }
+    }
+    
+    /* 📱 SAFE AREA SUPPORT - TASK-UI-004 */
+    @supports (padding: max(0px)) {
+      .page-content {
+        padding-left: max(var(--bmb-spacing-m, 1rem), env(safe-area-inset-left));
+        padding-right: max(var(--bmb-spacing-m, 1rem), env(safe-area-inset-right));
+        padding-bottom: max(var(--bmb-spacing-m, 1rem), env(safe-area-inset-bottom));
       }
     }
   `]

@@ -4,10 +4,39 @@ import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { ChatMessage, ChatRequest } from '@core/models';
 import { MedicalStateService, StreamingService } from '@core/services';
+import { ChangeDetectorRef } from '@angular/core';
+import { Patient } from '@core/models/patient.model';
 
-// Import available Bamboo Components
-// (Currently none used in this component)
-
+/**
+ * Medical Chat Component for AI-powered medical consultations
+ * 
+ * @description Main chat interface for medical consultations with AI assistant.
+ * Handles patient context, message history, streaming responses, and responsive design.
+ * Integrates with MedicalStateService for state management and StreamingService for real-time AI responses.
+ * 
+ * @features
+ * - Patient-contextual conversations
+ * - Real-time streaming AI responses
+ * - Responsive design (mobile, tablet, desktop)
+ * - Message formatting with medical content support
+ * - Quick action buttons for common medical queries
+ * - Auto-scrolling message container
+ * - Character limit validation
+ * 
+ * @example
+ * ```typescript
+ * // Used in template:
+ * <app-medical-chat></app-medical-chat>
+ * 
+ * // Component automatically handles:
+ * // 1. Patient selection from MedicalStateService
+ * // 2. Message history per patient
+ * // 3. Streaming AI responses
+ * // 4. Responsive UI adaptations
+ * ```
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-medical-chat',
   standalone: true,
@@ -16,24 +45,6 @@ import { MedicalStateService, StreamingService } from '@core/services';
     FormsModule,
   ],
   template: `
-    <!-- 🚨 BANNER ULTRA MEGA VISIBLE -->
-    <div class="mega-banner" id="bamboo-banner">
-      <div class="mega-banner-content">
-        <span class="mega-icon">🚨</span>
-        <span class="mega-text">¡¡¡ BAMBOO TOKENS FUNCIONANDO !!!</span>
-        <span class="mega-icon">🚨</span>
-            </div>
-          </div>
-          
-    <!-- 🚨 BANNER SÚPER VISIBLE -->
-    <div class="verification-banner">
-      <div class="banner-content">
-        <span class="banner-icon">🎯</span>
-        <span class="banner-text">BAMBOO TOKENS ACTIVADOS</span>
-        <span class="banner-icon">✨</span>
-            </div>
-            </div>
-
     <!-- Main chat container -->
     <div class="chat-container">
       <!-- Header -->
@@ -61,23 +72,82 @@ import { MedicalStateService, StreamingService } from '@core/services';
               </div>
         </div>
 
-        <!-- Messages -->
+        <!-- Messages with Bubble Design -->
         <div class="messages-list" *ngIf="activePatient">
           <div 
             *ngFor="let message of chatMessages; trackBy: trackMessage"
-            [class]="'message-item ' + (message.role === 'user' ? 'user-message' : 'assistant-message')"
+            class="message-wrapper"
+            [class.user-wrapper]="message.role === 'user'"
+            [class.assistant-wrapper]="message.role === 'assistant'"
           >
-            <div class="message-content">
-              <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
-              <div class="message-time">{{ formatTime(message.timestamp) }}</div>
+            <!-- Avatar -->
+            <div class="message-avatar" 
+                 [class.user-avatar]="message.role === 'user'"
+                 [class.assistant-avatar]="message.role === 'assistant'">
+              <span *ngIf="message.role === 'user'">👨‍⚕️</span>
+              <span *ngIf="message.role === 'assistant'">🤖</span>
+            </div>
+            
+            <!-- Bubble Container -->
+            <div class="bubble-container">
+              <!-- Speech Bubble -->
+              <div class="speech-bubble"
+                   [class.user-bubble]="message.role === 'user'"
+                   [class.assistant-bubble]="message.role === 'assistant'">
+                
+                <!-- Message Content -->
+                <div class="bubble-content">
+                  <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
+                </div>
+                
+                <!-- Bubble Tail -->
+                <div class="bubble-tail"
+                     [class.user-tail]="message.role === 'user'"
+                     [class.assistant-tail]="message.role === 'assistant'">
+                </div>
+              </div>
+              
+              <!-- Timestamp -->
+              <div class="message-timestamp"
+                   [class.user-timestamp]="message.role === 'user'"
+                   [class.assistant-timestamp]="message.role === 'assistant'">
+                {{ formatTime(message.timestamp) }}
+              </div>
             </div>
           </div>
               
-          <!-- Streaming message -->
-          <div class="message-item assistant-message" *ngIf="isStreaming">
-            <div class="message-content">
-              <div class="message-text" [innerHTML]="formatMessageContent(streamingMessage)"></div>
-              <div class="message-time">Escribiendo...</div>
+          <!-- Streaming message with bubble design -->
+          <div class="message-wrapper assistant-wrapper" *ngIf="isStreaming">
+            <!-- Avatar -->
+            <div class="message-avatar assistant-avatar">
+              <span class="typing-indicator">🤖</span>
+            </div>
+            
+            <!-- Bubble Container -->
+            <div class="bubble-container">
+              <!-- Speech Bubble -->
+              <div class="speech-bubble assistant-bubble streaming-bubble">
+                <!-- Message Content -->
+                <div class="bubble-content">
+                  <div class="message-text">
+                    <span *ngIf="streamingMessage" [innerHTML]="formatMessageContent(streamingMessage)"></span>
+                    <span *ngIf="!streamingMessage" class="thinking-dots">
+                      <span class="dot">.</span>
+                      <span class="dot">.</span>
+                      <span class="dot">.</span>
+                    </span>
+                    <span class="typing-cursor">|</span>
+                  </div>
+                </div>
+                
+                <!-- Bubble Tail -->
+                <div class="bubble-tail assistant-tail"></div>
+              </div>
+              
+              <!-- Timestamp -->
+              <div class="message-timestamp assistant-timestamp">
+                Escribiendo...
+              </div>
             </div>
           </div>
         </div>
@@ -113,80 +183,13 @@ import { MedicalStateService, StreamingService } from '@core/services';
     </div>
   `,
   styles: [`
-    /* 🚨 MEGA BANNER ULTRA VISIBLE */
-    .mega-banner {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100vw !important;
-      height: 40px !important;
-      background: linear-gradient(90deg, #2196F3, #1976D2, #2196F3) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      z-index: 999999 !important;
-      border-bottom: 2px solid #1976D2 !important;
-    }
-
-    .mega-banner-content {
-      display: flex !important;
-      align-items: center !important;
-      gap: 15px !important;
-      color: white !important;
-      font-weight: 600 !important;
-      font-size: 0.9rem !important;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
-      letter-spacing: 1px !important;
-    }
-
-    .mega-icon {
-      font-size: 1rem !important;
-    }
-
-    .mega-text {
-      font-size: 0.9rem !important;
-    }
-
-    /* 🚨 BANNER SÚPER VISIBLE */
-    .verification-banner {
-      position: fixed !important;
-      top: 40px !important;
-      left: 0 !important;
-      right: 0 !important;
-      height: 30px !important;
-      background: linear-gradient(90deg, #4CAF50, #45a049, #4CAF50) !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      z-index: 99999 !important;
-    }
-
-    .banner-content {
-      display: flex !important;
-      align-items: center !important;
-      gap: 10px !important;
-      color: white !important;
-      font-weight: 600 !important;
-      font-size: 0.8rem !important;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
-    }
-
-    .banner-icon {
-      font-size: 1rem !important;
-    }
-
-    .banner-text {
-      letter-spacing: 1px !important;
-    }
-
     /* CONTENEDOR PRINCIPAL */
     .chat-container {
       display: flex !important;
       flex-direction: column !important;
       height: 100vh !important;
       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
-      margin-top: 70px !important;
+      margin-top: 0 !important;
     }
 
     /* HEADER */
@@ -264,41 +267,212 @@ import { MedicalStateService, StreamingService } from '@core/services';
       margin: 0 auto !important;
     }
 
-    .message-item {
+    .message-wrapper {
+      display: flex !important;
+      align-items: flex-start !important;
       margin-bottom: 20px !important;
+      gap: 10px !important;
     }
 
-    .user-message {
+    .user-wrapper {
+      flex-direction: row-reverse !important;
+    }
+
+    .assistant-wrapper {
+      flex-direction: row !important;
+    }
+
+    .message-avatar {
+      width: 40px !important;
+      height: 40px !important;
+      border-radius: 50% !important;
+      background: #e0e0e0 !important;
       display: flex !important;
-      justify-content: flex-end !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 1.5rem !important;
+      color: #333 !important;
+      flex-shrink: 0 !important;
     }
 
-    .assistant-message {
+    .user-avatar {
+      background: #2196F3 !important;
+      color: white !important;
+    }
+
+    .assistant-avatar {
+      background: #FF9800 !important;
+      color: white !important;
+    }
+
+    .bubble-container {
       display: flex !important;
-      justify-content: flex-start !important;
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 5px !important;
     }
 
-    .message-content {
+    .user-wrapper .bubble-container {
+      align-items: flex-end !important;
+    }
+
+    .assistant-wrapper .bubble-container {
+      align-items: flex-start !important;
+    }
+
+    .speech-bubble {
       max-width: 70% !important;
       padding: 15px 20px !important;
       border-radius: 20px !important;
       background: white !important;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+      position: relative !important;
     }
 
-    .user-message .message-content {
+    .user-bubble {
       background: #2196F3 !important;
       color: white !important;
     }
 
-    .message-text {
+    .assistant-bubble {
+      background: #FF9800 !important;
+      color: white !important;
+    }
+
+    .streaming-bubble {
+      background: #FF9800 !important;
+      color: white !important;
+    }
+
+    .bubble-tail {
+      position: absolute !important;
+      width: 0 !important;
+      height: 0 !important;
+      border-style: solid !important;
+      border-width: 10px 10px 10px 0 !important;
+      border-color: transparent white transparent transparent !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+    }
+
+    .user-tail {
+      right: -10px !important;
+      border-width: 10px 0 10px 10px !important;
+      border-color: transparent transparent transparent #2196F3 !important;
+    }
+
+    .assistant-tail {
+      left: -10px !important;
+      border-width: 10px 10px 10px 0 !important;
+      border-color: transparent #FF9800 transparent transparent !important;
+    }
+
+    .bubble-content {
       line-height: 1.5 !important;
     }
 
-    .message-time {
+    .message-text {
+      white-space: pre-wrap !important; /* Preserve line breaks */
+      word-break: break-word !important;
+    }
+
+    /* Thinking Dots Animation */
+    .thinking-dots {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 2px !important;
+    }
+
+    .thinking-dots .dot {
+      width: 4px !important;
+      height: 4px !important;
+      background: currentColor !important;
+      border-radius: 50% !important;
+      animation: thinkingPulse 1.4s infinite ease-in-out !important;
+    }
+
+    .thinking-dots .dot:nth-child(1) {
+      animation-delay: -0.32s !important;
+    }
+
+    .thinking-dots .dot:nth-child(2) {
+      animation-delay: -0.16s !important;
+    }
+
+    .thinking-dots .dot:nth-child(3) {
+      animation-delay: 0s !important;
+    }
+
+    @keyframes thinkingPulse {
+      0%, 80%, 100% {
+        transform: scale(0) !important;
+        opacity: 0.5 !important;
+      }
+      40% {
+        transform: scale(1) !important;
+        opacity: 1 !important;
+      }
+    }
+
+    /* Typing Cursor Animation */
+    .typing-cursor {
+      animation: blink 1s infinite !important;
+      font-weight: bold !important;
+      margin-left: 2px !important;
+    }
+
+    @keyframes blink {
+      0%, 50% {
+        opacity: 1 !important;
+      }
+      51%, 100% {
+        opacity: 0 !important;
+      }
+    }
+
+    /* Typing Indicator Animation */
+    .typing-indicator {
+      animation: bounce 1.5s infinite !important;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0) !important;
+      }
+      40% {
+        transform: translateY(-5px) !important;
+      }
+      60% {
+        transform: translateY(-3px) !important;
+      }
+    }
+
+    /* Streaming Bubble Effect */
+    .streaming-bubble {
+      animation: streamingGlow 2s ease-in-out infinite alternate !important;
+    }
+
+    @keyframes streamingGlow {
+      from {
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3) !important;
+      }
+      to {
+        box-shadow: 0 4px 16px rgba(255, 152, 0, 0.6) !important;
+      }
+    }
+
+    .message-timestamp {
       font-size: 0.75rem !important;
       opacity: 0.7 !important;
       margin-top: 5px !important;
+    }
+
+    .user-timestamp {
+      text-align: right !important;
+    }
+
+    .assistant-timestamp {
+      text-align: left !important;
     }
 
     /* FOOTER */
@@ -352,106 +526,290 @@ import { MedicalStateService, StreamingService } from '@core/services';
       font-size: 0.8rem !important;
     }
 
-    /* 🚀 BOTÓN MEGA ULTRA VISIBLE */
+    /* 🚀 BOTÓN PREMIUM MODERNO */
     .send-btn-premium {
-      min-width: 160px !important;
-      height: 60px !important;
-      background: linear-gradient(45deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
-      border: 4px solid #FF0000 !important;
-      border-radius: 30px !important;
+      min-width: 120px !important;
+      height: 45px !important;
+      background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%) !important;
+      border: none !important;
+      border-radius: 25px !important;
       cursor: pointer !important;
       transition: all 0.3s ease !important;
-      box-shadow: 0 0 30px rgba(255, 0, 0, 0.8) !important;
-      animation: buttonMegaPulse 1s infinite !important;
-      transform: scale(1.3) !important;
+      box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
       position: relative !important;
-      z-index: 9999 !important;
+      overflow: hidden !important;
     }
 
-    .send-btn-premium:hover {
-      transform: scale(1.5) !important;
-      box-shadow: 0 0 50px rgba(255, 0, 0, 1) !important;
+    .send-btn-premium:hover:not(:disabled) {
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4) !important;
     }
 
     .send-btn-premium:disabled {
-      opacity: 0.5 !important;
+      opacity: 0.6 !important;
       cursor: not-allowed !important;
-      transform: scale(1) !important;
-      animation: none !important;
+      transform: none !important;
     }
 
     .premium-text {
       color: white !important;
-      font-size: 1.2rem !important;
-      font-weight: 900 !important;
-      text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8) !important;
-      letter-spacing: 2px !important;
+      font-size: 0.9rem !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.5px !important;
       text-transform: uppercase !important;
     }
 
-    @keyframes buttonMegaPulse {
-      0%, 100% {
-        box-shadow: 0 0 30px rgba(255, 0, 0, 0.8) !important;
-        background: linear-gradient(45deg, #FF0000, #FF4500, #FF6B35, #FF4500, #FF0000) !important;
-      }
-      50% {
-        box-shadow: 0 0 50px rgba(255, 0, 0, 1) !important;
-        background: linear-gradient(45deg, #FF4500, #FF6B35, #FFFF00, #FF6B35, #FF4500) !important;
-      }
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
+    /* 📱 RESPONSIVE OPTIMIZADO - TASK-UI-004 */
+    
+    /* Mobile Styles (<768px) */
+    @media (max-width: 767px) {
       .chat-container {
-        margin-top: 120px !important;
+        margin-top: 0 !important;
       }
       
-      .mega-banner {
-        height: 60px !important;
+      .message-wrapper {
+        gap: 8px !important;
       }
       
-      .verification-banner {
-        height: 50px !important;
-        top: 60px !important;
+      .message-avatar {
+        width: 35px !important;
+        height: 35px !important;
+        font-size: 1.1rem !important;
       }
       
-      .mega-banner-content {
-        font-size: 1.5rem !important;
+      .bubble-container {
+        gap: 3px !important;
       }
       
-      .banner-content {
-        font-size: 1.2rem !important;
-      }
-      
-      .banner-icon {
-        font-size: 1.5rem !important;
-      }
-      
-      .message-content {
+      .speech-bubble {
         max-width: 85% !important;
+        padding: 12px 15px !important;
+      }
+      
+      .bubble-tail {
+        border-width: 8px 8px 8px 0 !important;
+      }
+      
+      .user-tail {
+        right: -8px !important;
+      }
+      
+      .assistant-tail {
+        left: -8px !important;
+      }
+      
+      .message-text {
+        font-size: 0.9rem !important;
+      }
+      
+      .message-timestamp {
+        font-size: 0.6rem !important;
       }
       
       .send-btn-premium {
-        min-width: 140px !important;
-        height: 50px !important;
+        min-width: 120px !important;
+        height: var(--touch-target-min, 44px) !important;
+        transform: scale(1.1) !important;
+      }
+      
+      .send-btn-premium:hover {
+        transform: scale(1.2) !important;
+      }
+      
+      .message-input {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        padding: var(--touch-spacing, 12px) !important;
+      }
+      
+      .input-footer {
+        padding: var(--touch-spacing, 12px) !important;
+      }
+      
+      .chat-header {
+        padding: var(--bmb-spacing-m, 1rem) !important;
+      }
+      
+      .chat-footer {
+        padding: var(--bmb-spacing-m, 1rem) !important;
+      }
+    }
+    
+    /* Tablet Styles (768px-1024px) - TASK-UI-004 OPTIMIZACIÓN */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .chat-container {
+        margin-top: 0 !important;
+      }
+      
+      .message-wrapper {
+        gap: 10px !important;
+      }
+      
+      .message-avatar {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 1.3rem !important;
+      }
+      
+      .bubble-container {
+        gap: 5px !important;
+      }
+      
+      .speech-bubble {
+        max-width: 75% !important;
+        padding: 15px 20px !important;
+      }
+      
+      .bubble-tail {
+        border-width: 10px 10px 10px 0 !important;
+      }
+      
+      .user-tail {
+        right: -10px !important;
+      }
+      
+      .assistant-tail {
+        left: -10px !important;
+      }
+      
+      .message-text {
+        font-size: 1rem !important;
+      }
+      
+      .message-timestamp {
+        font-size: 0.75rem !important;
+      }
+      
+      .send-btn-premium {
+        min-width: 150px !important;
+        height: 55px !important;
+        transform: scale(1.2) !important;
+      }
+      
+      .send-btn-premium:hover {
+        transform: scale(1.3) !important;
+      }
+      
+      .messages-list {
+        max-width: 900px !important;
+        padding: 0 var(--bmb-spacing-m, 1rem) !important;
+      }
+      
+      .input-section {
+        max-width: 900px !important;
+      }
+      
+      .chat-header {
+        padding: var(--bmb-spacing-l, 1.5rem) !important;
+      }
+      
+      .chat-footer {
+        padding: var(--bmb-spacing-l, 1.5rem) !important;
+      }
+    }
+    
+    /* Desktop Styles (1025px+) */
+    @media (min-width: 1025px) {
+      .message-wrapper {
+        gap: 10px !important;
+      }
+      
+      .message-avatar {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 1.3rem !important;
+      }
+      
+      .bubble-container {
+        gap: 5px !important;
+      }
+      
+      .speech-bubble {
+        max-width: 70% !important;
+        padding: 15px 20px !important;
+      }
+      
+      .bubble-tail {
+        border-width: 10px 10px 10px 0 !important;
+      }
+      
+      .user-tail {
+        right: -10px !important;
+      }
+      
+      .assistant-tail {
+        left: -10px !important;
+      }
+      
+      .message-text {
+        font-size: 1rem !important;
+      }
+      
+      .message-timestamp {
+        font-size: 0.75rem !important;
+      }
+      
+      .send-btn-premium {
+        min-width: 160px !important;
+        height: 60px !important;
+        transform: scale(1.3) !important;
+      }
+      
+      .send-btn-premium:hover {
+        transform: scale(1.5) !important;
+      }
+    }
+    
+    /* 🖱️ TOUCH DEVICE OPTIMIZATIONS - TASK-UI-004 */
+    @media (hover: none) and (pointer: coarse) {
+      .message-input {
+        -webkit-appearance: none !important;
+        border-radius: var(--medical-border-radius) !important;
+      }
+      
+      .send-btn-premium:hover {
+        transform: scale(1.1) !important;
+      }
+      
+      .chat-main {
+        -webkit-overflow-scrolling: touch !important;
+        scroll-behavior: smooth !important;
+      }
+      
+      .message-wrapper {
+        touch-action: manipulation !important;
       }
     }
   `]
 })
 export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+  /** ViewChild reference to the messages container for auto-scrolling */
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
   
+  /** Subject for managing component subscriptions cleanup */
   private destroy$ = new Subject<void>();
+  
+  /** Flag to trigger scrolling to bottom after view updates */
   private shouldScrollToBottom = false;
 
-  // Component state
+  /** Current message being typed by the user */
   currentMessage = '';
+  
+  /** Array of chat messages for the current patient */
   chatMessages: ChatMessage[] = [];
+  
+  /** Whether AI is currently streaming a response */
   isStreaming = false;
+  
+  /** Current streaming message content */
   streamingMessage = '';
+  
+  /** Currently active patient for medical context */
   activePatient: any = null;
+  
+  /** Recently accessed patients for quick selection */
   recentPatients: any[] = [];
 
+  /** Quick action templates for common medical queries */
   quickActions = [
     { label: 'Síntomas', text: 'El paciente presenta los siguientes síntomas: ' },
     { label: 'Diagnóstico', text: 'Necesito ayuda con el diagnóstico diferencial para: ' },
@@ -461,11 +819,34 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     { label: 'Historial', text: 'Considerando el historial médico del paciente: ' }
   ];
 
+  /**
+   * Creates an instance of MedicalChatComponent
+   * 
+   * @param medicalStateService - Service for managing medical state and patient data
+   * @param streamingService - Service for handling streaming AI responses
+   */
   constructor(
     private medicalStateService: MedicalStateService,
-    private streamingService: StreamingService
+    private streamingService: StreamingService,
+    private cdr: ChangeDetectorRef
   ) {}
 
+  /**
+   * Component initialization lifecycle hook
+   * 
+   * @description Sets up subscriptions to medical state observables for:
+   * - Active patient changes
+   * - Recent patients updates
+   * - Chat messages changes
+   * - Streaming state updates
+   * - Real-time streaming message content
+   * 
+   * @example
+   * ```typescript
+   * // Automatically called by Angular
+   * // Sets up reactive data flow from MedicalStateService
+   * ```
+   */
   ngOnInit(): void {
     console.log('🩺 ============================================');
     console.log('🩺 MedicalChatComponent ngOnInit INICIADO');
@@ -473,23 +854,32 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     console.log('🩺 URL actual:', window.location.pathname);
     console.log('🩺 ============================================');
     
-    // Subscribe to active patient changes
+    // Get initial state immediately
+    const initialPatient = this.medicalStateService.activePatientValue;
+    console.log('🩺 Initial patient from service:', initialPatient?.name || 'NONE');
+    
+    // Subscribe to active patient changes with immediate emission
     console.log('🩺 PASO 1: Suscribiéndose a activePatient$...');
     this.medicalStateService.activePatient$
       .pipe(takeUntil(this.destroy$))
       .subscribe((patient: any) => {
         console.log('💊 ============================================');
         console.log('💊 CHAT: Active patient subscription triggered');
-        console.log('💊 Paciente recibido:', patient ? patient.name : 'NINGUNO');
-        console.log('💊 ID del paciente:', patient ? patient.id : 'N/A');
+        console.log('💊 Previous patient:', this.activePatient?.name || 'NONE');
+        console.log('💊 New patient:', patient?.name || 'NONE');
         console.log('💊 Timestamp:', new Date().toISOString());
         console.log('💊 ============================================');
         
+        // Update local state
         this.activePatient = patient;
         
         if (patient) {
           console.log('✅ CHAT HABILITADO: Chat enabled for patient:', patient.name);
+          console.log('✅ Patient ID:', patient.id);
           console.log('✅ this.activePatient actualizado a:', this.activePatient.name);
+          
+          // Trigger change detection to update UI immediately
+          this.cdr.detectChanges();
         } else {
           console.log('⚠️ CHAT DESHABILITADO: No hay paciente activo');
           console.log('⚠️ this.activePatient actualizado a: null');
@@ -500,51 +890,53 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     console.log('🩺 PASO 2: Suscribiéndose a recentPatients$...');
     this.medicalStateService.recentPatients$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(patients => {
-        console.log('👥 Pacientes recientes actualizados:', patients.length);
-        this.recentPatients = patients;
+      .subscribe((patients: Patient[]) => {
+        console.log('👥 Recent patients updated:', patients.length);
+        // Update local state if needed
       });
 
     // Subscribe to chat messages
     console.log('🩺 PASO 3: Suscribiéndose a currentChatMessages$...');
     this.medicalStateService.currentChatMessages$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(messages => {
-        console.log('💬 Chat messages actualizados:', messages.length);
+      .subscribe((messages: ChatMessage[]) => {
+        console.log('💬 Chat messages updated:', messages.length);
         this.chatMessages = messages;
-        this.shouldScrollToBottom = true;
+        this.cdr.detectChanges();
       });
 
     // Subscribe to streaming state
-    console.log('🩺 PASO 4: Suscribiéndose a isStreaming$...');
+    console.log('🩺 PASO 4: Suscribiéndose a streaming state...');
     this.medicalStateService.isStreaming$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(isStreaming => {
-        console.log('🔄 Streaming state changed:', isStreaming);
-        this.isStreaming = isStreaming;
-        this.shouldScrollToBottom = true;
+      .subscribe((streaming: boolean) => {
+        console.log('📡 Streaming state:', streaming);
+        this.isStreaming = streaming;
+        this.cdr.detectChanges();
       });
 
-    // Subscribe to streaming message
+    // Subscribe to streaming message content
     console.log('🩺 PASO 5: Suscribiéndose a streamingMessage$...');
     this.medicalStateService.streamingMessage$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(message => {
-        console.log('📝 Streaming message updated:', message.length > 0 ? 'Has content' : 'Empty');
+      .subscribe((message: string) => {
+        console.log('📡 Streaming message length:', message.length);
         this.streamingMessage = message;
+        this.cdr.detectChanges();
       });
-      
+
     console.log('🩺 ============================================');
-    console.log('🩺 MedicalChatComponent ngOnInit COMPLETADO');
-    console.log('🩺 Estado inicial:');
-    console.log('🩺 - activePatient:', this.activePatient?.name || 'null');
-    console.log('🩺 - recentPatients:', this.recentPatients.length);
-    console.log('🩺 - chatMessages:', this.chatMessages.length);
+    console.log('🩺 MedicalChatComponent ngOnInit COMPLETED');
+    console.log('🩺 Final activePatient:', this.activePatient?.name || 'NONE');
     console.log('🩺 ============================================');
-    
-    // ✅ Initialization complete
   }
 
+  /**
+   * After view checked lifecycle hook
+   * 
+   * @description Handles auto-scrolling to bottom when new messages arrive
+   * or streaming content updates
+   */
   ngAfterViewChecked(): void {
     if (this.shouldScrollToBottom) {
       this.scrollToBottom();
@@ -552,13 +944,27 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     }
   }
 
-
-
+  /**
+   * Component destruction lifecycle hook
+   * 
+   * @description Cleans up subscriptions to prevent memory leaks
+   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  /**
+   * Determines if a message can be sent
+   * 
+   * @returns True if message can be sent, false otherwise
+   * 
+   * @description Validates that:
+   * - Message has content (trimmed length > 0)
+   * - Not currently streaming
+   * - Patient is selected
+   * - Message length is within limit (2000 chars)
+   */
   get canSendMessage(): boolean {
     return this.currentMessage.trim().length > 0 && 
            !this.isStreaming && 
@@ -566,6 +972,23 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
            this.currentMessage.length <= 2000;
   }
 
+  /**
+   * Handles Enter key press in message input
+   * 
+   * @param event - Keyboard event
+   * 
+   * @description Sends message on Enter, allows new line with Shift+Enter
+   * 
+   * @example
+   * ```typescript
+   * // In template:
+   * <textarea (keydown.enter)="onEnterPressed($event)">
+   * 
+   * // Behavior:
+   * // Enter -> Send message
+   * // Shift+Enter -> New line
+   * ```
+   */
   onEnterPressed(event: any): void {
     if (event.shiftKey) {
       return; // Allow new line with Shift+Enter
@@ -577,8 +1000,15 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     }
   }
 
+  /**
+   * Handles input changes for auto-resizing textarea
+   * 
+   * @param event - Input event from textarea
+   * 
+   * @description Automatically adjusts textarea height based on content,
+   * with a maximum height of 150px
+   */
   onInputChange(event: any): void {
-    // Auto-resize textarea
     const textarea = event.target as HTMLTextAreaElement;
     if (textarea) {
       textarea.style.height = 'auto';
@@ -586,12 +1016,49 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     }
   }
 
+  /**
+   * Uses a quick action template in the message input
+   * 
+   * @param action - Quick action object with label and text template
+   * 
+   * @description Populates the message input with a pre-defined template
+   * including the active patient's name
+   * 
+   * @example
+   * ```typescript
+   * const action = { label: 'Síntomas', text: 'El paciente presenta los siguientes síntomas: ' };
+   * this.useQuickAction(action);
+   * // Result: "El paciente presenta los siguientes síntomas: Juan Pérez - "
+   * ```
+   */
   useQuickAction(action: any): void {
     if (this.activePatient) {
       this.currentMessage = `${action.text}${this.activePatient.name} - `;
     }
   }
 
+  /**
+   * Sends a message to the AI assistant
+   * 
+   * @description Main method for sending medical consultation messages:
+   * 1. Validates message can be sent
+   * 2. Creates user message object
+   * 3. Adds message to state
+   * 4. Initiates streaming AI response
+   * 5. Handles streaming chunks and errors
+   * 
+   * @example
+   * ```typescript
+   * // Called when user clicks send button or presses Enter
+   * this.sendMessage();
+   * 
+   * // Process:
+   * // 1. User message added to chat
+   * // 2. Streaming AI response begins
+   * // 3. Real-time chunks displayed
+   * // 4. Complete response added to history
+   * ```
+   */
   sendMessage(): void {
     if (!this.canSendMessage) return;
 
@@ -678,22 +1145,58 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     });
   }
 
+  /**
+   * Clears chat history for the current patient
+   * 
+   * @description Removes all chat messages for the active patient from state
+   * 
+   * @example
+   * ```typescript
+   * this.clearChat(); // Clears current patient's chat history
+   * ```
+   */
   clearChat(): void {
     if (this.activePatient) {
       this.medicalStateService.clearChatHistory(this.activePatient.id);
     }
   }
 
-  // Message interaction methods
+  /**
+   * Copies message content to clipboard
+   * 
+   * @param content - Message content to copy
+   * 
+   * @description Uses navigator.clipboard API to copy message text
+   * 
+   * @example
+   * ```typescript
+   * this.copyMessage('Diagnóstico: Hipertensión arterial');
+   * // Content copied to clipboard
+   * ```
+   */
   copyMessage(content: string): void {
     navigator.clipboard.writeText(content);
     console.log('📋 Mensaje copiado al portapapeles');
   }
 
+  /**
+   * Records positive feedback for a message
+   * 
+   * @param message - Message object that was liked
+   * 
+   * @description Placeholder for message rating functionality
+   */
   likeMessage(message: ChatMessage): void {
     console.log('👍 Mensaje valorado positivamente:', message);
   }
 
+  /**
+   * Repeats the last user message
+   * 
+   * @param message - Message object to repeat (not used, finds last user message)
+   * 
+   * @description Finds the most recent user message and puts it back in the input
+   */
   repeatMessage(message: ChatMessage): void {
     if (this.chatMessages.length > 0) {
       const lastUserMessage = [...this.chatMessages]
@@ -706,11 +1209,33 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     }
   }
 
-  // Utility methods
+  /**
+   * TrackBy function for message list optimization
+   * 
+   * @param index - Index in the array
+   * @param message - Message object
+   * @returns Unique identifier for the message
+   * 
+   * @description Improves Angular's change detection performance for message list
+   */
   trackMessage(index: number, message: ChatMessage): any {
     return message.timestamp || index;
   }
 
+  /**
+   * Formats timestamp for display
+   * 
+   * @param timestamp - Date object or undefined
+   * @returns Formatted time string (HH:MM)
+   * 
+   * @description Converts timestamp to localized time format for Spanish
+   * 
+   * @example
+   * ```typescript
+   * const time = this.formatTime(new Date());
+   * // Returns: "14:30"
+   * ```
+   */
   formatTime(timestamp: Date | undefined): string {
     if (!timestamp) return '';
     return timestamp.toLocaleTimeString('es-ES', { 
@@ -719,6 +1244,31 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     });
   }
 
+  /**
+   * Formats message content with enhanced markdown and medical formatting
+   * 
+   * @param content - Raw message content
+   * @returns HTML-formatted content string
+   * 
+   * @description Applies comprehensive formatting for medical content including:
+   * - Headers (##)
+   * - Bold and italic text (**text**, *text*)
+   * - Lists with bullet points
+   * - Medical values with units highlighting
+   * - Medical sections with styled headers
+   * - Line break conversion
+   * 
+   * @example
+   * ```typescript
+   * const formatted = this.formatMessageContent(`
+   * ## Diagnóstico
+   * **Hipertensión arterial**
+   * - Presión sistólica: 150 (rango normal: 120-140)
+   * - *Requiere tratamiento*
+   * `);
+   * // Returns: Fully formatted HTML with styles
+   * ```
+   */
   formatMessageContent(content: string): string {
     if (!content) return '';
     
@@ -750,6 +1300,13 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
       .replace(/(<br>\s*){3,}/g, '<br><br>');
   }
 
+  /**
+   * Scrolls the messages container to the bottom
+   * 
+   * @private
+   * @description Automatically scrolls to show the latest message,
+   * used when new messages arrive or during streaming
+   */
   private scrollToBottom(): void {
     try {
       this.messagesContainer.nativeElement.scrollTop = 
