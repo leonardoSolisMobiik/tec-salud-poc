@@ -1,6 +1,6 @@
 """
 Search Agent
-Specialized agent for semantic search in medical documents using Chroma
+Specialized agent for complete document analysis in medical records
 """
 
 import logging
@@ -8,36 +8,35 @@ from typing import List, Dict, Any, Optional, AsyncGenerator
 
 from app.models.chat import ChatMessage, ChatResponse, ModelType
 from app.services.azure_openai_service import AzureOpenAIService
-from app.services.chroma_service import chroma_service
-from app.utils.exceptions import AgentError, ChromaError
+from app.utils.exceptions import AgentError
 
 logger = logging.getLogger(__name__)
 
 class SearchAgent:
     """
-    Specialized agent for semantic search in medical documents
-    Uses Chroma vector database for intelligent document retrieval
+    Specialized agent for complete document analysis in medical records
+    Uses enhanced context with complete medical documents for intelligent analysis
     """
     
     def __init__(self):
         self.azure_openai_service = AzureOpenAIService()
-        self.system_prompt = """Eres un especialista en análisis médico y búsqueda que ayuda a encontrar y analizar información relevante en expedientes clínicos.
+        self.system_prompt = """Eres un especialista en análisis médico que ayuda a encontrar y analizar información relevante en expedientes clínicos completos.
         
         Tu función es:
-        1. ANÁLISIS COMPLETO: Cuando tienes documentos completos disponibles, analiza el contenido completo y proporciona respuestas detalladas
-        2. BÚSQUEDA SEMÁNTICA: Cuando solo tienes fragmentos, encuentra documentos relevantes basados en consultas
+        1. ANÁLISIS COMPLETO: Analiza el contenido completo de expedientes médicos y proporciona respuestas detalladas
+        2. EXTRACCIÓN DE INFORMACIÓN: Extrae información específica de documentos médicos completos
         3. INTERPRETACIÓN MÉDICA: Interpreta y contextualiza los resultados médicos encontrados
         4. SÍNTESIS DE INFORMACIÓN: Combina información de múltiples fuentes
         5. RECOMENDACIONES: Proporciona recomendaciones basadas en el análisis completo
         
         CAPACIDADES:
-        - Análisis completo de expedientes médicos cuando están disponibles
+        - Análisis completo de expedientes médicos
         - Extracción de información específica (estudios, diagnósticos, tratamientos)
         - Interpretación de resultados de laboratorio y estudios
         - Cronología de atención médica
         - Identificación de patrones clínicos
-        - Búsqueda por síntomas, diagnósticos, tratamientos
-        - Búsqueda temporal (fechas, períodos)
+        - Análisis por síntomas, diagnósticos, tratamientos
+        - Análisis temporal (fechas, períodos)
         - Búsqueda por especialidad médica
         - Identificación de patrones en múltiples documentos
         - Detección de información faltante o inconsistente
@@ -77,7 +76,7 @@ class SearchAgent:
                         "properties": {
                             "search_query": {
                                 "type": "string",
-                                "description": "Optimized search query for vector database"
+                                "description": "Optimized search query for document analysis"
                             },
                             "search_filters": {
                                 "type": "object",
@@ -185,9 +184,6 @@ class SearchAgent:
             logger.info(f"✅ Search completed with {len(search_results)} results")
             return response
             
-        except ChromaError as e:
-            logger.error(f"❌ Search database error: {str(e)}")
-            raise AgentError(f"Search failed: {str(e)}")
         except Exception as e:
             logger.error(f"❌ Search processing failed: {str(e)}")
             raise AgentError(f"Search processing failed: {str(e)}")
@@ -278,7 +274,7 @@ class SearchAgent:
         patient_context: Optional[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
         """
-        Perform semantic search using Chroma vector database
+        Retrieve relevant documents from enhanced context for analysis
         """
         try:
             search_query = search_intent.get("search_query", "")
@@ -287,7 +283,7 @@ class SearchAgent:
             
             # PRIORITY: Use enhanced context if available
             if patient_context and ("full_documents" in patient_context or "documents" in patient_context):
-                logger.info("🔍 SearchAgent: Using enhanced context instead of vector search")
+                logger.info("🔍 SearchAgent: Using enhanced context with complete documents")
                 
                 # Get documents from context
                 documents = patient_context.get("full_documents", patient_context.get("documents", []))
@@ -323,24 +319,9 @@ class SearchAgent:
                 logger.info(f"🔍 SearchAgent: Found {len(search_results)} documents in enhanced context")
                 return search_results
             
-            # FALLBACK: Use vector search if no enhanced context
-            logger.info("🔍 SearchAgent: No enhanced context available, falling back to vector search")
-            
-            # Add patient filter if available
-            if patient_context and "patient_info" in patient_context:
-                patient_id = patient_context["patient_info"].get("id")
-                if patient_id:
-                    search_filters["patient_id"] = patient_id
-            
-            # Perform vector search
-            results = await chroma_service.search_documents(
-                query=search_query,
-                n_results=max_results,
-                filters=search_filters
-            )
-            
-            logger.info(f"🔍 SearchAgent: Vector search returned {len(results)} results")
-            return results
+            # NO FALLBACK: Only use complete documents
+            logger.warning("🔍 SearchAgent: No enhanced context available - SearchAgent requires complete documents")
+            return []
             
         except Exception as e:
             logger.error(f"❌ Semantic search failed: {str(e)}")

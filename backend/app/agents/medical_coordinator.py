@@ -31,7 +31,7 @@ class QueryType(str, Enum):
 class MedicalCoordinatorAgent:
     """
     Enhanced coordinator agent that uses hybrid document context
-    Combines semantic vectors with complete documents for optimal medical assistance
+    Uses complete medical documents for optimal medical assistance
     """
     
     def __init__(self):
@@ -335,7 +335,7 @@ class MedicalCoordinatorAgent:
                 - Estrategia usada: {enhanced_context.strategy_used.value}
                 - Confianza del contexto: {enhanced_context.confidence:.2f}
                 - Documentos completos: {len(enhanced_context.full_documents)}
-                - Resultados vectoriales: {len(enhanced_context.vector_results)}
+                - Documentos médicos: {len(enhanced_context.vector_results)}
                 
                 IMPORTANTE: Si la consulta pide información específica del paciente y hay documentos disponibles,
                 es muy probable que sea "document_analysis" o "search" en lugar de "general".
@@ -527,15 +527,15 @@ class MedicalCoordinatorAgent:
                     
                     Para saludos y consultas generales:
                     - Saluda cordialmente y preséntate como asistente médico de TecSalud
-                    - Menciona que tienes acceso a expedientes médicos completos y vectorización semántica
+                    - Menciona que tienes acceso a expedientes médicos completos
                     - Ofrece ayuda con consultas médicas específicas
                     - Si hay contexto del paciente disponible, menciona que puedes revisar su historial
                     
                     Características del sistema:
                     - Análisis inteligente de documentos médicos completos
-                    - Búsqueda semántica en expedientes
+                    - Análisis exhaustivo de expedientes
                     - Agentes especializados para diagnóstico, análisis de documentos y búsquedas
-                    - Contexto híbrido que combina vectores con documentos completos
+                    - Contexto completo con documentos médicos completos
                     
                     Mantén un tono profesional pero cálido, y destaca las capacidades avanzadas del sistema."""
                 )
@@ -611,16 +611,16 @@ class MedicalCoordinatorAgent:
                 ):
                     yield chunk
             
-            elif query_type == "search":
-                logger.info("🎯 MedicalCoordinator: Calling SearchAgent")
-                async for chunk in self.search_agent.process_stream(
-                    messages=messages,
-                    patient_context=unified_context,
-                    model_type=model_type,
-                    temperature=temperature,
-                    max_tokens=max_tokens
-                ):
-                    yield chunk
+            # elif query_type == "search":
+            #     logger.info("🎯 MedicalCoordinator: Calling SearchAgent")
+            #     async for chunk in self.search_agent.process_stream(
+            #         messages=messages,
+            #         patient_context=unified_context,
+            #         model_type=model_type,
+            #         temperature=temperature,
+            #         max_tokens=max_tokens
+            #     ):
+            #         yield chunk
             
             else:  # general
                 logger.info("🎯 MedicalCoordinator: Handling general conversation")
@@ -631,8 +631,8 @@ class MedicalCoordinatorAgent:
                     
                     Características del sistema mejorado:
                     - Análisis inteligente de documentos médicos completos
-                    - Búsqueda semántica avanzada en expedientes  
-                    - Contexto híbrido que combina vectores con documentos completos
+                    - Análisis exhaustivo de expedientes  
+                    - Contexto completo con documentos médicos completos
                     - Agentes especializados para diferentes tipos de consultas
                     
                     Responde de manera cálida y profesional, destacando las capacidades avanzadas cuando sea relevante."""

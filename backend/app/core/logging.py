@@ -97,7 +97,6 @@ def setup_logging() -> None:
     logging.config.dictConfig(config)
     
     # Set specific logger levels
-    logging.getLogger("chromadb").setLevel(logging.WARNING)
     logging.getLogger("openai").setLevel(logging.WARNING)
     logging.getLogger("httpx").setLevel(logging.WARNING)
     

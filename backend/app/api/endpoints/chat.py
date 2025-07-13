@@ -138,10 +138,10 @@ async def get_available_models() -> Dict[str, Any]:
             {
                 "name": "GPT-4o-mini",
                 "type": ModelType.GPT4O_MINI,
-                "description": "Fast model for quick medical queries with vector context",
+                "description": "Fast model for quick medical queries with complete document context",
                 "max_tokens": 2048,
                 "use_cases": ["Quick questions", "Simple queries", "Real-time chat"],
-                "enhanced_features": ["Vector search", "Fast context retrieval"]
+                "enhanced_features": ["Complete document analysis", "Fast context retrieval"]
             }
         ],
         "features": {

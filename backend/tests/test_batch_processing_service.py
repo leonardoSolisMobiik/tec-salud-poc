@@ -96,7 +96,6 @@ def batch_service():
     # Mock external services
     service.filename_parser = Mock()
     service.patient_matcher = Mock()
-    service.chroma_service = Mock()
     service.azure_openai_service = Mock()
     service.document_agent = Mock()
     
@@ -248,9 +247,6 @@ class TestBatchProcessingService:
         # Mock file reading
         batch_service._read_file_content = AsyncMock(return_value="Test document content")
         
-        # Mock vectorization
-        batch_service.chroma_service.add_document = AsyncMock(return_value=["chunk1", "chunk2"])
-        
         # Test
         result = await batch_service.process_batch_upload(
             session_id=session_id,
@@ -357,7 +353,6 @@ class TestBatchProcessingService:
         
         # Mock file reading and vectorization
         batch_service._read_file_content = AsyncMock(return_value="Test document content")
-        batch_service.chroma_service.add_document = AsyncMock(return_value=["chunk1"])
         
         # Test
         result = await batch_service.process_batch_upload(
@@ -476,7 +471,6 @@ class TestBatchProcessingService:
         
         batch_service.patient_matcher.find_matching_patients = AsyncMock(return_value=mock_matching_result)
         batch_service._read_file_content = AsyncMock(return_value="Test content")
-        batch_service.chroma_service.add_document = AsyncMock(return_value=["chunk1"])
         
         # Test
         result = await batch_service.process_batch_upload(

@@ -11,9 +11,7 @@ class AzureOpenAIError(TecSaludError):
     """Exception for Azure OpenAI service errors"""
     pass
 
-class ChromaError(TecSaludError):
-    """Exception for Chroma vector database errors"""
-    pass
+
 
 class AgentError(TecSaludError):
     """Exception for medical agent processing errors"""

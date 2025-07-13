@@ -17,13 +17,13 @@ def custom_openapi(app: FastAPI):
         description="""
         # TecSalud - Asistente Virtual Médico con IA
         
-        API completa para el sistema TecSalud que integra Azure OpenAI con búsqueda vectorial 
+        API completa para el sistema TecSalud que integra Azure OpenAI con análisis de documentos completos
         para proporcionar asistencia médica inteligente.
         
         ## 🚀 Características Principales
         
         - **Chat Médico Inteligente**: Consultas médicas con GPT-4o/4o-mini
-        - **Búsqueda Semántica**: Búsqueda en expedientes médicos con Chroma
+        - **Análisis de Documentos Completos**: Análisis exhaustivo de expedientes médicos
         - **Gestión de Pacientes**: CRUD completo de pacientes y expedientes
         - **Análisis de Documentos**: Procesamiento automático de documentos médicos
         - **Tool Calling**: Funciones especializadas para tareas médicas
@@ -216,7 +216,6 @@ EXAMPLE_RESPONSES = {
         "timestamp": "2024-01-20T10:30:00Z",
         "services": {
             "azure_openai": "healthy",
-            "chroma_db": "healthy",
             "database": "healthy"
         },
         "version": "2.0.0",

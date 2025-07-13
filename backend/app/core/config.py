@@ -87,15 +87,7 @@ class Settings(BaseSettings):
         "batch_files": "batch_files"
     }
     
-    # Chroma Vector Database
-    CHROMA_PERSIST_DIRECTORY: str = Field(
-        default="./data/vectordb", 
-        env="CHROMA_PERSIST_DIRECTORY"
-    )
-    CHROMA_COLLECTION_NAME: str = Field(
-        default="expedientes_medicos", 
-        env="CHROMA_COLLECTION_NAME"
-    )
+
     
     # Redis Cache
     REDIS_URL: str = Field(
@@ -162,7 +154,6 @@ class Settings(BaseSettings):
         super().__init__(**kwargs)
         
         # Create directories if they don't exist
-        Path(self.CHROMA_PERSIST_DIRECTORY).mkdir(parents=True, exist_ok=True)
         Path(self.UPLOAD_DIRECTORY).mkdir(parents=True, exist_ok=True)
 
 # Global settings instance
@@ -184,7 +175,6 @@ class TestingSettings(Settings):
     """Testing environment settings"""
     DEBUG: bool = True
     DATABASE_URL: str = "sqlite:///./test.db"
-    CHROMA_PERSIST_DIRECTORY: str = "./test_data/vectordb"
 
 def get_settings() -> Settings:
     """Get settings based on environment"""
