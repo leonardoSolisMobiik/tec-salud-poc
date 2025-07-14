@@ -385,6 +385,7 @@ interface DocumentUpload {
       gap: var(--bmb-spacing-m);
     }
 
+    /* 🎯 FILES LIST - HOVER SIMPLE SIGUIENDO PATRÓN DE ADMIN-PILLS-MANAGER */
     .file-item {
       background: var(--general_contrasts-15);
       border: 1px solid var(--general_contrasts-container-outline);
@@ -394,7 +395,9 @@ interface DocumentUpload {
       align-items: center;
       gap: var(--bmb-spacing-m);
       transition: all 0.3s ease;
+      cursor: pointer;
       
+      /* Estados base con colores */
       &.status-success {
         border-color: var(--semantic-success);
         background: rgba(76, 175, 80, 0.1);
@@ -409,15 +412,23 @@ interface DocumentUpload {
         border-color: rgb(var(--color-blue-tec));
         background: rgba(var(--color-blue-tec), 0.1);
       }
+      
+      /* Hover effect siguiendo patrón de admin-pills-manager */
+      &:hover {
+        background: var(--medical-context-active);
+      }
     }
 
     .file-info {
       flex: 1;
+      min-width: 0;
       
       .file-name {
         font-weight: 600;
         color: var(--general_contrasts-100);
         margin-bottom: var(--bmb-spacing-xs);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
       }
       
       .file-details {
@@ -436,13 +447,17 @@ interface DocumentUpload {
       }
       
       .status-uploading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--bmb-spacing-xs);
+        
         .progress-bar {
           width: 80px;
           height: 6px;
           background: var(--general_contrasts-25);
           border-radius: var(--bmb-radius-full);
           overflow: hidden;
-          margin-bottom: var(--bmb-spacing-xs);
           
           .progress-fill {
             height: 100%;
@@ -463,29 +478,40 @@ interface DocumentUpload {
       
       .status-success {
         color: var(--semantic-success);
+        font-size: 0.875rem;
         font-weight: 600;
       }
       
       .status-error {
         color: var(--semantic-error);
-        font-size: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 600;
       }
     }
 
     .file-actions {
+      display: flex;
+      gap: var(--bmb-spacing-s);
+      
       .remove-button {
         background: none;
-        border: none;
-        cursor: pointer;
+        border: 1px solid var(--general_contrasts-container-outline);
         padding: var(--bmb-spacing-xs);
         border-radius: var(--bmb-radius-s);
-        transition: background 0.2s ease;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        color: var(--general_contrasts-75);
         
         &:hover {
           background: rgba(244, 67, 54, 0.1);
+          border-color: rgba(244, 67, 54, 0.3);
+          color: var(--semantic-error);
         }
       }
     }
+
+
 
     .results-section {
       max-width: 800px;

@@ -349,9 +349,17 @@ interface PillFormData {
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
     }
 
+    /* 🎯 RESET Y DEBUG DE TABLA */
     .pills-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: auto; /* Auto para distribución natural */
+    }
+    
+    .pills-table *,
+    .pills-table *::before,
+    .pills-table *::after {
+      box-sizing: border-box;
     }
       
     .pills-table th {
@@ -361,32 +369,73 @@ interface PillFormData {
       font-weight: 600;
       color: var(--medical-text-primary);
       border-bottom: 1px solid var(--medical-divider);
+      position: relative;
+      vertical-align: middle;
+    }
+    
+    /* DEBUG: Anchos específicos para cada columna */
+    .pills-table th:nth-child(1) {
+      width: 10%;
+      text-align: center;
+    }
+    
+    .pills-table th:nth-child(2) {
+      width: 40%;
+      text-align: left;
+    }
+    
+    .pills-table th:nth-child(3) {
+      width: 20%;
+      text-align: center;
+    }
+    
+    .pills-table th:nth-child(4) {
+      width: 15%;
+      text-align: center;
+    }
+    
+    .pills-table th:nth-child(5) {
+      width: 15%;
+      text-align: center;
     }
       
     .pills-table td {
       padding: 1rem;
       border-bottom: 1px solid var(--medical-divider);
       vertical-align: middle;
+      position: relative;
+    }
+    
+    /* DEBUG: Alineación de celdas de datos */
+    .pills-table td:nth-child(1) {
+      text-align: center;
+      font-size: 1.5rem;
+    }
+    
+    .pills-table td:nth-child(2) {
+      text-align: left;
+      font-weight: 500;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    .pills-table td:nth-child(3) {
+      text-align: center;
+    }
+    
+    .pills-table td:nth-child(4) {
+      text-align: center;
+    }
+    
+    .pills-table td:nth-child(5) {
+      text-align: center;
     }
       
     .pills-table tbody tr:hover {
       background: var(--medical-context-active);
     }
 
-    .icon-cell {
-      font-size: 1.5rem;
-      text-align: center;
-      width: 60px;
-    }
-
-    .text-cell {
-      max-width: 300px;
-      font-weight: 500;
-    }
-
-    .category-cell, .priority-cell {
-      text-align: center;
-    }
+    /* Clases específicas removidas - Ahora se usan nth-child para mayor precisión */
 
     .category-badge, .priority-badge {
       padding: 0.25rem 0.75rem;
@@ -634,6 +683,26 @@ interface PillFormData {
     @media (max-width: 950px) {
       .icon-selector .icon-options {
         grid-template-columns: repeat(6, 1fr);
+      }
+    }
+
+    /* 🎯 PILLS TABLE - ESTILOS SIMPLES PARA DEPURACIÓN */
+    .pills-table {
+      tbody tr {
+        transition: background-color 0.2s ease;
+        
+        &:hover {
+          background-color: rgba(var(--color-blue-tec), 0.05) !important;
+        }
+      }
+    }
+    
+    /* 📱 MOBILE CARDS - ESTILOS SIMPLES PARA DEPURACIÓN */
+    .pill-card {
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: rgba(var(--color-blue-tec), 0.05) !important;
       }
     }
   `]

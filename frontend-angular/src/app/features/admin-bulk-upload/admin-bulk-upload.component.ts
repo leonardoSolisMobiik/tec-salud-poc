@@ -470,14 +470,20 @@ interface BatchUpload {
         border-color: rgb(var(--color-blue-tec));
         background: rgba(var(--color-blue-tec), 0.1);
       }
+      
+      /* Hover effect siguiendo patrón de admin-pills-manager */
+      &:hover {
+        background: var(--medical-context-active);
+        cursor: pointer;
+      }
     }
 
     .file-info {
       flex: 1;
-      
-      .file-name {
-            font-weight: 600;
-            color: var(--general_contrasts-100);
+        
+        .file-name {
+          font-weight: 600;
+          color: var(--general_contrasts-100);
         margin-bottom: var(--bmb-spacing-xs);
           }
           
@@ -518,7 +524,7 @@ interface BatchUpload {
         span {
           font-size: 0.75rem;
           color: rgb(var(--color-blue-tec));
-          font-weight: 600;
+            font-weight: 600;
         }
       }
       
@@ -530,14 +536,14 @@ interface BatchUpload {
       .status-error {
         color: var(--semantic-error);
         font-size: 0.75rem;
+        }
       }
-    }
-
-    .file-actions {
-      .remove-button {
+      
+      .file-actions {
+        .remove-button {
         background: none;
-        border: none;
-        cursor: pointer;
+          border: none;
+          cursor: pointer;
         padding: var(--bmb-spacing-xs);
         border-radius: var(--bmb-radius-s);
         transition: background 0.2s ease;
@@ -565,8 +571,8 @@ interface BatchUpload {
       .success-content {
         display: flex;
         align-items: center;
-        gap: var(--bmb-spacing-m);
-        margin-bottom: var(--bmb-spacing-l);
+      gap: var(--bmb-spacing-m);
+      margin-bottom: var(--bmb-spacing-l);
         
         .success-icon {
           font-size: 3rem;
@@ -577,38 +583,38 @@ interface BatchUpload {
           
           .success-title {
             font-size: 1.5rem;
-            font-weight: 700;
+        font-weight: 700;
             color: var(--general_contrasts-100);
             margin: 0 0 var(--bmb-spacing-xs) 0;
       }
       
           .success-subtitle {
-            color: var(--general_contrasts-75);
+        color: var(--general_contrasts-75);
             margin: 0;
           }
         }
       }
       
       .completion-actions {
-        display: flex;
-        gap: var(--bmb-spacing-m);
-        
+      display: flex;
+      gap: var(--bmb-spacing-m);
+      
         .action-btn {
           padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
-          border-radius: var(--bmb-radius-s);
-          font-weight: 500;
-          cursor: pointer;
+        border-radius: var(--bmb-radius-s);
+        font-weight: 500;
+        cursor: pointer;
           transition: all 0.2s ease;
           display: flex;
             align-items: center;
             gap: var(--bmb-spacing-s);
-            
+        
           &.primary {
             background: rgb(var(--color-blue-tec));
-            color: white;
+          color: white;
             border: none;
-            
-            &:hover {
+          
+          &:hover {
               background: rgba(var(--color-blue-tec), 0.9);
               transform: translateY(-2px);
         }
@@ -618,8 +624,8 @@ interface BatchUpload {
             background: var(--general_contrasts-15);
             color: var(--general_contrasts-100);
             border: 1px solid var(--general_contrasts-container-outline);
-            
-            &:hover {
+          
+          &:hover {
               background: var(--general_contrasts-25);
               transform: translateY(-2px);
             }
@@ -717,6 +723,14 @@ interface BatchUpload {
             justify-content: center !important;
           }
         }
+      }
+    }
+
+    /* 🎯 FILES LIST - HOVER SIMPLE SIGUIENDO PATRÓN DE ADMIN-PILLS-MANAGER */
+    .file-item {
+      &:hover {
+        background: var(--medical-context-active);
+        cursor: pointer;
       }
     }
   `]
