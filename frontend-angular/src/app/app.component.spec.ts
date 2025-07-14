@@ -4,7 +4,12 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { Component } from '@angular/core';
 import { AppComponent } from './app.component';
 
-// Mock components to avoid complex dependencies
+/**
+ * Mock component for AppShell to avoid complex dependencies in tests
+ * 
+ * @description Provides a simple mock implementation of the app shell
+ * component to isolate the AppComponent during unit testing
+ */
 @Component({
   selector: 'app-shell',
   standalone: true,
@@ -12,6 +17,12 @@ import { AppComponent } from './app.component';
 })
 class MockAppShellComponent {}
 
+/**
+ * Test suite for AppComponent
+ * 
+ * @description Unit tests for the main application component including
+ * component creation, title verification, and shell rendering
+ */
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -35,7 +46,7 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have the correct title`, () => {
+  it('should have the correct title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
     expect(app.title).toEqual('TecSalud Medical Assistant');

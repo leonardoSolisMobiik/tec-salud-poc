@@ -13,7 +13,7 @@ import { BambooModule } from '../../shared/bamboo.module';
       
       <!-- Header -->
       <div class="summary-header">
-        <h1 class="summary-title">📤 Sistema de Vectorización de Expedientes</h1>
+        <h1 class="summary-title">📤 Sistema de Procesamiento de Expedientes</h1>
         <div class="summary-subtitle">
           Inteligencia Artificial para búsqueda médica avanzada
         </div>
@@ -28,7 +28,7 @@ import { BambooModule } from '../../shared/bamboo.module';
           <h3 class="feature-title">Subir Expedientes</h3>
           <p class="feature-description">
             Arrastra y suelta documentos médicos (PDF, DOCX, TXT) 
-            para vectorización automática con IA
+                          para procesamiento automático con IA
           </p>
           <div class="feature-benefits">
             <div class="benefit">✅ Drag & Drop intuitivo</div>
@@ -49,7 +49,7 @@ import { BambooModule } from '../../shared/bamboo.module';
           <div class="feature-icon">📚</div>
           <h3 class="feature-title">Ver Documentos</h3>
           <p class="feature-description">
-            Explora documentos vectorizados con búsqueda semántica 
+                          Explora documentos procesados con búsqueda semántica 
             y filtros avanzados por paciente y tipo
           </p>
           <div class="feature-benefits">
@@ -91,7 +91,7 @@ import { BambooModule } from '../../shared/bamboo.module';
 
       <!-- How It Works -->
       <div class="how-it-works">
-        <h2 class="section-title">🔧 Cómo Funciona la Vectorización</h2>
+                  <h2 class="section-title">🔧 Cómo Funciona el Procesamiento</h2>
         
         <div class="steps-container">
           <div class="step">
@@ -118,7 +118,7 @@ import { BambooModule } from '../../shared/bamboo.module';
             <div class="step-number">3</div>
             <div class="step-content">
               <h4>🧠 Embeddings con IA</h4>
-              <p>Crea vectores semánticos usando Azure OpenAI para búsqueda inteligente</p>
+              <p>Procesa contenido usando Azure OpenAI para búsqueda inteligente</p>
             </div>
           </div>
           
@@ -127,7 +127,7 @@ import { BambooModule } from '../../shared/bamboo.module';
           <div class="step">
             <div class="step-number">4</div>
             <div class="step-content">
-              <h4>🔍 Búsqueda Vectorial</h4>
+              <h4>🔍 Búsqueda Inteligente</h4>
               <p>Permite búsquedas por significado, no solo palabras exactas</p>
             </div>
           </div>
@@ -153,7 +153,7 @@ import { BambooModule } from '../../shared/bamboo.module';
             <div class="tech-icon">🗄️</div>
             <h4>Base de Datos</h4>
             <ul>
-              <li>ChromaDB vectorial</li>
+              <li>ChromaDB semántico</li>
               <li>SQLite relacional</li>
               <li>Metadatos estructurados</li>
             </ul>

@@ -8,6 +8,35 @@ import { BambooModule } from '../../shared/bamboo.module';
 import { ProcessingChoiceComponent } from './processing-choice.component';
 import { ProcessingTypeService } from '../../shared/services/processing-type.service';
 
+/**
+ * Demo component for showcasing document processing type capabilities
+ * 
+ * @description Interactive demonstration of different document processing methods
+ * including file simulation, processing type selection, and result visualization.
+ * Helps users understand the differences between processing options.
+ * 
+ * @example
+ * ```typescript
+ * // Access via route
+ * // URL: /processing-demo
+ * ```
+ * 
+ * @features
+ * - Interactive file simulation with various medical document types
+ * - Real-time processing type comparison
+ * - Visual progress simulation for processing workflows
+ * - Estimated chunk count and storage size calculations
+ * - Processing time simulation with realistic delays
+ * - Responsive design with medical styling
+ * 
+ * @uiComponents
+ * - File simulation controls (add/remove/clear)
+ * - Processing type selector integration
+ * - Progress indicators and result displays
+ * - Professional medical interface styling
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-processing-choice-demo',
   standalone: true,
@@ -584,12 +613,22 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
   `]
 })
 export class ProcessingChoiceDemoComponent implements OnInit {
+  /** Array of simulated files for demonstration purposes */
   simulatedFiles: any[] = [];
+  
+  /** Currently selected processing type for simulation */
   selectedProcessingType = 'both';
+  
+  /** Flag indicating if processing simulation is running */
   isSimulating = false;
+  
+  /** Current progress of processing simulation (0-100) */
   simulationProgress = 0;
+  
+  /** Flag indicating if processing simulation has completed */
   simulationComplete = false;
 
+  /** Available file types for simulation with medical document examples */
   private fileTypes = [
     { icon: '📄', extension: 'pdf', type: 'Expediente Médico' },
     { icon: '🧪', extension: 'pdf', type: 'Laboratorios' },
@@ -599,12 +638,25 @@ export class ProcessingChoiceDemoComponent implements OnInit {
     { icon: '💊', extension: 'txt', type: 'Farmacia' }
   ];
 
+  /**
+   * Creates an instance of ProcessingChoiceDemoComponent
+   * 
+   * @param router - Angular router for navigation
+   * @param location - Location service for browser back navigation
+   * @param processingTypeService - Service for processing type logic
+   */
   constructor(
     private router: Router,
     private location: Location,
     private processingTypeService: ProcessingTypeService
   ) {}
 
+  /**
+   * Component initialization lifecycle method
+   * 
+   * @description Initializes the demo with 3 sample simulated files
+   * to provide an immediate demonstration of processing capabilities.
+   */
   ngOnInit(): void {
     // Add some initial simulated files
     this.addSimulatedFile();
@@ -612,6 +664,13 @@ export class ProcessingChoiceDemoComponent implements OnInit {
     this.addSimulatedFile();
   }
 
+  /**
+   * Adds a new simulated file to the demonstration
+   * 
+   * @description Creates a simulated medical document file with random
+   * properties including file type, size, and name for demonstration purposes.
+   * Limited to maximum of 10 files for performance reasons.
+   */
   addSimulatedFile(): void {
     if (this.simulatedFiles.length >= 10) return;
 
@@ -639,21 +698,49 @@ export class ProcessingChoiceDemoComponent implements OnInit {
     this.simulatedFiles.push(file);
   }
 
+  /**
+   * Removes a simulated file from the demonstration
+   * 
+   * @param id - Unique identifier of the file to remove
+   * 
+   * @description Filters out the specified file from the simulated files array
+   * and resets simulation completion status for fresh demonstrations.
+   */
   removeSimulatedFile(id: number): void {
     this.simulatedFiles = this.simulatedFiles.filter(f => f.id !== id);
     this.simulationComplete = false;
   }
 
+  /**
+   * Clears all simulated files from the demonstration
+   * 
+   * @description Resets the simulated files array to empty state and clears
+   * simulation completion status for starting fresh demonstrations.
+   */
   clearSimulatedFiles(): void {
     this.simulatedFiles = [];
     this.simulationComplete = false;
   }
 
+  /**
+   * Handles processing type selection changes
+   * 
+   * @param type - The newly selected processing type
+   * 
+   * @description Updates the component's selected processing type and resets
+   * simulation completion to reflect new processing capabilities.
+   */
   onProcessingTypeChange(type: string): void {
     this.selectedProcessingType = type;
     this.simulationComplete = false;
   }
 
+  /**
+   * Simulates the document processing workflow
+   * 
+   * @description Runs a realistic simulation of document processing with
+   * progress updates over 5 seconds to demonstrate processing flow to users.
+   */
   async simulateProcessing(): Promise<void> {
     this.isSimulating = true;
     this.simulationProgress = 0;

@@ -6,10 +6,44 @@ import { QuickQuestion, QuickQuestionsService } from '../../services/quick-quest
 import { Patient } from '@core/models';
 
 /**
- * Premium Quick Pills Component
+ * Quick Pills component for contextual medical question suggestions
  * 
- * Reutiliza el patrón de diseño existente del chat-input.component.ts
- * pero lo hace más sutil y premium, integrado justo arriba del input
+ * @description Displays contextual quick questions as interactive pills/buttons
+ * above the chat input. Questions are automatically filtered based on patient
+ * context and medical priorities, with optional rotation and progress indicators.
+ * 
+ * @example
+ * ```typescript
+ * // In parent component template
+ * <app-quick-pills
+ *   [patient]="activePatient"
+ *   [showRotationIndicator]="true"
+ *   (questionSelected)="onQuestionSelected($event)">
+ * </app-quick-pills>
+ * 
+ * // In parent component
+ * onQuestionSelected(questionText: string) {
+ *   console.log('User selected question:', questionText);
+ *   this.processQuickQuestion(questionText);
+ * }
+ * ```
+ * 
+ * @features
+ * - Contextual questions based on patient demographics
+ * - Priority-based visual styling (high/medium/low)
+ * - Automatic question rotation with progress indicator
+ * - Responsive grid layout with medical-themed icons
+ * - Integration with QuickQuestionsService
+ * - Smooth animations and transitions
+ * 
+ * @inputs
+ * - patient: Patient | null - Current patient for contextual filtering
+ * - showRotationIndicator: boolean - Whether to show rotation progress bar
+ * 
+ * @outputs
+ * - questionSelected: EventEmitter<string> - Emitted when user clicks a question pill
+ * 
+ * @since 1.0.0
  */
 @Component({
   selector: 'app-quick-pills',
@@ -42,7 +76,7 @@ import { Patient } from '@core/models';
     </div>
   `,
   styles: [`
-    /* Reutiliza el patrón premium del chat-input.component.ts pero más sutil */
+    /* Quick Pills Container */
     .quick-pills-container {
       margin-bottom: var(--bmb-spacing-s, 0.5rem);
       opacity: 0;
@@ -250,25 +284,52 @@ import { Patient } from '@core/models';
   `]
 })
 export class QuickPillsComponent implements OnInit, OnDestroy, OnChanges {
+  /** Current patient for contextual question filtering */
   @Input() patient: Patient | null = null;
+  
+  /** Whether to display rotation progress indicator */
   @Input() showRotationIndicator: boolean = false;
+  
+  /** Event emitted when user selects a question pill */
   @Output() questionSelected = new EventEmitter<string>();
 
+  /** Subject for handling component destruction */
   private destroy$ = new Subject<void>();
   
+  /** Currently displayed quick questions */
   currentQuestions: QuickQuestion[] = [];
+  
+  /** Flag indicating if questions are currently rotating */
   isRotating = false;
+  
+  /** Current rotation progress percentage (0-100) */
   rotationProgress = 0;
   
+  /** Timer reference for rotation progress animation */
   private progressTimer: any;
 
+  /**
+   * Creates an instance of QuickPillsComponent
+   * 
+   * @param quickQuestionsService - Service for managing contextual questions
+   */
   constructor(private quickQuestionsService: QuickQuestionsService) {}
 
+  /**
+   * Component initialization lifecycle method
+   * 
+   * @description Sets up question subscription and starts rotation progress tracking
+   */
   ngOnInit(): void {
     this.subscribeToQuestions();
     this.startRotationProgress();
   }
 
+  /**
+   * Component cleanup lifecycle method
+   * 
+   * @description Cleans up subscriptions, timers, and stops question rotation
+   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -276,6 +337,11 @@ export class QuickPillsComponent implements OnInit, OnDestroy, OnChanges {
     this.quickQuestionsService.stopRotation();
   }
 
+  /**
+   * Component changes lifecycle method
+   * 
+   * @description Reloads contextual questions when patient input changes
+   */
   ngOnChanges(): void {
     if (this.patient) {
       this.loadContextualQuestions();

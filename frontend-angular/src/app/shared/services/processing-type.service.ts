@@ -82,7 +82,7 @@ export class ProcessingTypeService {
   private processingTypes: ProcessingTypeInfo[] = [
     {
       value: 'vectorized',
-      label: 'Vectorización',
+      label: 'Búsqueda Semántica',
       description: 'Búsqueda semántica inteligente',
       icon: '🔍',
       isVectorizationEnabled: true,
@@ -156,7 +156,7 @@ export class ProcessingTypeService {
    * @example
    * ```typescript
    * const info = this.processingService.getProcessingTypeInfo('vectorized');
-   * console.log(info.label); // 'Vectorización'
+       * console.log(info.label); // 'Búsqueda Semántica'
    * console.log(info.description); // 'Búsqueda semántica inteligente'
    * ```
    */

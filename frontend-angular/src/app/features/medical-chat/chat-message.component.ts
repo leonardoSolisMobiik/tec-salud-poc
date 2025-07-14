@@ -3,6 +3,42 @@ import { CommonModule } from '@angular/common';
 import { ChatMessage } from '@core/models';
 import { marked } from 'marked';
 
+/**
+ * Chat message display component for medical conversations
+ * 
+ * @description Renders individual chat messages with role-based styling, timestamps,
+ * and markdown formatting. Distinguishes between user and AI assistant messages
+ * with different visual styles and avatars.
+ * 
+ * @example
+ * ```typescript
+ * // In parent component template
+ * <app-chat-message 
+ *   *ngFor="let msg of messages" 
+ *   [message]="msg">
+ * </app-chat-message>
+ * 
+ * // Message object structure
+ * const message: ChatMessage = {
+ *   role: 'user', // or 'assistant'
+ *   content: 'Patient has fever and headache',
+ *   timestamp: new Date()
+ * };
+ * ```
+ * 
+ * @features
+ * - Role-based visual styling (user vs assistant)
+ * - Markdown content rendering for rich formatting
+ * - Automatic timestamp formatting
+ * - Responsive message bubbles
+ * - Medical-themed avatars and colors
+ * - HTML sanitization for security
+ * 
+ * @inputs
+ * - message: ChatMessage - The message object to display
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-chat-message',
   standalone: true,
@@ -165,12 +201,30 @@ import { marked } from 'marked';
   `]
 })
 export class ChatMessageComponent {
+  /** The chat message to display */
   @Input() message!: ChatMessage;
-  
+
+  /**
+   * Gets formatted time for the current message
+   * 
+   * @returns Formatted time string (HH:MM format)
+   * 
+   * @description Returns the current time if message timestamp is not available,
+   * otherwise formats the message timestamp to HH:MM format.
+   */
   getFormattedTime(): string {
     return this.formatTime(this.message.timestamp || new Date());
   }
   
+  /**
+   * Formats a timestamp to HH:MM format
+   * 
+   * @param timestamp - Date object to format
+   * @returns Formatted time string in Mexican Spanish locale (HH:MM)
+   * 
+   * @description Converts a Date object to a localized time string
+   * using Mexican Spanish locale formatting for consistency with the application.
+   */
   formatTime(timestamp: Date): string {
     return new Intl.DateTimeFormat('es-MX', {
       hour: '2-digit',
@@ -178,6 +232,23 @@ export class ChatMessageComponent {
     }).format(new Date(timestamp));
   }
   
+  /**
+   * Formats message content with markdown rendering
+   * 
+   * @param content - Raw message content that may contain markdown
+   * @returns HTML string with rendered markdown
+   * 
+   * @description Processes markdown syntax in message content and converts
+   * it to HTML for rich text display. Handles escaped characters, line breaks,
+   * and GitHub-flavored markdown. Includes error handling with manual fallback.
+   * 
+   * @example
+   * ```typescript
+   * const content = '## Diagnosis\\n**Hypertension**\\n- High blood pressure';
+   * const html = this.formatContent(content);
+   * // Returns: '<h2>Diagnosis</h2><p><strong>Hypertension</strong></p><ul><li>High blood pressure</li></ul>'
+   * ```
+   */
   formatContent(content: string): string {
     try {
       // First, clean up any escaped characters

@@ -5,6 +5,46 @@ import { Observable } from 'rxjs';
 import { UiStateService, MedicalStateService } from '@core/services';
 import { Patient } from '@core/models';
 
+/**
+ * Header Component for application navigation and patient context
+ * 
+ * @description Top navigation header that displays patient context when active,
+ * provides mobile menu toggle, navigation dropdown, and quick actions.
+ * Adapts its layout based on patient selection and device type.
+ * 
+ * @example
+ * ```typescript
+ * // Used in app-shell layout
+ * <app-header></app-header>
+ * 
+ * // Automatically displays:
+ * // - Patient context when patient is selected
+ * // - Default app title when no patient
+ * // - Mobile menu toggle on small screens
+ * // - Navigation dropdown for app sections
+ * ```
+ * 
+ * @features
+ * - Patient context display with clear action
+ * - Mobile-responsive menu toggle
+ * - Navigation dropdown with app sections
+ * - Notification indicator (placeholder)
+ * - Professional medical styling
+ * - Responsive design for all devices
+ * 
+ * @states
+ * - Default: Shows app title and subtitle
+ * - Patient Active: Shows patient info and context actions
+ * - Mobile: Shows hamburger menu for sidebar toggle
+ * 
+ * @navigation
+ * - Dashboard: System overview
+ * - Chat Médico: AI medical consultation
+ * - Administración: Admin features (bulk upload, pills management)
+ * - Documentos: Document upload and management
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -506,10 +546,23 @@ import { Patient } from '@core/models';
   `]
 })
 export class HeaderComponent implements OnInit {
+  /** Observable for currently active patient */
   activePatient$: Observable<Patient | null>;
+  
+  /** Observable for mobile device state */
   isMobile$: Observable<boolean>;
+  
+  /** State for navigation dropdown visibility */
   isNavDropdownOpen = false;
   
+  /**
+   * Creates an instance of HeaderComponent
+   * 
+   * @param uiState - UI state service for responsive behavior
+   * @param medicalState - Medical state service for patient context
+   * 
+   * @description Initializes observables for patient context and mobile state
+   */
   constructor(
     private uiState: UiStateService,
     private medicalState: MedicalStateService
@@ -518,21 +571,75 @@ export class HeaderComponent implements OnInit {
     this.isMobile$ = this.uiState.isMobile$;
   }
   
+  /**
+   * Component initialization lifecycle hook
+   * 
+   * @description No specific initialization needed as component
+   * is reactive to state service changes
+   */
   ngOnInit(): void {}
   
+  /**
+   * Toggles the sidebar open/closed state
+   * 
+   * @description Delegates to UI state service to toggle sidebar visibility.
+   * Primarily used on mobile devices where sidebar is hidden by default.
+   * 
+   * @example
+   * ```typescript
+   * // Called when mobile menu button is clicked
+   * toggleSidebar(); // Sidebar slides in/out
+   * ```
+   */
   toggleSidebar(): void {
     this.uiState.toggleSidebar();
   }
   
+  /**
+   * Clears the current patient context
+   * 
+   * @description Removes the active patient selection and shows a success toast.
+   * Resets the application to default state without patient context.
+   * 
+   * @example
+   * ```typescript
+   * // Called when user clicks clear context button
+   * clearPatientContext(); // Patient context removed, toast shown
+   * ```
+   */
   clearPatientContext(): void {
     this.medicalState.setActivePatient(null);
     this.uiState.showSuccessToast('Contexto del paciente limpiado');
   }
-  
+
+  /**
+   * Toggles the navigation dropdown visibility
+   * 
+   * @description Opens or closes the navigation dropdown menu that contains
+   * links to different application sections.
+   * 
+   * @example
+   * ```typescript
+   * // Called when navigation button is clicked
+   * toggleNavDropdown(); // Dropdown appears/disappears
+   * ```
+   */
   toggleNavDropdown(): void {
     this.isNavDropdownOpen = !this.isNavDropdownOpen;
   }
   
+  /**
+   * Closes the navigation dropdown
+   * 
+   * @description Explicitly closes the navigation dropdown, typically called
+   * when user clicks outside or selects a navigation option.
+   * 
+   * @example
+   * ```typescript
+   * // Called when user clicks outside dropdown or selects option
+   * closeNavDropdown(); // Dropdown closes
+   * ```
+   */
   closeNavDropdown(): void {
     this.isNavDropdownOpen = false;
   }

@@ -5,6 +5,43 @@ import { takeUntil } from 'rxjs/operators';
 import { PatientDocumentsService, PatientDocument } from '../../services/patient-documents.service';
 import { Patient } from '../../../core/models/patient.model';
 
+/**
+ * Patient Document Viewer Component for medical record display
+ * 
+ * @description Component for viewing and navigating patient medical documents.
+ * Features tabbed interface for multiple documents, PDF viewing capabilities,
+ * document type indicators, and download/print functionality.
+ * 
+ * @example
+ * ```typescript
+ * // In parent component template
+ * <app-patient-document-viewer
+ *   [patient]="activePatient"
+ *   [isVisible]="showDocumentViewer">
+ * </app-patient-document-viewer>
+ * 
+ * // Component automatically loads and displays documents for the patient
+ * ```
+ * 
+ * @features
+ * - Tabbed interface for multiple documents
+ * - PDF document display and viewing
+ * - Document type indicators (CONS/EMER)
+ * - Download and print functionality
+ * - Patient avatar and context display
+ * - Responsive design for different screen sizes
+ * - Loading states and error handling
+ * 
+ * @inputs
+ * - patient: Patient object to load documents for
+ * - isVisible: Whether the viewer should be visible
+ * 
+ * @documentTypes
+ * - CONS: Consultation documents
+ * - EMER: Emergency documents
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-patient-document-viewer',
   standalone: true,
@@ -473,38 +510,83 @@ import { Patient } from '../../../core/models/patient.model';
   `]
 })
 export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChanges {
+  /** Patient object to load documents for */
   @Input() patient: Patient | null = null;
+  
+  /** Whether the viewer should be visible */
   @Input() isVisible: boolean = false;
 
+  /** Array of documents for the current patient */
   documents: PatientDocument[] = [];
+  
+  /** Index of the currently active document */
   activeDocumentIndex: number = 0;
+  
+  /** Loading state for document retrieval */
   isLoading: boolean = false;
   
+  /** Subject for component cleanup */
   private destroy$ = new Subject<void>();
 
+  /**
+   * Creates an instance of PatientDocumentViewerComponent
+   * 
+   * @param patientDocumentsService - Service for patient document management
+   */
   constructor(
     private patientDocumentsService: PatientDocumentsService
   ) {}
 
+  /**
+   * Component initialization lifecycle hook
+   * 
+   * @description Loads patient documents on component initialization
+   */
   ngOnInit(): void {
     this.loadPatientDocuments();
   }
 
+  /**
+   * Component destruction lifecycle hook
+   * 
+   * @description Cleans up subscriptions to prevent memory leaks
+   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  /**
+   * Input changes lifecycle hook
+   * 
+   * @param changes - Object containing input property changes
+   * 
+   * @description Reloads documents when patient input changes
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['patient'] && this.patient) {
       this.loadPatientDocuments();
     }
   }
 
+  /**
+   * Gets the currently active document
+   * 
+   * @returns Currently active document or null if no documents
+   * 
+   * @description Getter for the document at the active index
+   */
   get activeDocument(): PatientDocument | null {
     return this.documents[this.activeDocumentIndex] || null;
   }
 
+  /**
+   * Loads documents for the current patient
+   * 
+   * @private
+   * @description Fetches documents from the service and updates component state.
+   * Handles loading states and error scenarios.
+   */
   private loadPatientDocuments(): void {
     if (!this.patient) {
       this.documents = [];
@@ -530,12 +612,37 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
       });
   }
 
+  /**
+   * Sets the active document by index
+   * 
+   * @param index - Index of document to make active
+   * 
+   * @description Changes the currently displayed document if index is valid
+   * 
+   * @example
+   * ```typescript
+   * setActiveDocument(1); // Switch to second document
+   * ```
+   */
   setActiveDocument(index: number): void {
     if (index >= 0 && index < this.documents.length) {
       this.activeDocumentIndex = index;
     }
   }
 
+  /**
+   * Gets patient initials for avatar display
+   * 
+   * @returns Patient initials string (up to 2 characters) or '?' if no patient
+   * 
+   * @description Extracts and formats patient initials from name for avatar display
+   * 
+   * @example
+   * ```typescript
+   * // Patient: "María González López"
+   * getPatientInitials(); // Returns "MG"
+   * ```
+   */
   getPatientInitials(): string {
     if (!this.patient?.name) return '?';
     return this.patient.name
@@ -546,10 +653,38 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
       .toUpperCase();
   }
 
+  /**
+   * Gets the appropriate icon for a document type
+   * 
+   * @param doc - Document to get icon for
+   * @returns Icon string for the document type
+   * 
+   * @description Returns different icons based on document type (consultation vs emergency)
+   * 
+   * @example
+   * ```typescript
+   * getDocumentIcon(consultationDoc); // Returns "📋"
+   * getDocumentIcon(emergencyDoc); // Returns "🚨"
+   * ```
+   */
   getDocumentIcon(doc: PatientDocument): string {
     return doc.type === 'CONS' ? '📋' : '🚨';
   }
 
+  /**
+   * Gets a shortened display name for tab labels
+   * 
+   * @param doc - Document to get short name for
+   * @returns Truncated display name with ellipsis if needed
+   * 
+   * @description Truncates long document names for tab display with 15 character limit
+   * 
+   * @example
+   * ```typescript
+   * getShortDisplayName({ displayName: "Very Long Medical Document Name" });
+   * // Returns "Very Long Medic..."
+   * ```
+   */
   getShortDisplayName(doc: PatientDocument): string {
     const maxLength = 15;
     return doc.displayName.length > maxLength 
@@ -557,11 +692,31 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
       : doc.displayName;
   }
 
+  /**
+   * Gets the PDF URL for display and download
+   * 
+   * @param doc - Document to get URL for
+   * @returns PDF URL string
+   * 
+   * @description Returns the document URL for PDF viewing and download operations
+   */
   getPdfUrlString(doc: PatientDocument): string {
     // Para descargas y nueva pestaña 
     return doc.url;
   }
 
+  /**
+   * Downloads a PDF document
+   * 
+   * @param doc - Document to download
+   * 
+   * @description Creates a download link and triggers download of the document
+   * 
+   * @example
+   * ```typescript
+   * downloadPdf(document); // Starts download with original filename
+   * ```
+   */
   downloadPdf(doc: PatientDocument): void {
     const url = this.getPdfUrlString(doc);
     const link = document.createElement('a');
@@ -570,11 +725,32 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
     link.click();
   }
 
+  /**
+   * Opens a PDF document in a new browser tab
+   * 
+   * @param doc - Document to open
+   * 
+   * @description Opens the document URL in a new browser tab for viewing
+   * 
+   * @example
+   * ```typescript
+   * openInNewTab(document); // Opens PDF in new tab
+   * ```
+   */
   openInNewTab(doc: PatientDocument): void {
     const url = this.getPdfUrlString(doc);
     window.open(url, '_blank');
   }
 
+  /**
+   * TrackBy function for ngFor performance optimization
+   * 
+   * @param index - Array index (unused)
+   * @param doc - Document object
+   * @returns Unique identifier for the document
+   * 
+   * @description Helps Angular track document items for efficient DOM updates
+   */
   trackByDocId(index: number, doc: PatientDocument): string {
     return doc.id;
   }

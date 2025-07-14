@@ -1,23 +1,115 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
+/**
+ * Interface representing a patient document in the medical system
+ * 
+ * @interface PatientDocument
+ * @description Defines the structure for medical documents including PDFs,
+ * images, and other clinical files associated with patients
+ * 
+ * @example
+ * ```typescript
+ * const document: PatientDocument = {
+ *   id: 'doc_001',
+ *   fileName: '4000365732_CASTRO_FLORES_RAFAEL_AARON_6001465670_CONS.pdf',
+ *   displayName: 'Historia Clínica - Consulta',
+ *   type: 'CONS',
+ *   patientId: 'ARTURO001',
+ *   patientName: 'Arturo Herrera',
+ *   url: 'https://storage.example.com/documents/doc_001.pdf',
+ *   uploadDate: new Date('2024-01-15')
+ * };
+ * ```
+ */
 export interface PatientDocument {
+  /** Unique document identifier */
   id: string;
+  
+  /** Original file name as stored in the system */
   fileName: string;
+  
+  /** Human-readable display name for the document */
   displayName: string;
-  type: 'CONS' | 'EMER'; // Consulta o Emergencia
+  
+  /** Document type: CONS (Consulta) or EMER (Emergencia) */
+  type: 'CONS' | 'EMER';
+  
+  /** Patient ID this document belongs to */
   patientId: string;
+  
+  /** Patient name for easy reference */
   patientName: string;
-  url: string; // URL para acceder al PDF
+  
+  /** URL to access the document file */
+  url: string;
+  
+  /** Optional upload date */
   uploadDate?: Date;
 }
 
+/**
+ * Interface representing a group of documents for a specific patient
+ * 
+ * @interface PatientDocumentGroup
+ * @description Used for organizing and displaying documents grouped by patient
+ * 
+ * @example
+ * ```typescript
+ * const documentGroup: PatientDocumentGroup = {
+ *   patientId: 'ARTURO001',
+ *   patientName: 'Arturo Herrera',
+ *   documents: [document1, document2, document3]
+ * };
+ * ```
+ */
 export interface PatientDocumentGroup {
+  /** Patient ID for the group */
   patientId: string;
+  
+  /** Patient name for the group */
   patientName: string;
+  
+  /** Array of documents belonging to this patient */
   documents: PatientDocument[];
 }
 
+/**
+ * Service for managing patient documents and medical files
+ * 
+ * @description Provides methods for retrieving, organizing, and managing
+ * patient documents including medical records, consultation notes, and
+ * emergency documentation. Handles document mapping and access validation.
+ * 
+ * @example
+ * ```typescript
+ * constructor(private documentService: PatientDocumentsService) {}
+ * 
+ * // Get documents for a specific patient
+ * this.documentService.getPatientDocuments('ARTURO001').subscribe(docs => {
+ *   console.log('Patient documents:', docs);
+ * });
+ * 
+ * // Get documents by type
+ * this.documentService.getDocumentsByType('CONS').subscribe(consultations => {
+ *   console.log('Consultation documents:', consultations);
+ * });
+ * 
+ * // Get all patients with their documents
+ * this.documentService.getPatientsWithDocuments().subscribe(groups => {
+ *   console.log('Document groups:', groups);
+ * });
+ * ```
+ * 
+ * @features
+ * - Patient-specific document retrieval
+ * - Document type filtering (CONS/EMER)
+ * - Patient name normalization and mapping
+ * - Document access validation
+ * - Grouped document organization
+ * 
+ * @since 1.0.0
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -106,10 +198,25 @@ export class PatientDocumentsService {
     }
   ];
 
+  /**
+   * Creates an instance of PatientDocumentsService
+   * 
+   * @description Initializes the service with the document database
+   */
   constructor() {}
 
   /**
-   * Obtiene todos los documentos de un paciente específico
+   * Retrieves documents for a specific patient
+   * 
+   * @param patientId - Unique identifier for the patient
+   * @returns Observable containing array of patient documents
+   * 
+   * @example
+   * ```typescript
+   * this.documentService.getPatientDocuments('ARTURO001').subscribe(docs => {
+   *   console.log(`Found ${docs.length} documents for patient`);
+   * });
+   * ```
    */
   getPatientDocuments(patientId: string): Observable<PatientDocument[]> {
     const documents = this.documentDatabase.filter(doc => doc.patientId === patientId);
@@ -117,7 +224,17 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Obtiene documentos por nombre del paciente (fuzzy matching)
+   * Retrieves documents by patient name using fuzzy matching
+   * 
+   * @param patientName - Patient name to search for
+   * @returns Observable containing array of matching documents
+   * 
+   * @example
+   * ```typescript
+   * this.documentService.getDocumentsByPatientName('Arturo').subscribe(docs => {
+   *   console.log('Documents for patients with "Arturo":', docs);
+   * });
+   * ```
    */
   getDocumentsByPatientName(patientName: string): Observable<PatientDocument[]> {
     const normalizedSearch = this.normalizeString(patientName);
@@ -129,7 +246,21 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Obtiene un documento específico por ID
+   * Retrieves a specific document by its ID
+   * 
+   * @param documentId - Unique identifier for the document
+   * @returns Observable containing the document or null if not found
+   * 
+   * @example
+   * ```typescript
+   * this.documentService.getDocument('doc_001').subscribe(doc => {
+   *   if (doc) {
+   *     console.log('Document found:', doc.displayName);
+   *   } else {
+   *     console.log('Document not found');
+   *   }
+   * });
+   * ```
    */
   getDocument(documentId: string): Observable<PatientDocument | null> {
     const document = this.documentDatabase.find(doc => doc.id === documentId);
@@ -137,7 +268,18 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Obtiene todos los pacientes que tienen documentos
+   * Retrieves all patients with their associated documents grouped
+   * 
+   * @returns Observable containing array of patient document groups
+   * 
+   * @example
+   * ```typescript
+   * this.documentService.getPatientsWithDocuments().subscribe(groups => {
+   *   groups.forEach(group => {
+   *     console.log(`${group.patientName}: ${group.documents.length} documents`);
+   *   });
+   * });
+   * ```
    */
   getPatientsWithDocuments(): Observable<PatientDocumentGroup[]> {
     const grouped = this.groupDocumentsByPatient();
@@ -145,7 +287,17 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Busca documentos por tipo (CONS o EMER)
+   * Retrieves documents filtered by type
+   * 
+   * @param type - Document type to filter by ('CONS' for consultation, 'EMER' for emergency)
+   * @returns Observable containing array of documents of the specified type
+   * 
+   * @example
+   * ```typescript
+   * this.documentService.getDocumentsByType('CONS').subscribe(consultations => {
+   *   console.log(`Found ${consultations.length} consultation documents`);
+   * });
+   * ```
    */
   getDocumentsByType(type: 'CONS' | 'EMER'): Observable<PatientDocument[]> {
     const documents = this.documentDatabase.filter(doc => doc.type === type);
@@ -153,7 +305,21 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Mapeo inteligente desde objeto Patient del sistema
+   * Maps patient objects to their associated documents with smart matching
+   * 
+   * @param patient - Patient object with optional ID and name
+   * @returns Observable containing array of documents for the patient
+   * 
+   * @description First attempts to match by patient ID, then falls back to name matching
+   * for more flexible patient-to-document associations
+   * 
+   * @example
+   * ```typescript
+   * const patient = { id: 'ARTURO001', name: 'Arturo Herrera' };
+   * this.documentService.mapPatientToDocuments(patient).subscribe(docs => {
+   *   console.log(`Mapped ${docs.length} documents to patient`);
+   * });
+   * ```
    */
   mapPatientToDocuments(patient: { id?: string, name: string }): Observable<PatientDocument[]> {
     // Primero intentar por ID si está disponible
@@ -176,7 +342,13 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Agrupa documentos por paciente
+   * Groups documents by patient for organized display
+   * 
+   * @private
+   * @returns Array of patient document groups
+   * 
+   * @description Creates a Map-based grouping to efficiently organize documents
+   * by patient ID while maintaining patient information
    */
   private groupDocumentsByPatient(): PatientDocumentGroup[] {
     const groupMap = new Map<string, PatientDocumentGroup>();
@@ -196,7 +368,20 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Normaliza strings para búsqueda (sin acentos, lowercase)
+   * Normalizes strings for search operations
+   * 
+   * @private
+   * @param str - String to normalize
+   * @returns Normalized string without accents, lowercase, alphanumeric only
+   * 
+   * @description Removes accents, converts to lowercase, and strips special characters
+   * for improved search matching across different input formats
+   * 
+   * @example
+   * ```typescript
+   * normalizeString('José María'); // returns 'jose maria'
+   * normalizeString('PÉREZ-GARCÍA'); // returns 'perez garcia'
+   * ```
    */
   private normalizeString(str: string): string {
     return str
@@ -208,7 +393,19 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Obtiene URL de descarga/visualización del documento
+   * Generates URL for document access
+   * 
+   * @param document - Document to generate URL for
+   * @returns URL string for document access
+   * 
+   * @description Generates appropriate URL for document viewing or download.
+   * In MVP uses relative URLs, in production would use backend endpoints
+   * 
+   * @example
+   * ```typescript
+   * const url = this.documentService.getDocumentUrl(document);
+   * // Returns: '/api/documents/view/doc_001'
+   * ```
    */
   getDocumentUrl(document: PatientDocument): string {
     // En MVP usamos URLs relativas, en producción sería del backend
@@ -216,7 +413,24 @@ export class PatientDocumentsService {
   }
 
   /**
-   * Valida si un documento existe y es accesible
+   * Validates document access permissions
+   * 
+   * @param documentId - Document ID to validate
+   * @returns Observable containing true if document is accessible, false otherwise
+   * 
+   * @description Checks if a document exists and is accessible to the current user.
+   * In production would include proper access control validation
+   * 
+   * @example
+   * ```typescript
+   * this.documentService.validateDocumentAccess('doc_001').subscribe(canAccess => {
+   *   if (canAccess) {
+   *     console.log('Document is accessible');
+   *   } else {
+   *     console.log('Document access denied');
+   *   }
+   * });
+   * ```
    */
   validateDocumentAccess(documentId: string): Observable<boolean> {
     const document = this.documentDatabase.find(doc => doc.id === documentId);

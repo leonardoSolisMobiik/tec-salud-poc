@@ -70,7 +70,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
         <!-- Normal Header -->
         <div class="sidebar-header" *ngIf="!sidebarCollapsed">
           <div class="header-content">
-            <div class="logo-container">
+            <div class="logo-container" (click)="navigateToHome()" style="cursor: pointer;">
               <div class="logo">T</div>
               <div>
                 <h2 class="brand-title">
@@ -224,7 +224,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
       <div class="main-panel">
         <!-- Header -->
         <div class="main-header">
-          <div class="header-info">
+          <div class="header-info" (click)="navigateToHome()" style="cursor: pointer;">
             <h1 class="main-title">Copiloto Médico</h1>
             <p class="main-subtitle">Asistente Virtual TecSalud</p>
           </div>
@@ -321,17 +321,17 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                     <span class="dropdown-icon">📄</span>
                     <div class="dropdown-text">
                       <div class="dropdown-title">Subir Documentos</div>
-                      <div class="dropdown-subtitle">Vectorización automática</div>
+                      <div class="dropdown-subtitle">Procesamiento automático</div>
                     </div>
                   </button>
                   
-                  <!-- DISABLED: Expedientes Vectorizados -->
+                  <!-- DISABLED: Expedientes Procesados -->
                   <!--
                   <button class="dropdown-item" (click)="navigateTo('/documents/list')">
                     <span class="dropdown-icon">📋</span>
                     <div class="dropdown-text">
                       <div class="dropdown-title">Gestión Documentos</div>
-                      <div class="dropdown-subtitle">Ver documentos vectorizados</div>
+                      <div class="dropdown-subtitle">Ver documentos procesados</div>
                     </div>
                   </button>
                   -->
@@ -1115,6 +1115,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   onDropdownClick(route: string): void {
     this.navigateTo(route);
+  }
+  
+  /** Navigate to root/home page */
+  navigateToHome(): void {
+    this.router.navigate(['/']);
   }
   
   getCurrentTime(): string {

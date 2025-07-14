@@ -50,9 +50,9 @@ interface SearchResult {
             <span class="back-text">Volver</span>
           </button>
           <div class="title-container">
-            <h1 class="main-title">📚 Expedientes Vectorizados</h1>
-            <div class="main-subtitle">
-              Documentos indexados para búsqueda inteligente
+            <h1 class="main-title">📚 Expedientes Procesados</h1>
+                          <div class="main-subtitle">
+                Documentos procesados para búsqueda inteligente
             </div>
           </div>
         </div>

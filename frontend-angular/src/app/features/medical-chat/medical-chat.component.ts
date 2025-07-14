@@ -1155,6 +1155,16 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
    * this.clearChat(); // Clears current patient's chat history
    * ```
    */
+  /**
+   * Clears the chat history for the active patient
+   * 
+   * @description Removes all messages from the current patient's chat history
+   * 
+   * @example
+   * ```typescript
+   * this.clearChat(); // Clears all messages for current patient
+   * ```
+   */
   clearChat(): void {
     if (this.activePatient) {
       this.medicalStateService.clearChatHistory(this.activePatient.id);

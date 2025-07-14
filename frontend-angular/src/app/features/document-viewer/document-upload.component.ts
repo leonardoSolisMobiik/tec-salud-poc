@@ -48,7 +48,7 @@ interface DocumentUpload {
           <div class="title-container">
             <h1 class="main-title">📤 Subir Expedientes Médicos</h1>
             <div class="main-subtitle">
-              Vectorización automática con IA para búsqueda inteligente
+              Procesamiento inteligente de documentos médicos
             </div>
           </div>
         </div>
@@ -194,7 +194,7 @@ interface DocumentUpload {
 
       <!-- Results Summary -->
       <div class="results-section" *ngIf="uploadResults.length > 0">
-        <h3 class="results-title">📊 Resultados de Vectorización</h3>
+                    <h3 class="results-title">📊 Resultados de Procesamiento</h3>
         
         <div class="results-summary">
           <div class="summary-stat">
@@ -895,7 +895,7 @@ export class DocumentUploadComponent implements OnInit {
           file,
           patient_id: this.defaultPatientId,
           document_type: this.defaultDocumentType,
-          processing_type: 'vectorized', // Default processing type for document upload
+          processing_type: 'complete', // Default processing type for document upload
           title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
           status: 'pending',
           progress: 0

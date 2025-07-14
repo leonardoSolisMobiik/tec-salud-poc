@@ -5,21 +5,97 @@ import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+/**
+ * Interface for Quick Pill data structure
+ * 
+ * @interface QuickPillData
+ * @description Defines the structure for quick pill items with unique ID,
+ * text content, visual icon, category classification, and priority level.
+ */
 interface QuickPillData {
+  /** Unique identifier for the pill */
   id: string;
+  
+  /** Text content or question template */
   text: string;
+  
+  /** Icon emoji for visual representation */
   icon: string;
+  
+  /** Category classification (symptoms, diagnosis, etc.) */
   category: string;
+  
+  /** Priority level (high, medium, low) */
   priority: string;
 }
 
+/**
+ * Interface for pill form data
+ * 
+ * @interface PillFormData
+ * @description Structure for form input data when creating or editing pills.
+ * Similar to QuickPillData but without ID (generated automatically).
+ */
 interface PillFormData {
+  /** Text content or question template */
   text: string;
+  
+  /** Icon emoji for visual representation */
   icon: string;
+  
+  /** Category classification */
   category: string;
+  
+  /** Priority level */
   priority: string;
 }
 
+/**
+ * Admin Pills Manager Component for managing quick question templates
+ * 
+ * @description Administrative interface for managing quick pill templates
+ * used in the medical chat system. Provides full CRUD operations for
+ * organizing and maintaining question templates by category and priority.
+ * 
+ * @example
+ * ```typescript
+ * // Used in admin route
+ * // Route: '/admin-pills'
+ * <app-admin-pills-manager></app-admin-pills-manager>
+ * 
+ * // Provides:
+ * // - List of existing pills with categorization
+ * // - Create new pill with form modal
+ * // - Edit existing pill in-place
+ * // - Delete pill with confirmation
+ * // - Category and priority management
+ * ```
+ * 
+ * @features
+ * - CRUD operations for quick pill templates
+ * - Category-based organization (symptoms, diagnosis, treatment, etc.)
+ * - Priority-based sorting (high, medium, low)
+ * - Modal forms for create/edit operations
+ * - Icon selection from predefined medical icons
+ * - Responsive table layout with hover effects
+ * - Confirmation dialogs for destructive actions
+ * - Local storage persistence
+ * 
+ * @categories
+ * - symptoms: Symptom-related questions
+ * - diagnosis: Diagnostic inquiries
+ * - treatment: Treatment recommendations
+ * - urgency: Urgency assessments
+ * - history: Medical history questions
+ * - general: General medical questions
+ * 
+ * @priorities
+ * - high: Critical/urgent questions
+ * - medium: Standard questions
+ * - low: Optional/supplementary questions
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-admin-pills-manager',
   standalone: true,
@@ -708,19 +784,28 @@ interface PillFormData {
   `]
 })
 export class AdminPillsManagerComponent implements OnInit, OnDestroy {
+  /** Subject for managing component subscriptions cleanup */
   private destroy$ = new Subject<void>();
 
-  // Datos mock para demostración
+  /** Array of quick pill data items */
   pills: QuickPillData[] = [];
   
-  // Modal states
+  /** Form modal visibility state */
   showFormModal = false;
+  
+  /** Delete confirmation modal visibility state */
   showDeleteModal = false;
+  
+  /** Flag indicating if form is in edit mode */
   isEditMode = false;
+  
+  /** Reference to pill being deleted */
   pillToDelete: QuickPillData | null = null;
+  
+  /** ID of pill being edited */
   editingPillId: string | null = null;
 
-  // Form data
+  /** Form data for creating/editing pills */
   formData: PillFormData = {
     text: '',
     icon: '',
@@ -728,21 +813,42 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     priority: ''
   };
 
-  // Icon options para selector
+  /** Available medical icons for pill selection */
   iconOptions = ['🩺', '💊', '📋', '🏥', '🔬', '🚨', '📝', '⏰', '🤒', '💉', '📊', '⚠️', '🛡️', '🤱', '👶', '👴', '📸', '📈', '👨‍⚕️'];
 
+  /**
+   * Creates an instance of AdminPillsManagerComponent
+   * 
+   * @description Initializes the component with default form state
+   */
   constructor() {}
 
+  /**
+   * Component initialization lifecycle hook
+   * 
+   * @description Loads existing pills from localStorage on component initialization
+   */
   ngOnInit(): void {
     this.loadPills();
   }
 
+  /**
+   * Component destruction lifecycle hook
+   * 
+   * @description Cleans up subscriptions to prevent memory leaks
+   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  // CRUD Operations usando mocks
+  /**
+   * Loads pills from mock data
+   * 
+   * @private
+   * @description Initializes the pills array with default medical templates
+   * for demonstration purposes. In production, this would load from a service or API.
+   */
   private loadPills(): void {
     // Mock data - reutiliza las pastillas del servicio existente
     this.pills = [
@@ -755,12 +861,36 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     ];
   }
 
+  /**
+   * Opens the create pill modal
+   * 
+   * @description Sets up the form for creating a new pill by resetting
+   * form data and opening the modal in create mode
+   * 
+   * @example
+   * ```typescript
+   * this.openCreateModal(); // Opens modal for new pill creation
+   * ```
+   */
   openCreateModal(): void {
     this.isEditMode = false;
     this.resetForm();
     this.showFormModal = true;
   }
 
+  /**
+   * Opens the edit pill modal
+   * 
+   * @param pill - The pill to edit
+   * 
+   * @description Sets up the form for editing an existing pill by
+   * populating form data and opening the modal in edit mode
+   * 
+   * @example
+   * ```typescript
+   * this.openEditModal(existingPill); // Opens modal for editing
+   * ```
+   */
   openEditModal(pill: QuickPillData): void {
     this.isEditMode = true;
     this.editingPillId = pill.id;
@@ -773,21 +903,50 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     this.showFormModal = true;
   }
 
+  /**
+   * Opens the delete confirmation modal
+   * 
+   * @param pill - The pill to delete
+   * 
+   * @description Sets up the delete confirmation modal with
+   * reference to the pill to be deleted
+   * 
+   * @example
+   * ```typescript
+   * this.openDeleteModal(pillToDelete); // Opens delete confirmation
+   * ```
+   */
   openDeleteModal(pill: QuickPillData): void {
     this.pillToDelete = pill;
     this.showDeleteModal = true;
   }
 
+  /**
+   * Closes the form modal
+   * 
+   * @description Hides the form modal and resets form data
+   */
   closeFormModal(): void {
     this.showFormModal = false;
     this.resetForm();
   }
 
+  /**
+   * Closes the delete confirmation modal
+   * 
+   * @description Hides the delete modal and clears delete reference
+   */
   closeDeleteModal(): void {
     this.showDeleteModal = false;
     this.pillToDelete = null;
   }
 
+  /**
+   * Resets the form to default values
+   * 
+   * @private
+   * @description Clears all form data and resets to default state
+   */
   private resetForm(): void {
     this.formData = {
       text: '',
@@ -798,10 +957,33 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     this.editingPillId = null;
   }
 
+  /**
+   * Selects an icon for the pill
+   * 
+   * @param icon - The icon emoji to select
+   * 
+   * @description Updates the form data with the selected icon
+   * 
+   * @example
+   * ```typescript
+   * this.selectIcon('💊'); // Sets pill icon to medicine emoji
+   * ```
+   */
   selectIcon(icon: string): void {
     this.formData.icon = icon;
   }
 
+  /**
+   * Saves the pill (create or update)
+   * 
+   * @description Handles both creating new pills and updating existing ones
+   * based on the current form mode. Uses mock data for demonstration.
+   * 
+   * @example
+   * ```typescript
+   * this.savePill(); // Saves current form data as new or updated pill
+   * ```
+   */
   savePill(): void {
     if (this.isEditMode && this.editingPillId) {
       // Update existing pill (mock)
@@ -830,6 +1012,16 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     this.closeFormModal();
   }
 
+  /**
+   * Confirms and executes pill deletion
+   * 
+   * @description Removes the selected pill from the array using mock data
+   * 
+   * @example
+   * ```typescript
+   * this.confirmDelete(); // Deletes the pill and closes modal
+   * ```
+   */
   confirmDelete(): void {
     if (this.pillToDelete) {
       // Delete pill (mock)
@@ -838,7 +1030,19 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Utility methods
+  /**
+   * Gets the display label for a category
+   * 
+   * @param category - The category key
+   * @returns Localized category label
+   * 
+   * @description Converts category keys to user-friendly Spanish labels
+   * 
+   * @example
+   * ```typescript
+   * this.getCategoryLabel('symptoms'); // Returns "Síntomas"
+   * ```
+   */
   getCategoryLabel(category: string): string {
     const labels: { [key: string]: string } = {
       'diagnosis': 'Diagnóstico',
@@ -853,6 +1057,19 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     return labels[category] || category;
   }
 
+  /**
+   * Gets the display label for a priority
+   * 
+   * @param priority - The priority key
+   * @returns Localized priority label
+   * 
+   * @description Converts priority keys to user-friendly Spanish labels
+   * 
+   * @example
+   * ```typescript
+   * this.getPriorityLabel('high'); // Returns "Alta"
+   * ```
+   */
   getPriorityLabel(priority: string): string {
     const labels: { [key: string]: string } = {
       'high': 'Alta',
@@ -862,10 +1079,29 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     return labels[priority] || priority;
   }
 
+  /**
+   * TrackBy function for pills list optimization
+   * 
+   * @param index - Array index (unused)
+   * @param pill - Pill object
+   * @returns Unique identifier for the pill
+   * 
+   * @description Helps Angular track pills for efficient DOM updates
+   */
   trackByPill(index: number, pill: QuickPillData): string {
     return pill.id;
   }
   
+  /**
+   * Navigates back to the previous page
+   * 
+   * @description Uses browser history to go back to the previous page
+   * 
+   * @example
+   * ```typescript
+   * this.goBack(); // Navigates back in browser history
+   * ```
+   */
   goBack(): void {
     window.history.back();
   }

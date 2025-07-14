@@ -19,7 +19,7 @@ import { Routes } from '@angular/router';
  * ```
  * 
  * @routes
- * - `/` - Redirects to dashboard
+ * - `/` - Redirects to chat
  * - `/dashboard` - Main dashboard with system overview
  * - `/chat` - Medical AI chat interface
  * - `/patients` - Patient management system
@@ -29,10 +29,10 @@ import { Routes } from '@angular/router';
  * @since 1.0.0
  */
 export const routes: Routes = [
-  /** Root path redirect to dashboard */
+  /** Root path redirect to chat */
   {
     path: '',
-    redirectTo: '/dashboard',
+    redirectTo: '/chat',
     pathMatch: 'full'
   },
   
@@ -55,7 +55,7 @@ export const routes: Routes = [
   //   loadComponent: () => import('./features/patient-management/patient-management.component').then(m => m.PatientManagementComponent)
   // },
   
-  /** Document Upload - Medical document processing and vectorization */
+  /** Document Upload - Medical document processing and analysis */
   {
     path: 'documents',
     loadComponent: () => import('./features/document-viewer/document-upload.component').then(m => m.DocumentUploadComponent)

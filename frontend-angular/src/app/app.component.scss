@@ -1,15 +1,13 @@
-/* 🎯 APP COMPONENT STYLES - BAMBOO DESIGN SYSTEM INTEGRATION */
+/* APP COMPONENT STYLES */
 
-/* Import Bamboo tokens - they're already available from global styles.scss */
-
-/* 📄 DOCUMENT PANEL CSS VARIABLES */
+/* Document Panel Variables */
 :root {
   --document-panel-width: 400px;
   --document-panel-width-tablet: 350px;
   --document-panel-width-mobile: 300px;
 }
 
-/* 📱 APP CONTAINER - LAYOUT BASE - TASK-UI-004 RESPONSIVE */
+/* App Container Layout */
 .app-container {
   display: grid !important;
   grid-template-columns: var(--sidebar-width-desktop, 320px) 1fr var(--document-panel-width, 400px) !important;
@@ -33,7 +31,7 @@
   grid-template-columns: 60px 1fr 60px !important;
 }
 
-/* 📱 MOBILE LAYOUT - TASK-UI-004 */
+/* Mobile Layout */
 @media (max-width: 767px) {
   .app-container {
     grid-template-columns: 1fr var(--document-panel-width-mobile, 300px) !important;
@@ -84,7 +82,7 @@
   }
 }
 
-/* 📱 TABLET LAYOUT - TASK-UI-004 */
+/* Tablet Layout */
 @media (min-width: 768px) and (max-width: 1024px) {
   .app-container {
     grid-template-columns: var(--sidebar-width-tablet, 280px) 1fr var(--document-panel-width-tablet, 350px) !important;
@@ -106,7 +104,7 @@
   }
 }
 
-/* ✅ BAMBOO DS TOKENS - Sidebar Panel Premium */
+/* Sidebar Panel */
 .sidebar-panel {
   background: linear-gradient(180deg, 
     var(--general_contrasts-input-background, #ffffff) 0%, 
@@ -124,7 +122,7 @@
   position: relative !important;
 }
 
-/* ✅ BAMBOO DS TOKENS - Sidebar Header Premium */
+/* Sidebar Header */
 .sidebar-header {
   padding: var(--bmb-spacing-m, 1rem) !important;
   border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
@@ -147,9 +145,16 @@
   align-items: center !important;
   gap: var(--bmb-spacing-m, 1rem) !important;
   flex: 1 !important;
+  transition: all 0.3s ease !important;
+  
+  /* Hover effect for clickable logo */
+  &:hover {
+    opacity: 0.8 !important;
+    transform: scale(1.02) !important;
+  }
 }
 
-/* ✅ BAMBOO DS TOKENS - Logo Premium */
+/* Logo */
 .logo {
   width: 36px !important;
   height: 36px !important;
@@ -174,7 +179,7 @@
   overflow: hidden !important;
 }
 
-/* ✅ BAMBOO DS TOKENS - Brand Premium */
+/* Brand */
 .brand-title {
   color: var(--general_contrasts-100, #1f2937) !important;
   font-size: 1.125rem !important;
@@ -188,7 +193,7 @@
   transition: color 0.3s ease !important;
 }
 
-/* 🔄 COLLAPSE/EXPAND BUTTONS PREMIUM STYLES */
+/* Collapse/Expand Buttons */
 .collapse-btn {
   background: rgba(var(--color-blue-tec, 0, 57, 166), 0.1) !important;
   border: 1px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
@@ -226,7 +231,7 @@
   }
 }
 
-/* 🔄 SIDEBAR COLLAPSED HEADER */
+/* Sidebar Collapsed Header */
 .sidebar-header-collapsed {
   padding: var(--bmb-spacing-m, 1rem) var(--bmb-spacing-s, 0.75rem) !important;
   border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
@@ -298,7 +303,7 @@
   }
 }
 
-/* 🎯 EXPAND BUTTON PULSE ANIMATION */
+/* Expand Button Animation */
 @keyframes expandPulse {
   0%, 100% {
     box-shadow: 
@@ -323,7 +328,7 @@
   font-weight: 500 !important;
 }
 
-/* ✅ BAMBOO DS TOKENS - Main Panel */
+/* Main Panel */
 .main-panel {
   display: flex !important;
   flex-direction: column !important;
@@ -331,7 +336,7 @@
   overflow: hidden !important;
 }
 
-/* ✅ BAMBOO DS TOKENS - Main Header */
+/* Main Header */
 .main-header {
   display: flex !important;
   align-items: center !important;
@@ -349,6 +354,13 @@
   flex: 1 !important;
   min-width: 0 !important;
   max-width: 50% !important;
+  transition: all 0.3s ease !important;
+  
+  /* Hover effect for clickable header */
+  &:hover {
+    opacity: 0.8 !important;
+    transform: translateX(2px) !important;
+  }
 }
 
 .main-title {
@@ -372,7 +384,7 @@
   white-space: nowrap !important;
 }
 
-/* 📱 CHAT CONTAINER */
+/* Chat Container */
 .chat-container {
   flex: 1 !important;
   padding: var(--bmb-spacing-m, 1rem) !important;
@@ -391,14 +403,14 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
 }
 
-/* 📝 MESSAGES AREA */
+/* Messages Area */
 .messages-area {
   flex: 1 !important;
   overflow-y: auto !important;
   padding: var(--bmb-spacing-m, 1rem) !important;
 }
 
-/* 💬 WELCOME MESSAGE */
+/* Welcome Message */
 .welcome-message {
   display: flex !important;
   align-items: center !important;
@@ -459,7 +471,7 @@
   font-family: var(--font-display, 'Poppins', sans-serif) !important;
 }
 
-/* 💬 BUBBLE CHAT MESSAGES */
+/* Bubble Chat Messages */
 .message-wrapper {
   display: flex !important;
   align-items: flex-start !important;
@@ -624,7 +636,7 @@
   text-align: left !important;
 }
 
-/* Thinking Dots Animation */
+/* Thinking Animation */
 .thinking-dots {
   display: inline-flex !important;
   align-items: center !important;
@@ -662,7 +674,7 @@
   }
 }
 
-/* Typing Cursor Animation */
+/* Typing Cursor */
 .typing-cursor {
   animation: blink 1s infinite !important;
   font-weight: bold !important;
@@ -678,7 +690,7 @@
   }
 }
 
-/* Typing Indicator Animation */
+/* Typing Indicator */
 .typing-indicator {
   animation: bounce 1.5s infinite !important;
 }
@@ -695,7 +707,7 @@
   }
 }
 
-/* Streaming Bubble Effect */
+/* Streaming Bubble */
 @keyframes streamingGlow {
   from {
     box-shadow: 
@@ -711,7 +723,7 @@
   }
 }
 
-/* 🔽 INPUT AREA */
+/* Input Area */
 .input-area {
   padding: var(--bmb-spacing-m, 1rem) !important;
   border-top: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
@@ -741,7 +753,7 @@
   box-shadow: 0 0 0 2px rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
 }
 
-/* 🚀 SEND BUTTON */
+/* Send Button */
 .send-button-premium {
   position: relative !important;
   min-width: 100px !important;
@@ -784,7 +796,7 @@
   transition: all 0.3s ease !important;
 }
 
-/* 🌟 CSS ANIMATIONS FOR SMOOTH TRANSITIONS */
+/* CSS Animations */
 @keyframes nav-dropdown-fade-in {
   from {
     opacity: 0;
@@ -818,7 +830,7 @@
   }
 }
 
-/* 🔧 NAVIGATION DROPDOWN - USANDO TOKENS BAMBOO */
+/* Navigation Dropdown */
 .nav-dropdown-container {
   position: relative;
   display: inline-block;
@@ -885,7 +897,7 @@
   }
 }
 
-/* 🎯 SIMPLE DROPDOWN - COMO EL EJEMPLO DE LA IMAGEN */
+/* Simple Dropdown */
 .simple-dropdown {
   position: fixed !important;
   top: 0 !important;
@@ -977,7 +989,7 @@
 
 
 
-/* 🎨 PATIENT CONTEXT STYLES - USANDO TOKENS BAMBOO */
+/* Patient Context Styles */
 .patient-context-horizontal {
   display: flex !important;
   align-items: center !important;
@@ -1051,7 +1063,7 @@
   }
 }
 
-/* 🚀 HEADER LAYOUT - USANDO TOKENS BAMBOO */
+/* Header Layout */
 .main-header {
   display: flex !important;
   align-items: center !important;
@@ -1093,7 +1105,7 @@
   max-width: 50% !important;
 }
 
-/* 🔧 FORCE CORRECT LAYOUT WITH ::ng-deep */
+/* Force Correct Layout */
 ::ng-deep .header-actions {
   display: flex !important;
   align-items: center !important;
@@ -1116,8 +1128,8 @@
   vertical-align: top !important;
 }
 
-/* 📱 RESPONSIVE DESIGN CON TOKENS BAMBOO */
-/* 📱 MOBILE HEADER - TASK-UI-004 */
+/* Responsive Design */
+/* Mobile Header */
 @media (max-width: 767px) {
   .main-header {
     padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem);
@@ -1200,7 +1212,7 @@
   }
 }
 
-/* 📱 TABLET HEADER - TASK-UI-004 */
+/* Tablet Header */
 @media (min-width: 768px) and (max-width: 1024px) {
   .main-header {
     padding: var(--bmb-spacing-m, 1rem) var(--bmb-spacing-l, 1.5rem);
@@ -1237,7 +1249,7 @@
   }
 }
 
-/* 📱 BUBBLE CHAT RESPONSIVE - MOBILE */
+/* Bubble Chat Responsive - Mobile */
 @media (max-width: 767px) {
   .message-wrapper {
     gap: var(--bmb-spacing-s) !important;
@@ -1295,7 +1307,7 @@
   }
 }
 
-/* 📱 BUBBLE CHAT RESPONSIVE - TABLET */
+/* Bubble Chat Responsive - Tablet */
 @media (min-width: 768px) and (max-width: 1024px) {
   .message-wrapper {
     gap: var(--bmb-spacing-s) !important;
@@ -1353,7 +1365,7 @@
   }
 }
 
-/* 📱 DESKTOP HEADER - TASK-UI-004 */
+/* Desktop Header */
 @media (min-width: 1025px) {
   .nav-dropdown-menu {
     right: 40px;
@@ -1365,7 +1377,7 @@
   }
 }
 
-/* 🌟 ANIMACIONES PREMIUM CON TOKENS BAMBOO */
+/* Premium Animations */
 @keyframes bamboo-fade-in {
   from {
     opacity: 0;
@@ -1399,7 +1411,7 @@
   }
 }
 
-/* 🎯 DROPDOWN ANIMATION */
+/* Dropdown Animation */
 @keyframes dropdown-appear {
   from {
     opacity: 0;
@@ -1423,7 +1435,7 @@
   animation: bamboo-pulse 2s infinite;
 }
 
-/* 🔧 UTILITY CLASSES CON TOKENS BAMBOO */
+/* Utility Classes */
 .bamboo-text-primary {
   color: var(--color-blue-tec, #0066cc);
 }
@@ -1444,7 +1456,7 @@
   background: rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
 }
 
-/* 🎯 BUTTON STYLES CON TOKENS BAMBOO */
+/* Button Styles */
 .bamboo-button {
   background: var(--color-blue-tec, #0066cc);
   color: white;
@@ -1473,7 +1485,7 @@
   }
 }
 
-/* 🔄 LOADING STATES CON TOKENS BAMBOO */
+/* Loading States */
 .bamboo-loading {
   position: relative;
   
@@ -1497,7 +1509,7 @@
   100% { transform: rotate(360deg); }
 }
 
-/* 🎨 THEME VARIABLES FOR CONSISTENT STYLING */
+/* Theme Variables */
 :host {
   --app-primary-color: var(--color-blue-tec, #0066cc);
   --app-secondary-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.8);

@@ -1,6 +1,4 @@
-// Medical Sidebar - Integración cuidadosa con Bamboo
-
-// 🚨 FORZAR VISIBILIDAD DEL SIDEBAR - PARA DEBUGGING
+// Medical Sidebar
 .medical-sidebar {
   display: block !important;
   visibility: visible !important;
@@ -110,7 +108,7 @@
     }
   }
 
-  // 🎯 NAVEGACIÓN CON MISMA ESTRATEGIA EXITOSA QUE PATIENT CARDS
+  // Navigation with Patient Cards Strategy
   ::ng-deep .nav-container-simple {
     display: block !important;
     visibility: visible !important;
@@ -137,7 +135,7 @@
     }
   }
   
-  // 🎯 NAVEGACIÓN MÉDICA ORIGINAL - USANDO ESTRATEGIA EXITOSA DE CARDS
+  // Medical Navigation
   ::ng-deep .nav-container {
     padding: var(--bmb-spacing-m) !important;
     border-bottom: 1px solid var(--general_contrasts-container-outline) !important;
@@ -273,13 +271,13 @@
       gap: 0.75rem;
     }
 
-    // 🎯 ESTILOS PREMIUM BAMBOO CARDS - VERSIÓN PREMIUM SIMPLIFICADA
+    // Premium Bamboo Cards
     .patient-card-bamboo {
       margin-bottom: 0.75rem;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       
-      // Premium Bamboo card styles
+              // Bamboo card styles
       ::ng-deep bmb-card {
         border: 1px solid #e5e7eb;
         border-radius: 12px;
@@ -289,7 +287,7 @@
         overflow: hidden;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
         
-        // Premium glass effect
+        // Glass effect
         &::before {
           content: '';
           position: absolute;
@@ -341,7 +339,7 @@
       }
     }
 
-    // 🎯 ESTILOS HTML CARDS - FALLBACK PREMIUM CON TOKENS BAMBOO
+    // HTML Cards Fallback
     .patient-card-html {
       padding: var(--bmb-spacing-l);
       border: 1px solid var(--general_contrasts-container-outline);
@@ -407,7 +405,7 @@
       }
     }
 
-    // Premium card wrapper con tokens
+    // Card wrapper
     ::ng-deep .patient-card-wrapper {
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -477,7 +475,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       
-      // Premium glow effect
+      // Glow effect
       &::after {
         content: '';
         position: absolute;
@@ -691,28 +689,28 @@
     }
   }
 
-  // Animación sutil para el indicador médico
+  // Subtle animation for medical indicator
   @keyframes pulse {
     0%, 100% { opacity: 0.7; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.05); }
   }
 }
 
-// Overrides globales para componentes de Bamboo en modo médico
+// Global overrides for Bamboo components
 ::ng-deep {
-  // Bamboo Badge personalizado para TecSalud
+  // Custom Bamboo Badge for TecSalud
   .bmb-badge--success {
     background-color: #10b981 !important;
     color: white !important;
   }
 
-  // Bamboo Card personalizado para pacientes
+  // Custom Bamboo Card for patients
   .bmb-card {
     border-radius: 8px !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
   }
 
-  // Tema TecSalud para componentes Bamboo
+  // TecSalud theme for Bamboo components
   .medical-sidebar {
     --bmb-primary-color: #0066cc;
     --bmb-secondary-color: #004d99;
@@ -720,7 +718,7 @@
   }
 }
 
-// 📱 RESPONSIVE STYLES - TASK-UI-004 MEJORADO
+// Responsive Styles
 /* Mobile Styles (<768px) */
 @media (max-width: 767px) {
   .medical-sidebar {
@@ -764,7 +762,7 @@
   }
 }
 
-/* Tablet Styles (768px-1024px) - TASK-UI-004 */
+/* Tablet Styles (768px-1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {
   .medical-sidebar {
     width: var(--sidebar-width-tablet, 280px) !important;
@@ -796,7 +794,7 @@
   }
 }
 
-/* Desktop Styles (1025px+) - TASK-UI-004 */
+/* Desktop Styles (1025px+) */
 @media (min-width: 1025px) {
   .medical-sidebar {
     width: var(--sidebar-width-desktop, 320px) !important;
@@ -813,7 +811,7 @@
   }
 }
 
-// 🖱️ TOUCH GESTURE SUPPORT - TASK-UI-004
+// Touch Gesture Support
 @media (hover: none) and (pointer: coarse) {
   .medical-sidebar {
     // Remove hover effects on touch devices

@@ -2,6 +2,47 @@ import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { marked } from 'marked';
 
+/**
+ * Streaming message component for real-time AI response display
+ * 
+ * @description Displays AI assistant messages with real-time streaming capability,
+ * typing indicators, loading states, and markdown formatting. Provides visual
+ * feedback during AI response generation with animated typing effects.
+ * 
+ * @example
+ * ```typescript
+ * // In parent component template
+ * <app-streaming-message
+ *   [content]="streamingContent"
+ *   [isLoading]="isAiResponding">
+ * </app-streaming-message>
+ * 
+ * // In parent component
+ * onStreamingUpdate(chunk: string) {
+ *   this.streamingContent += chunk;
+ * }
+ * 
+ * onStreamingStart() {
+ *   this.isAiResponding = true;
+ *   this.streamingContent = '';
+ * }
+ * ```
+ * 
+ * @features
+ * - Real-time content streaming display
+ * - Animated typing indicators with rotating text
+ * - Markdown content rendering
+ * - Professional AI avatar with medical styling
+ * - Smooth fade-in animations
+ * - Cursor blinking effect during streaming
+ * - Loading state management
+ * 
+ * @inputs
+ * - content: string - Current streamed content to display
+ * - isLoading: boolean - Whether AI is currently generating response
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-streaming-message',
   standalone: true,
@@ -33,7 +74,7 @@ import { marked } from 'marked';
     </div>
   `,
   styles: [`
-    /* 🎯 PREMIUM STREAMING MESSAGE CON TOKENS BAMBOO */
+    /* Streaming Message Container */
     .streaming-message {
       display: flex;
       gap: var(--bmb-spacing-s);
@@ -45,7 +86,7 @@ import { marked } from 'marked';
       position: relative;
     }
     
-    /* 🎨 MESSAGE AVATAR PREMIUM */
+    /* Message Avatar */
     .message-avatar {
       width: 44px;
       height: 44px;
@@ -314,9 +355,13 @@ import { marked } from 'marked';
   `]
 })
 export class StreamingMessageComponent implements OnInit, OnDestroy {
+  /** Current streaming content to display */
   @Input() content = '';
+  
+  /** Whether AI is currently loading/generating response */
   @Input() isLoading = false;
   
+  /** Array of loading text messages to rotate through */
   private loadingTexts = [
     'Analizando la consulta médica...',
     'Revisando el historial del paciente...',
@@ -325,31 +370,68 @@ export class StreamingMessageComponent implements OnInit, OnDestroy {
     'Generando respuesta personalizada...'
   ];
   
+  /** Current index for loading text rotation */
   private currentIndex = 0;
+  
+  /** Interval reference for loading text rotation */
   private loadingInterval?: any;
   
+  /**
+   * Component initialization lifecycle method
+   * 
+   * @description Starts loading text rotation if component is in loading state
+   */
   ngOnInit(): void {
     if (this.isLoading) {
       this.startLoadingTextRotation();
     }
   }
   
+  /**
+   * Component cleanup lifecycle method
+   * 
+   * @description Cleans up loading text rotation interval to prevent memory leaks
+   */
   ngOnDestroy(): void {
     if (this.loadingInterval) {
       clearInterval(this.loadingInterval);
     }
   }
   
+  /**
+   * Gets the current loading text for display
+   * 
+   * @returns Current loading text string from rotation array
+   * 
+   * @description Provides the currently active loading message for
+   * display in the loading state template.
+   */
   get currentLoadingText(): string {
     return this.loadingTexts[this.currentIndex];
   }
   
+  /**
+   * Starts automatic rotation of loading text messages
+   * 
+   * @private
+   * @description Initiates an interval that cycles through loading messages
+   * every 2 seconds to provide dynamic feedback during AI processing.
+   */
   private startLoadingTextRotation(): void {
     this.loadingInterval = setInterval(() => {
       this.currentIndex = (this.currentIndex + 1) % this.loadingTexts.length;
     }, 2000);
   }
   
+  /**
+   * Formats streaming content with markdown rendering
+   * 
+   * @param content - Raw streaming content that may contain markdown
+   * @returns HTML string with rendered markdown
+   * 
+   * @description Processes markdown syntax in streaming content and converts
+   * it to HTML for rich text display during real-time streaming.
+   */
   formatContent(content: string): string {
     try {
       // First, clean up any escaped characters

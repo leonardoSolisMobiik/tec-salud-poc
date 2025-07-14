@@ -2,16 +2,79 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+/**
+ * Interface for processing option configuration
+ * 
+ * @interface ProcessingOption
+ * @description Defines the structure for document processing options
+ * including display information, benefits, and use cases.
+ */
 export interface ProcessingOption {
+  /** Unique identifier for the processing option */
   value: string;
+  
+  /** Display label for the option */
   label: string;
+  
+  /** Detailed description of the processing method */
   description: string;
+  
+  /** Icon emoji for visual representation */
   icon: string;
+  
+  /** List of benefits/features for this processing type */
   benefits: string[];
+  
+  /** Whether this option is recommended */
   recommended?: boolean;
+  
+  /** Use case description for when to use this option */
   useCase: string;
 }
 
+/**
+ * Processing Type Selector Component for document processing options
+ * 
+ * @description Interactive component that allows users to select between different
+ * document processing methods (vectorization, complete storage, or hybrid approach).
+ * Features detailed option descriptions, benefits, and recommendations.
+ * 
+ * @example
+ * ```typescript
+ * // In parent component template
+ * <app-processing-type-selector
+ *   [selectedType]="processingType"
+ *   (typeChange)="onProcessingTypeChange($event)">
+ * </app-processing-type-selector>
+ * 
+ * // In parent component
+ * onProcessingTypeChange(type: string) {
+ *   this.processingType = type;
+ *   // Handle processing type change
+ * }
+ * ```
+ * 
+ * @features
+ * - Three processing options: vectorized, complete, and hybrid
+ * - Visual option cards with icons and descriptions
+ * - Expandable benefits section for selected option
+ * - Recommended option highlighting
+ * - Responsive design for mobile devices
+ * - Smooth animations and transitions
+ * 
+ * @inputs
+ * - selectedType: Currently selected processing type
+ * 
+ * @outputs
+ * - typeChange: Emits when processing type selection changes
+ * 
+ * @processingTypes
+ * - vectorized: Fast semantic search with vector embeddings
+ * - complete: Full document storage with original context
+ * - both: Hybrid approach combining vectorization and storage
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-processing-type-selector',
   standalone: true,
@@ -339,14 +402,18 @@ export interface ProcessingOption {
   `]
 })
 export class ProcessingTypeSelectorComponent {
+  /** Currently selected processing type */
   @Input() selectedType: string = '';
+  
+  /** Event emitter for processing type changes */
   @Output() typeChange = new EventEmitter<string>();
 
+  /** Array of available processing options with configurations */
   processingOptions: ProcessingOption[] = [
     {
-      value: 'vectorized',
-      label: 'Vectorización',
-      description: 'Convierte documentos en vectores para búsqueda semántica inteligente',
+              value: 'vectorized',
+        label: 'Búsqueda Semántica',
+        description: 'Procesa documentos para búsqueda semántica inteligente',
       icon: '🔍',
       useCase: 'Ideal para búsquedas rápidas y análisis de contenido',
       benefits: [
@@ -374,7 +441,7 @@ export class ProcessingTypeSelectorComponent {
     {
       value: 'both',
       label: 'Procesamiento Híbrido',
-      description: 'Combina vectorización y almacenamiento completo para máxima flexibilidad',
+              description: 'Combina búsqueda semántica y almacenamiento completo para máxima flexibilidad',
       icon: '⚡',
       useCase: 'La opción más completa para usuarios avanzados',
       recommended: true,
@@ -388,11 +455,40 @@ export class ProcessingTypeSelectorComponent {
     }
   ];
 
+  /**
+   * Selects a processing option and emits the change
+   * 
+   * @param value - The processing type value to select
+   * 
+   * @description Updates the selected processing type and emits the change
+   * event to notify parent components of the selection.
+   * 
+   * @example
+   * ```typescript
+   * selectOption('vectorized'); // Selects vectorization and emits change
+   * ```
+   */
   selectOption(value: string): void {
     this.selectedType = value;
     this.typeChange.emit(value);
   }
 
+  /**
+   * Gets the currently selected processing option configuration
+   * 
+   * @returns The selected ProcessingOption or undefined if none selected
+   * 
+   * @description Finds and returns the configuration object for the
+   * currently selected processing type.
+   * 
+   * @example
+   * ```typescript
+   * const option = getSelectedOption();
+   * if (option) {
+   *   console.log(option.label); // "Búsqueda Semántica"
+   * }
+   * ```
+   */
   getSelectedOption(): ProcessingOption | undefined {
     return this.processingOptions.find(option => option.value === this.selectedType);
   }

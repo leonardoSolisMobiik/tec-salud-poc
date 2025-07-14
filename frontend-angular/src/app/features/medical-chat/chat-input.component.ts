@@ -5,6 +5,38 @@ import { Subject, takeUntil, Observable } from 'rxjs';
 import { Patient } from '@core/models';
 import { MedicalStateService } from '@core/services';
 
+/**
+ * Chat input component for medical consultations
+ * 
+ * @description Provides a text input interface for medical chat with patient context validation,
+ * quick action buttons, character limits, and streaming state management. Includes automatic
+ * textarea resizing and keyboard shortcuts for improved user experience.
+ * 
+ * @example
+ * ```typescript
+ * // In parent component template
+ * <app-chat-input (messageSent)="onMessageSent($event)"></app-chat-input>
+ * 
+ * // In parent component
+ * onMessageSent(message: string) {
+ *   console.log('User message:', message);
+ *   this.processMedicalQuery(message);
+ * }
+ * ```
+ * 
+ * @features
+ * - Patient context validation
+ * - 2000 character limit with visual feedback
+ * - Quick action templates for common medical queries
+ * - Ctrl+Enter keyboard shortcut for sending
+ * - Streaming state awareness
+ * - Automatic disabled state when no patient selected
+ * - Responsive design for mobile and desktop
+ * 
+ * @emits messageSent - Emitted when user sends a message
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-chat-input',
   standalone: true,
@@ -405,16 +437,22 @@ import { MedicalStateService } from '@core/services';
   `]
 })
 export class ChatInputComponent implements OnDestroy {
+  /** Event emitted when user sends a message */
   @Output() messageSent = new EventEmitter<string>();
   
+  /** Subject for handling component destruction */
   private destroy$ = new Subject<void>();
   
+  /** Current message text being typed */
   messageText = '';
   
-  // Observables from medical state
+  /** Observable stream of the currently active patient */
   activePatient$!: Observable<Patient | null>;
+  
+  /** Observable stream indicating if AI is currently streaming a response */
   isStreaming$!: Observable<boolean>;
   
+  /** Quick action templates for common medical queries */
   quickActions = [
     { icon: '🩺', text: 'Realizar diagnóstico inicial' },
     { icon: '💊', text: 'Revisar medicamentos' },
@@ -422,16 +460,34 @@ export class ChatInputComponent implements OnDestroy {
     { icon: '🏥', text: 'Recomendar especialista' }
   ];
   
+  /**
+   * Creates an instance of ChatInputComponent
+   * 
+   * @param medicalState - Service for managing medical application state
+   */
   constructor(private medicalState: MedicalStateService) {
     this.activePatient$ = this.medicalState.activePatient$;
     this.isStreaming$ = this.medicalState.isStreaming$;
   }
   
+  /**
+   * Component cleanup lifecycle method
+   * 
+   * @description Properly destroys observables to prevent memory leaks
+   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
   
+  /**
+   * Determines if the send button should be enabled
+   * 
+   * @returns True if message can be sent, false otherwise
+   * 
+   * @description Validates that message has content, is within character limit,
+   * a patient is selected, and AI is not currently streaming a response.
+   */
   get canSend(): boolean {
     return this.messageText.trim().length > 0 && 
            this.messageText.length <= 2000 &&
@@ -439,6 +495,14 @@ export class ChatInputComponent implements OnDestroy {
            !this.medicalState.isStreamingValue;
   }
   
+  /**
+   * Handles keyboard events for the textarea
+   * 
+   * @param event - Keyboard event from textarea
+   * 
+   * @description Enables Ctrl+Enter shortcut for sending messages.
+   * Prevents default behavior when shortcut is used and message can be sent.
+   */
   onKeyDown(event: KeyboardEvent): void {
     // Auto-resize textarea
     const textarea = event.target as HTMLTextAreaElement;
@@ -452,6 +516,18 @@ export class ChatInputComponent implements OnDestroy {
     }
   }
   
+  /**
+   * Sends the current message if validation passes
+   * 
+   * @description Validates the message, emits the messageSent event with the trimmed text,
+   * clears the input, and resets the textarea height. Only sends if canSend validation passes.
+   * 
+   * @example
+   * ```typescript
+   * // Called when send button is clicked or Ctrl+Enter is pressed
+   * this.sendMessage(); // Emits messageSent event with current message
+   * ```
+   */
   sendMessage(): void {
     if (!this.canSend) return;
     
@@ -468,6 +544,22 @@ export class ChatInputComponent implements OnDestroy {
     });
   }
   
+  /**
+   * Inserts a quick action template into the message input
+   * 
+   * @param actionText - The template text to insert
+   * 
+   * @description Sets the message text to the selected quick action template
+   * and focuses the textarea for immediate editing. Useful for speeding up
+   * common medical consultation patterns.
+   * 
+   * @example
+   * ```typescript
+   * // Called when quick action button is clicked
+   * this.insertQuickAction('Realizar diagnóstico inicial');
+   * // Sets messageText and focuses textarea
+   * ```
+   */
   insertQuickAction(actionText: string): void {
     this.messageText = actionText;
     
@@ -479,6 +571,4 @@ export class ChatInputComponent implements OnDestroy {
       }
     });
   }
-}
-}
 } 

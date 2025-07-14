@@ -4,6 +4,46 @@ import { Observable } from 'rxjs';
 import { UiStateService } from '@core/services';
 import { trigger, transition, style, animate } from '@angular/animations';
 
+/**
+ * Global Loader Component for application-wide loading states
+ * 
+ * @description Full-screen overlay loader that displays during global loading operations.
+ * Features animated spinner, backdrop blur, and responsive design. Automatically
+ * shows/hides based on UI state service loading state.
+ * 
+ * @example
+ * ```typescript
+ * // In app.component.html
+ * <app-global-loader></app-global-loader>
+ * 
+ * // Trigger loading from any service/component
+ * this.uiState.startLoading('data-fetch');
+ * // Loader automatically appears
+ * 
+ * // Stop loading
+ * this.uiState.stopLoading('data-fetch');
+ * // Loader automatically disappears
+ * ```
+ * 
+ * @features
+ * - Full-screen overlay with backdrop blur
+ * - Multi-ring animated spinner
+ * - Fade in/out animations
+ * - Responsive design for mobile devices
+ * - Automatically controlled by UiStateService
+ * - Medical-themed styling
+ * 
+ * @animations
+ * - fadeIn: Smooth fade in/out transitions (200ms)
+ * - spin: Continuous rotation animation for spinner rings
+ * 
+ * @usage
+ * - Place once in app.component.html
+ * - Control via UiStateService loading methods
+ * - Automatically handles multiple concurrent loading states
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-global-loader',
   standalone: true,
@@ -149,11 +189,26 @@ import { trigger, transition, style, animate } from '@angular/animations';
   ]
 })
 export class GlobalLoaderComponent implements OnInit {
+  /** Observable for loading state from UI service */
   isLoading$: Observable<boolean>;
   
+  /**
+   * Creates an instance of GlobalLoaderComponent
+   * 
+   * @param uiState - UI state service for loading state management
+   * 
+   * @description Initializes the component with loading state observable
+   * from the UI state service for automatic show/hide behavior.
+   */
   constructor(private uiState: UiStateService) {
     this.isLoading$ = this.uiState.isLoading$;
   }
   
+  /**
+   * Component initialization lifecycle hook
+   * 
+   * @description No specific initialization needed as component
+   * is purely reactive to UI state service changes.
+   */
   ngOnInit(): void {}
 }

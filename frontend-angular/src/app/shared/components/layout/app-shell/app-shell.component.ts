@@ -8,6 +8,48 @@ import { HeaderComponent } from '../header/header.component';
 import { ToastContainerComponent } from '../../toast-container/toast-container.component';
 import { GlobalLoaderComponent } from '../../global-loader/global-loader.component';
 
+/**
+ * Application Shell Component providing main layout structure
+ * 
+ * @description Core layout component that provides the main application structure
+ * including sidebar, header, router outlet, and global UI components. Features
+ * responsive design with optimized layouts for mobile, tablet, and desktop.
+ * 
+ * @example
+ * ```typescript
+ * // Used as root layout in app routing
+ * <app-shell></app-shell>
+ * 
+ * // Automatically provides:
+ * // - Responsive sidebar layout
+ * // - Header navigation
+ * // - Router outlet for page content
+ * // - Global loader overlay
+ * // - Toast notifications container
+ * ```
+ * 
+ * @features
+ * - Responsive layout with breakpoint-specific optimizations
+ * - Sidebar with collapsible behavior
+ * - Header navigation integration
+ * - Router outlet for page routing
+ * - Global loading states and notifications
+ * - Touch device optimizations
+ * - Safe area support for mobile devices
+ * - Landscape orientation handling
+ * 
+ * @responsive
+ * - Mobile (< 768px): Full-width layout, hidden sidebar
+ * - Tablet (768px - 1024px): Reduced sidebar width
+ * - Desktop (> 1024px): Full sidebar layout
+ * 
+ * @accessibility
+ * - Touch scrolling optimizations
+ * - Safe area padding for notched devices
+ * - Overscroll behavior controls
+ * 
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-shell',
   standalone: true,
@@ -146,20 +188,43 @@ import { GlobalLoaderComponent } from '../../global-loader/global-loader.compone
   `]
 })
 export class AppShellComponent implements OnInit, OnDestroy {
+  /** Subject for component cleanup */
   private destroy$ = new Subject<void>();
   
+  /** Observable for sidebar open/closed state */
   isSidebarOpen$!: Observable<boolean>;
+  
+  /** Observable for sidebar width in pixels */
   sidebarWidth$!: Observable<number>;
   
+  /**
+   * Creates an instance of AppShellComponent
+   * 
+   * @param uiState - UI state service for layout state management
+   * 
+   * @description Initializes the component with UI state observables
+   * for responsive sidebar behavior and layout management.
+   */
   constructor(private uiState: UiStateService) {
     this.isSidebarOpen$ = this.uiState.isSidebarOpen$;
     this.sidebarWidth$ = this.uiState.sidebarWidth$;
   }
   
+  /**
+   * Component initialization lifecycle hook
+   * 
+   * @description Initializes app-wide settings and listeners.
+   * Currently minimal as layout is primarily reactive to UI state service.
+   */
   ngOnInit(): void {
     // Initialize any app-wide settings or listeners
   }
   
+  /**
+   * Component destruction lifecycle hook
+   * 
+   * @description Cleans up subscriptions and prevents memory leaks
+   */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();

@@ -7,34 +7,88 @@ import { Location } from '@angular/common';
 import { BambooModule } from '../../shared/bamboo.module';
 import { ApiService } from '../../core/services/api.service';
 
+/**
+ * Interface for batch file processing
+ * 
+ * @interface BatchFile
+ * @description Represents a file in the batch upload process with
+ * patient information, processing status, and progress tracking.
+ */
 interface BatchFile {
+  /** The actual file object */
   file: File;
+  
+  /** Original filename */
   filename: string;
+  
+  /** Extracted patient information from filename */
   patientInfo?: {
+    /** Patient ID */
     id: string;
+    /** Patient's paternal surname */
     apellido_paterno: string;
+    /** Patient's maternal surname */
     apellido_materno: string;
+    /** Patient's first name */
     nombre: string;
+    /** Medical record number */
     numero: string;
+    /** Document type (CONS/EMER) */
     tipo: string;
   };
+  
+  /** Current processing status */
   status: 'pending' | 'processing' | 'completed' | 'error';
-  progress: number; // 0-100 for progress bar
+  
+  /** Processing progress (0-100) */
+  progress: number;
+  
+  /** Processing start time */
   startTime?: Date;
+  
+  /** Processing completion time */
   completedTime?: Date;
+  
+  /** Error message if processing failed */
   error?: string;
-  estimatedTimeRemaining?: number; // in seconds
+  
+  /** Estimated time remaining in seconds */
+  estimatedTimeRemaining?: number;
 }
 
+/**
+ * Interface for batch upload session
+ * 
+ * @interface BatchUpload
+ * @description Represents a complete batch upload session with
+ * overall status, progress tracking, and file collection.
+ */
 interface BatchUpload {
+  /** Unique batch ID */
   id?: string;
+  
+  /** Overall batch status */
   status: 'pending' | 'processing' | 'completed' | 'failed';
+  
+  /** Total number of files in batch */
   total_files: number;
+  
+  /** Number of files currently processed */
   processed_files: number;
+  
+  /** Number of files successfully completed */
   completed_files: number;
+  
+  /** Number of files with errors */
   error_files: number;
+  
+  /** Array of batch files */
   files: BatchFile[];
+  
+  /** Batch processing start time */
   startTime?: Date;
+  
+  /** Estimated total processing time */
   estimatedTotalTime?: number;
 }
 
@@ -45,13 +99,43 @@ interface BatchUpload {
  * medical documents with automatic patient extraction and matching.
  * Provides drag & drop functionality and batch processing configuration.
  * 
+ * @example
+ * ```typescript
+ * // Used in admin route
+ * // Route: '/admin-bulk-upload'
+ * <app-admin-bulk-upload></app-admin-bulk-upload>
+ * 
+ * // Provides:
+ * // - Drag & drop file upload
+ * // - Batch processing of medical documents
+ * // - Patient information extraction
+ * // - Progress tracking and error handling
+ * ```
+ * 
  * @features
  * - Bulk document upload with drag & drop
  * - Automatic filename parsing for TecSalud format
- * - Patient matching and creation
- * - Processing type configuration
- * - Real-time progress tracking
- * - Responsive design for all devices
+ * - Patient information extraction from filenames
+ * - Batch processing with progress tracking
+ * - Error handling and retry mechanisms
+ * - Real-time progress indicators
+ * - File validation and filtering
+ * - Responsive design for mobile devices
+ * 
+ * @fileNameFormat
+ * Expected format: `{ID}_{APELLIDO_PATERNO}, {APELLIDO_MATERNO}_{NOMBRE}_{NUMERO}_{TIPO}.pdf`
+ * Example: `3000003799_GARZA TIJERINA, MARIA ESTHER_6001467010_CONS.pdf`
+ * 
+ * @supportedTypes
+ * - PDF documents (.pdf)
+ * - Images (.jpg, .jpeg, .png)
+ * - Office documents (.doc, .docx)
+ * 
+ * @processingStates
+ * - pending: File queued for processing
+ * - processing: Currently being processed
+ * - completed: Successfully processed
+ * - error: Processing failed
  * 
  * @since 1.0.0
  */
@@ -736,30 +820,67 @@ interface BatchUpload {
   `]
 })
 export class AdminBulkUploadComponent implements OnInit {
+  /** API service for backend communication */
   private apiService = inject(ApiService);
+  
+  /** Router for navigation */
   private router = inject(Router);
+  
+  /** Location service for history navigation */
   private location = inject(Location);
   
+  /** Array of files in the current batch */
   batchFiles: BatchFile[] = [];
+  
+  /** Current batch upload session */
   batchUpload: BatchUpload | null = null;
   
+  /** Flag indicating if drag operation is over drop zone */
   isDragOver = false;
+  
+  /** Flag indicating if batch processing is in progress */
   isProcessing = false;
 
+  /**
+   * Component initialization lifecycle hook
+   * 
+   * @description Initializes the component and logs initialization
+   */
   ngOnInit(): void {
     console.log('🔧 Admin Bulk Upload Component initialized - MVP Mode');
   }
 
+  /**
+   * Handles drag over events for the drop zone
+   * 
+   * @param event - DragEvent from the drag operation
+   * 
+   * @description Prevents default browser behavior and sets drag over state
+   */
   onDragOver(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver = true;
   }
 
+  /**
+   * Handles drag leave events for the drop zone
+   * 
+   * @param event - DragEvent from the drag operation
+   * 
+   * @description Prevents default browser behavior and clears drag over state
+   */
   onDragLeave(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver = false;
   }
 
+  /**
+   * Handles file drop events for the drop zone
+   * 
+   * @param event - DragEvent containing the dropped files
+   * 
+   * @description Processes dropped files and adds them to batch
+   */
   onDrop(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver = false;
@@ -768,6 +889,13 @@ export class AdminBulkUploadComponent implements OnInit {
     this.processFiles(files);
   }
 
+  /**
+   * Handles file selection from file input
+   * 
+   * @param event - File input change event
+   * 
+   * @description Processes selected files and adds them to batch
+   */
   onFileSelected(event: any): void {
     const files = Array.from(event.target.files || []) as File[];
     this.processFiles(files);

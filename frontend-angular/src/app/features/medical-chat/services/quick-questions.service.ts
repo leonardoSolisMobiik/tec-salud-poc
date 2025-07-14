@@ -2,24 +2,80 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { Patient } from '@core/models';
 
+/**
+ * Interface for quick question items in medical chat
+ * 
+ * @interface QuickQuestion
+ * @description Defines the structure for pre-defined medical questions that can be
+ * quickly selected by users to speed up medical consultations and ensure comprehensive care.
+ */
 export interface QuickQuestion {
+  /** Unique identifier for the question */
   id: string;
+  /** Display text for the question */
   text: string;
+  /** Emoji icon representing the question category */
   icon: string;
+  /** Medical category classification */
   category: 'diagnosis' | 'symptoms' | 'treatment' | 'medication' | 'tests' | 'emergency' | 'follow-up' | 'prevention';
+  /** Priority level for question ordering */
   priority: 'high' | 'medium' | 'low';
+  /** Whether question adapts to patient context */
   contextual: boolean;
+  /** Whether question is relevant to specific age groups */
   ageRelevant?: boolean;
+  /** Whether question is relevant to specific genders */
   genderRelevant?: boolean;
 }
 
+/**
+ * Service for managing contextual quick questions in medical chat
+ * 
+ * @description Provides intelligent quick question suggestions based on patient context,
+ * medical priorities, and user patterns. Includes automatic rotation of questions
+ * and contextual filtering based on patient demographics and medical history.
+ * 
+ * @example
+ * ```typescript
+ * constructor(private quickQuestions: QuickQuestionsService) {}
+ * 
+ * // Get contextual questions for a patient
+ * const questions = this.quickQuestions.getContextualQuestions(patient, 6);
+ * console.log('Suggested questions:', questions);
+ * 
+ * // Start automatic rotation
+ * this.quickQuestions.startRotation(patient);
+ * 
+ * // Subscribe to current questions
+ * this.quickQuestions.getCurrentQuestions().subscribe(questions => {
+ *   this.displayQuestions = questions;
+ * });
+ * ```
+ * 
+ * @features
+ * - Context-aware question suggestions
+ * - Automatic question rotation every 10 seconds
+ * - Priority-based question ordering
+ * - Age and gender-specific filtering
+ * - 8 medical categories coverage
+ * - Integration with existing chat templates
+ * 
+ * @since 1.0.0
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class QuickQuestionsService {
-  private rotationInterval = 10000; // 10 seconds
+  /** Rotation interval in milliseconds (10 seconds) */
+  private rotationInterval = 10000;
+  
+  /** Maximum number of questions to display simultaneously */
   private maxVisible = 8;
+  
+  /** BehaviorSubject for current question set */
   private currentQuestions$ = new BehaviorSubject<QuickQuestion[]>([]);
+  
+  /** Timer reference for question rotation */
   private rotationTimer: any;
 
   // Reutilizando y extendiendo preguntas existentes de chat-input.component.ts y medical-chat.component.ts
@@ -53,18 +109,52 @@ export class QuickQuestionsService {
     { id: 'q20', text: '¿Necesita interconsulta especializada?', icon: '👨‍⚕️', category: 'treatment', priority: 'medium', contextual: true }
   ];
 
+  /**
+   * Creates an instance of QuickQuestionsService
+   */
   constructor() {}
 
   /**
-   * Get current questions observable
+   * Gets the current questions observable stream
+   * 
+   * @returns Observable that emits the current set of visible questions
+   * 
+   * @description Provides a reactive stream of questions that updates automatically
+   * during rotation cycles. Use this to subscribe to question changes in components.
+   * 
+   * @example
+   * ```typescript
+   * this.quickQuestions.getCurrentQuestions().subscribe(questions => {
+   *   this.visibleQuestions = questions;
+   *   this.cdr.detectChanges();
+   * });
+   * ```
    */
   getCurrentQuestions(): Observable<QuickQuestion[]> {
     return this.currentQuestions$.asObservable();
   }
 
   /**
-   * Generate contextual questions based on patient data
-   * Reutiliza la lógica existente pero la hace contextual
+   * Generates contextual questions based on patient data
+   * 
+   * @param patient - Patient object to contextualize questions for
+   * @param maxCount - Maximum number of questions to return (default: 8)
+   * @returns Array of contextual questions sorted by priority
+   * 
+   * @description Filters and prioritizes questions based on patient demographics,
+   * medical history, and contextual relevance. High-priority questions appear first,
+   * followed by medium and low priority questions.
+   * 
+   * @example
+   * ```typescript
+   * const patient: Patient = { id: '123', age: 65, gender: 'M', ... };
+   * const questions = this.getContextualQuestions(patient, 6);
+   * 
+   * // Returns age-relevant questions for elderly male patient:
+   * // - High priority: diagnosis, symptoms, emergency
+   * // - Medium priority: treatment, medication adjustments
+   * // - Low priority: prevention, follow-up
+   * ```
    */
   getContextualQuestions(patient: Patient, maxCount: number = 8): QuickQuestion[] {
     let questions = [...this.baseQuestions];
@@ -85,7 +175,21 @@ export class QuickQuestionsService {
   }
 
   /**
-   * Start automatic rotation
+   * Starts automatic rotation of questions for a patient
+   * 
+   * @param patient - Patient context for question filtering
+   * 
+   * @description Begins automatic question rotation every 10 seconds with questions
+   * filtered and prioritized for the given patient. Automatically stops any existing
+   * rotation before starting a new one.
+   * 
+   * @example
+   * ```typescript
+   * // Start rotation when patient is selected
+   * onPatientSelected(patient: Patient) {
+   *   this.quickQuestions.startRotation(patient);
+   * }
+   * ```
    */
   startRotation(patient: Patient): void {
     this.stopRotation();
@@ -100,7 +204,18 @@ export class QuickQuestionsService {
   }
 
   /**
-   * Stop automatic rotation
+   * Stops the automatic question rotation
+   * 
+   * @description Clears the rotation timer and stops automatic question updates.
+   * Call this when navigating away from chat or when patient context changes.
+   * 
+   * @example
+   * ```typescript
+   * // Stop rotation when leaving chat
+   * ngOnDestroy() {
+   *   this.quickQuestions.stopRotation();
+   * }
+   * ```
    */
   stopRotation(): void {
     if (this.rotationTimer) {
@@ -110,14 +225,25 @@ export class QuickQuestionsService {
   }
 
   /**
-   * Manually rotate questions
+   * Manually triggers question rotation for a patient
+   * 
+   * @param patient - Patient context for new question set
+   * 
+   * @description Forces an immediate update of the question set without waiting
+   * for the automatic rotation timer. Useful for manual refresh actions.
    */
   rotateQuestions(patient: Patient): void {
     this.updateQuestions(patient);
   }
 
   /**
-   * Update current questions
+   * Updates the current question set and emits new questions
+   * 
+   * @param patient - Patient context for question filtering
+   * @private
+   * 
+   * @description Internal method that generates new contextual questions
+   * and updates the observable stream with the latest question set.
    */
   private updateQuestions(patient: Patient): void {
     const newQuestions = this.getContextualQuestions(patient, this.maxVisible);
@@ -125,7 +251,17 @@ export class QuickQuestionsService {
   }
 
   /**
-   * Filter questions by patient context
+   * Filters questions based on patient demographics and context
+   * 
+   * @param questions - Full question set to filter
+   * @param patient - Patient object with demographic data
+   * @returns Filtered questions relevant to the patient
+   * @private
+   * 
+   * @description Applies contextual filtering based on patient age, gender,
+   * and other demographic factors. Age-relevant questions are filtered for
+   * pediatric (<18) and geriatric (>65) patients. Gender-relevant questions
+   * are filtered based on patient gender.
    */
   private filterByPatientContext(questions: QuickQuestion[], patient: Patient): QuickQuestion[] {
     return questions.filter(q => {
@@ -149,7 +285,21 @@ export class QuickQuestionsService {
   }
 
   /**
-   * Get category icon for backward compatibility
+   * Gets the appropriate emoji icon for a medical category
+   * 
+   * @param category - Medical category name
+   * @returns Emoji icon representing the category
+   * 
+   * @description Maps medical categories to their corresponding emoji icons
+   * for consistent visual representation. Returns a fallback question mark
+   * icon for unrecognized categories.
+   * 
+   * @example
+   * ```typescript
+   * const icon = this.getCategoryIcon('diagnosis'); // Returns '🩺'
+   * const icon = this.getCategoryIcon('emergency'); // Returns '🚨'
+   * const icon = this.getCategoryIcon('unknown');   // Returns '❓'
+   * ```
    */
   getCategoryIcon(category: string): string {
     const icons: { [key: string]: string } = {
@@ -166,7 +316,17 @@ export class QuickQuestionsService {
   }
 
   /**
-   * Clean up resources
+   * Cleans up service resources and stops rotation
+   * 
+   * @description Lifecycle method to properly clean up the rotation timer
+   * and prevent memory leaks. Should be called when the service is destroyed.
+   * 
+   * @example
+   * ```typescript
+   * // Called automatically by Angular when service is destroyed
+   * // Or call manually when needed:
+   * this.quickQuestions.ngOnDestroy();
+   * ```
    */
   ngOnDestroy(): void {
     this.stopRotation();

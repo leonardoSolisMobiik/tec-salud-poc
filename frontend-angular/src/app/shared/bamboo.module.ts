@@ -1,36 +1,36 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-// Importar componentes DISPONIBLES en Bamboo DS v1.5.5
+// Import available components from Bamboo DS v1.5.5
 import { 
-  BmbCardComponent,          // ✅ Cards para pacientes - ERROR RESUELTO
-  BmbCardButtonComponent,    // ✅ Botones de card con estilos Bamboo
-  BmbBadgeComponent,         // ✅ Badges para status
-  BmbIconComponent,          // ✅ Iconografía estándar
-  BmbToastComponent,         // ✅ Notificaciones
-  BmbLoaderComponent,        // ✅ Estados de carga
-  BmbDividerComponent,       // ✅ Separadores
-  BmbContainerComponent,     // ✅ Contenedores
-  // BmbInputComponent,         // ❌ No disponible - usar input nativo con estilos
-  // BmbSelectComponent,        // ❌ No disponible - usar select nativo con estilos
-  // BmbTextareaComponent,      // ❌ No disponible - usar textarea nativo con estilos
-  // BmbButtonComponent,        // ❌ No disponible - usar BmbCardButtonComponent
-  // BmbSearchInputComponent,   // ❌ Removido - usar input nativo con estilos
+  BmbCardComponent,          // ✅ Cards for patients - ERROR RESOLVED
+  BmbCardButtonComponent,    // ✅ Card buttons with Bamboo styling
+  BmbBadgeComponent,         // ✅ Status badges
+  BmbIconComponent,          // ✅ Standard iconography
+  BmbToastComponent,         // ✅ Notifications
+  BmbLoaderComponent,        // ✅ Loading states
+  BmbDividerComponent,       // ✅ Separators
+  BmbContainerComponent,     // ✅ Containers
+  // BmbInputComponent,         // ❌ Not available - use native input with styles
+  // BmbSelectComponent,        // ❌ Not available - use native select with styles
+  // BmbTextareaComponent,      // ❌ Not available - use native textarea with styles
+  // BmbButtonComponent,        // ❌ Not available - use BmbCardButtonComponent
+  // BmbSearchInputComponent,   // ❌ Removed - use native input with styles
 } from '@ti-tecnologico-de-monterrey-oficial/ds-ng';
 
 // Import our custom medical icon component
 import { MedicalIconComponent } from './components/icons/medical-icon.component';
 
-// COMPONENTES BAMBOO DISPONIBLES
+// Available Bamboo components
 const BAMBOO_COMPONENTS = [
-  BmbCardComponent,           // ✅ Cards para contenido
-  BmbCardButtonComponent,     // ✅ Botones estandarizados
-  BmbBadgeComponent,          // ✅ Badges de estado
-  BmbIconComponent,           // ✅ Iconografía
-  BmbToastComponent,          // ✅ Notificaciones
+  BmbCardComponent,           // ✅ Content cards
+  BmbCardButtonComponent,     // ✅ Standardized buttons
+  BmbBadgeComponent,          // ✅ Status badges
+  BmbIconComponent,           // ✅ Iconography
+  BmbToastComponent,          // ✅ Notifications
   BmbLoaderComponent,         // ✅ Loading states
-  BmbDividerComponent,        // ✅ Separadores
-  BmbContainerComponent,      // ✅ Contenedores
+  BmbDividerComponent,        // ✅ Separators
+  BmbContainerComponent,      // ✅ Containers
 ];
 
 const CUSTOM_COMPONENTS = [
