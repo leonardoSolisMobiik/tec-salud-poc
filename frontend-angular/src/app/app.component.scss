@@ -2089,3 +2089,159 @@ body .app-container .main-panel .main-header .header-actions .nav-dropdown-conta
     box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3) !important;
   }
 }
+
+/* 📱 RESPONSIVE LAYOUT FOR SMALL SCREENS */
+@media (max-width: 950px) {
+  .input-container {
+    display: flex !important;
+    flex-direction: column !important; /* ✅ STACK VERTICALLY ON SMALL SCREENS */
+    gap: var(--bmb-spacing-s, 0.75rem) !important; /* ✅ REDUCED GAP FOR VERTICAL LAYOUT */
+  }
+
+  .message-input {
+    flex: 1 !important;
+    width: 100% !important;
+    order: 1 !important; /* ✅ INPUT FIRST */
+  }
+
+  .send-button-premium {
+    order: 2 !important; /* ✅ BUTTON SECOND (BELOW INPUT) */
+    width: 100% !important; /* ✅ FULL WIDTH ON MOBILE */
+    min-width: auto !important;
+    height: 44px !important; /* ✅ SLIGHTLY TALLER FOR EASIER TOUCH */
+    font-size: 1rem !important; /* ✅ LARGER TEXT FOR MOBILE */
+    
+    .btn-content-premium {
+      justify-content: center !important;
+      
+      .premium-btn-text {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+      }
+      
+      .airplane-icon {
+        width: 20px !important;
+        height: 20px !important;
+      }
+    }
+  }
+}
+
+/* 📟 MEDIUM SCREENS - TABLET */
+@media (max-width: 1200px) and (min-width: 951px) {
+  .input-container {
+    gap: var(--bmb-spacing-s, 0.75rem) !important; /* ✅ REDUCED GAP FOR TABLET */
+  }
+
+  .send-button-premium {
+    min-width: 90px !important; /* ✅ SLIGHTLY SMALLER ON TABLET */
+    
+    .btn-content-premium {
+      gap: var(--bmb-spacing-xs, 0.5rem) !important;
+      
+      .premium-btn-text {
+        font-size: 0.8rem !important;
+      }
+      
+      .airplane-icon {
+        width: 16px !important;
+        height: 16px !important;
+      }
+    }
+  }
+}
+
+/* 🔙 GLOBAL BACK BUTTON STYLES - CONSISTENT ACROSS ALL SCREENS */
+.back-button-global,
+.back-link,
+.back-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: var(--bmb-spacing-xs, 0.5rem) !important;
+  background: var(--general_contrasts-input-background, #ffffff) !important;
+  border: 1px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+  border-radius: var(--bmb-radius-s, 0.5rem) !important;
+  padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem) !important;
+  color: var(--general_contrasts-100, #1f2937) !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  font-size: 0.875rem !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  margin-bottom: var(--bmb-spacing-s, 0.75rem) !important;
+  
+  &:hover {
+    background: var(--general_contrasts-25, #f3f4f6) !important;
+    border-color: rgb(var(--color-blue-tec, 0, 57, 166)) !important;
+    transform: translateX(-2px) !important;
+    color: rgb(var(--color-blue-tec, 0, 57, 166)) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .back-icon,
+  .back-text {
+    font-size: 0.875rem !important;
+    line-height: 1 !important;
+  }
+}
+
+/* 📱 RESPONSIVE BACK BUTTON FOR SMALL SCREENS */
+@media (max-width: 950px) {
+  .back-button-global,
+  .back-link,
+  .back-button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: var(--bmb-spacing-m, 1rem) !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    margin-bottom: var(--bmb-spacing-m, 1rem) !important;
+    background: linear-gradient(135deg, 
+      var(--general_contrasts-15, #f9fafb) 0%, 
+      var(--general_contrasts-25, #f3f4f6) 100%
+    ) !important;
+    border: 2px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
+    border-radius: var(--bmb-radius-m, 1rem) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    
+    &:hover {
+      background: linear-gradient(135deg, 
+        rgba(var(--color-blue-tec, 0, 57, 166), 0.1) 0%, 
+        rgba(var(--color-blue-tec, 0, 57, 166), 0.05) 100%
+      ) !important;
+      border-color: rgb(var(--color-blue-tec, 0, 57, 166)) !important;
+      transform: translateY(-2px) !important;
+      box-shadow: 0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.2) !important;
+    }
+    
+    .back-icon,
+    .back-text {
+      font-size: 1rem !important;
+      font-weight: 600 !important;
+    }
+    
+    /* ✅ ICON ANIMATION ON MOBILE */
+    .back-icon {
+      transition: transform 0.2s ease !important;
+    }
+    
+    &:hover .back-icon {
+      transform: translateX(-4px) !important;
+    }
+  }
+}
+
+/* 📟 MEDIUM SCREENS - TABLET */
+@media (max-width: 1200px) and (min-width: 951px) {
+  .back-button-global,
+  .back-link,
+  .back-button {
+    padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-l, 1.5rem) !important;
+    font-size: 0.9rem !important;
+    
+    .back-icon,
+    .back-text {
+      font-size: 0.9rem !important;
+    }
+  }
+}

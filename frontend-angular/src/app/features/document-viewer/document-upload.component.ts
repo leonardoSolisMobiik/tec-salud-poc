@@ -34,19 +34,20 @@ interface DocumentUpload {
   standalone: true,
   imports: [CommonModule, FormsModule, BambooModule],
   template: `
-    <div class="document-upload-container">
+    <div class="global-container">
       <!-- Header -->
-      <div class="upload-header">
+      <div class="global-header">
         <div class="header-top">
           <button 
-            class="back-button"
+            class="global-back-button"
             (click)="goBack()"
             title="Volver">
-            ← Volver
+            <span class="back-icon">←</span>
+            <span class="back-text">Volver</span>
           </button>
           <div class="title-container">
-            <h1 class="upload-title">📤 Subir Expedientes Médicos</h1>
-            <div class="upload-subtitle">
+            <h1 class="main-title">📤 Subir Expedientes Médicos</h1>
+            <div class="main-subtitle">
               Vectorización automática con IA para búsqueda inteligente
             </div>
           </div>
@@ -56,9 +57,9 @@ interface DocumentUpload {
       <!-- Upload Area -->
       <div class="upload-section">
         
-        <!-- Drag & Drop Zone -->
+        <!-- Drag & Drop Zone usando sistema estandarizado -->
         <div 
-          class="drop-zone"
+          class="drop-zone-full"
           [class.drag-over]="isDragOver"
           [class.has-files]="selectedFiles.length > 0"
           (dragover)="onDragOver($event)"
@@ -66,15 +67,13 @@ interface DocumentUpload {
           (drop)="onDrop($event)"
           (click)="fileInput.click()">
           
-          <div class="drop-zone-content">
-            <div class="upload-icon">📁</div>
-            <h3>Arrastra documentos aquí</h3>
-            <p>o haz clic para seleccionar archivos</p>
-            <div class="supported-formats">
-              <span class="format-badge">PDF</span>
-              <span class="format-badge">DOCX</span>
-              <span class="format-badge">TXT</span>
-            </div>
+          <div class="drop-icon">📁</div>
+          <h3 class="drop-title">Arrastra documentos aquí</h3>
+          <p class="drop-subtitle">o haz clic para seleccionar archivos</p>
+          <div class="format-badges">
+            <span class="format-badge">PDF</span>
+            <span class="format-badge">DOCX</span>
+            <span class="format-badge">TXT</span>
           </div>
           
           <input 
@@ -83,7 +82,7 @@ interface DocumentUpload {
             multiple
             accept=".pdf,.docx,.doc,.txt"
             (change)="onFileSelected($event)"
-            style="display: none;">
+            class="file-input-hidden">
         </div>
 
         <!-- Configuration Panel -->
@@ -301,93 +300,7 @@ interface DocumentUpload {
       margin: 0 auto var(--bmb-spacing-xl) auto;
     }
 
-    .drop-zone {
-      border: 2px dashed var(--general_contrasts-container-outline);
-      border-radius: var(--bmb-radius-m);
-      background: var(--general_contrasts-15);
-      padding: var(--bmb-spacing-xxl);
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-      overflow: hidden;
-      
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, 
-          transparent 0%, 
-          rgba(var(--color-blue-tec), 0.1) 50%, 
-          transparent 100%
-        );
-        transition: left 0.6s ease;
-      }
-      
-      &:hover {
-        border-color: rgb(var(--color-blue-tec));
-        background: linear-gradient(135deg, 
-          var(--general_contrasts-15) 0%, 
-          rgb(var(--color-mariner-50)) 100%
-        );
-        transform: translateY(-4px);
-        
-        &::before {
-          left: 100%;
-        }
-      }
-      
-      &.drag-over {
-        border-color: rgb(var(--color-blue-tec));
-        background: rgb(var(--color-mariner-50));
-        transform: scale(1.02);
-      }
-      
-      &.has-files {
-        border-color: var(--semantic-success);
-        background: rgba(76, 175, 80, 0.1);
-      }
-    }
-
-    .drop-zone-content {
-      .upload-icon {
-        font-size: 4rem;
-        margin-bottom: var(--bmb-spacing-m);
-        filter: grayscale(0.3);
-      }
-      
-      h3 {
-        color: var(--general_contrasts-100);
-        margin: 0 0 var(--bmb-spacing-s) 0;
-        font-size: 1.5rem;
-        font-weight: 600;
-      }
-      
-      p {
-        color: var(--general_contrasts-75);
-        margin: 0 0 var(--bmb-spacing-m) 0;
-        font-size: 1.1rem;
-      }
-    }
-
-    .supported-formats {
-      display: flex;
-      justify-content: center;
-      gap: var(--bmb-spacing-s);
-      margin-top: var(--bmb-spacing-m);
-      
-      .format-badge {
-        background: var(--buttons-primary-normal);
-        color: white;
-        padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
-        border-radius: var(--bmb-radius-s);
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-    }
+    /* 🗑️ Estilos eliminados - Ahora usa .drop-zone-full global */
 
     .config-panel {
       background: var(--general_contrasts-15);
@@ -685,34 +598,7 @@ interface DocumentUpload {
         margin-bottom: var(--bmb-spacing-l) !important;
         padding: 0 !important;
         
-        .drop-zone {
-          min-height: 120px !important;
-          padding: var(--bmb-spacing-m) !important;
-          margin-bottom: var(--bmb-spacing-m) !important;
-          
-          .drop-zone-content {
-            h3 {
-              font-size: 1rem !important;
-              margin: var(--bmb-spacing-s) 0 !important;
-            }
-            
-            p {
-              font-size: 0.85rem !important;
-              margin-bottom: var(--bmb-spacing-s) !important;
-            }
-            
-            .supported-formats {
-              display: flex !important;
-              justify-content: center !important;
-              gap: var(--bmb-spacing-xs) !important;
-              
-              .format-badge {
-                font-size: 0.7rem !important;
-                padding: 2px 6px !important;
-              }
-            }
-          }
-        }
+        /* 🗑️ Estilos eliminados - Ahora usa .drop-zone-full global con responsive */
         
         /* ✅ FORCE MOBILE CONFIG PANEL */
         .config-panel {

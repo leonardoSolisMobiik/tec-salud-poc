@@ -37,20 +37,21 @@ interface SearchResult {
   standalone: true,
   imports: [CommonModule, FormsModule, BambooModule],
   template: `
-    <div class="document-list-container">
+    <div class="global-container">
       
       <!-- Header -->
-      <div class="list-header">
+      <div class="global-header">
         <div class="header-top">
           <button 
-            class="back-button"
+            class="global-back-button"
             (click)="goBack()"
             title="Volver">
-            ← Volver
+            <span class="back-icon">←</span>
+            <span class="back-text">Volver</span>
           </button>
           <div class="title-container">
-            <h1 class="list-title">📚 Expedientes Vectorizados</h1>
-            <div class="list-subtitle">
+            <h1 class="main-title">📚 Expedientes Vectorizados</h1>
+            <div class="main-subtitle">
               Documentos indexados para búsqueda inteligente
             </div>
           </div>
@@ -724,6 +725,48 @@ interface SearchResult {
         
         &:hover {
           background: rgba(244, 67, 54, 0.2);
+        }
+      }
+    }
+
+    /* ✅ RESPONSIVE LAYOUT FOR SMALL SCREENS */
+    @media (max-width: 950px) {
+      .document-list-container {
+        padding: var(--bmb-spacing-s) !important;
+        padding-bottom: calc(var(--bmb-spacing-xxl) + var(--bmb-spacing-l)) !important;
+        max-height: 100vh !important;
+        overflow-y: auto !important;
+      }
+      
+      /* ✅ FORCE MOBILE HEADER LAYOUT */
+      .list-header {
+        margin-bottom: var(--bmb-spacing-m) !important;
+        
+        .header-top {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          gap: var(--bmb-spacing-s) !important;
+          
+          .back-button {
+            margin-right: 0 !important;
+            margin-bottom: var(--bmb-spacing-s) !important;
+            order: 1 !important;
+          }
+          
+          .title-container {
+            order: 2 !important;
+            text-align: center !important;
+            
+            .list-title {
+              font-size: 1.3rem !important;
+              margin-bottom: var(--bmb-spacing-xs) !important;
+            }
+            
+            .list-subtitle {
+              font-size: 0.9rem !important;
+            }
+          }
         }
       }
     }

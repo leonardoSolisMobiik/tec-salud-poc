@@ -23,23 +23,42 @@ interface PillFormData {
 @Component({
   selector: 'app-admin-pills-manager',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   template: `
-    <div class="admin-container">
+    <div class="global-container">
       <!-- Header siguiendo patrón existente -->
-      <div class="admin-header">
-        <a routerLink="/dashboard" class="back-link">← Volver</a>
-        <h1>💊 Gestión de Pastillas Médicas</h1>
-        <button class="add-btn" (click)="openCreateModal()">
-          <span class="btn-icon">➕</span>
-          <span class="btn-text">Nueva Pastilla</span>
-        </button>
+      <div class="global-header">
+        <div class="header-top">
+          <button 
+            class="global-back-button"
+            (click)="goBack()"
+            title="Volver al dashboard">
+            <span class="back-icon">←</span>
+            <span class="back-text">Volver</span>
+          </button>
+          
+          <div class="title-container">
+            <h1 class="main-title">💊 Gestión de Pastillas</h1>
+            <div class="main-subtitle">
+              Administra las pastillas de preguntas rápidas para el chat médico
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <button class="add-btn" (click)="openCreateModal()">
+            <span class="btn-icon">➕</span>
+            <span class="btn-text">Nueva Pastilla</span>
+          </button>
+        </div>
       </div>
 
       <!-- Tabla simple siguiendo patrón existente -->
       <div class="admin-content">
-        <div class="pills-table-container">
-          <table class="pills-table" *ngIf="pills.length > 0">
+        <div class="global-admin-panel pills-table-container">
+          
+          <!-- Vista de tabla para pantallas grandes -->
+          <table class="pills-table desktop-view" *ngIf="pills.length > 0">
             <thead>
               <tr>
                 <th>Icono</th>
@@ -71,6 +90,49 @@ interface PillFormData {
             </tbody>
           </table>
 
+          <!-- Vista de tarjetas para pantallas pequeñas -->
+          <div class="pills-cards mobile-view" *ngIf="pills.length > 0">
+            <div class="pill-card" *ngFor="let pill of pills; trackBy: trackByPill">
+              
+              <!-- Card Header -->
+              <div class="card-header">
+                <div class="pill-icon">{{ pill.icon }}</div>
+                <div class="pill-text">{{ pill.text }}</div>
+              </div>
+              
+              <!-- Card Content -->
+              <div class="card-content">
+                <div class="pill-info">
+                  <div class="info-item">
+                    <span class="info-label">Categoría:</span>
+                    <span class="category-badge" [class]="'category-' + pill.category">
+                      {{ getCategoryLabel(pill.category) }}
+                    </span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Prioridad:</span>
+                    <span class="priority-badge" [class]="'priority-' + pill.priority">
+                      {{ getPriorityLabel(pill.priority) }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Card Actions -->
+                <div class="card-actions">
+                  <button class="action-btn edit-btn" (click)="openEditModal(pill)">
+                    <span>✏️</span>
+                    <span>Editar</span>
+                  </button>
+                  <button class="action-btn delete-btn" (click)="openDeleteModal(pill)">
+                    <span>🗑️</span>
+                    <span>Eliminar</span>
+                  </button>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+
           <div class="empty-state" *ngIf="pills.length === 0">
             <p>No hay pastillas configuradas.</p>
             <button class="add-btn" (click)="openCreateModal()">➕ Crear Primera Pastilla</button>
@@ -78,119 +140,129 @@ interface PillFormData {
         </div>
       </div>
 
-      <!-- Modal Create/Edit siguiendo patrón premium -->
+      <!-- Modal Create/Edit usando sistema estandarizado -->
       <div class="modal-overlay" *ngIf="showFormModal" (click)="closeFormModal()">
-        <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-content modal-md" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h3>{{ isEditMode ? '✏️ Editar Pastilla' : '➕ Nueva Pastilla' }}</h3>
-            <button class="close-btn" (click)="closeFormModal()">✕</button>
+            <h3 class="modal-title">{{ isEditMode ? '✏️ Editar Pastilla' : '➕ Nueva Pastilla' }}</h3>
+            <button class="modal-close" (click)="closeFormModal()">✕</button>
           </div>
 
-          <form class="pill-form" (ngSubmit)="savePill()" #pillForm="ngForm">
-            <div class="form-group">
-              <label for="pillText">Texto de la pregunta: *</label>
-              <input
-                type="text"
-                id="pillText"
-                name="pillText"
-                [(ngModel)]="formData.text"
-                required
-                maxlength="100"
-                placeholder="Ej: ¿Cuáles son los síntomas principales?"
-                class="form-input">
-            </div>
-
-            <div class="form-group">
-              <label for="pillIcon">Icono: *</label>
-              <div class="icon-selector">
+          <div class="modal-body">
+            <form class="modal-form" (ngSubmit)="savePill()" #pillForm="ngForm">
+              <div class="form-group">
+                <label class="form-label" for="pillText">Texto de la pregunta: *</label>
                 <input
                   type="text"
-                  id="pillIcon"
-                  name="pillIcon"
-                  [(ngModel)]="formData.icon"
+                  id="pillText"
+                  name="pillText"
+                  [(ngModel)]="formData.text"
                   required
-                  maxlength="2"
-                  placeholder="🩺"
-                  class="icon-input">
-                <div class="icon-options">
-                  <button 
-                    type="button" 
-                    *ngFor="let icon of iconOptions" 
-                    class="icon-option"
-                    [class.selected]="formData.icon === icon"
-                    (click)="selectIcon(icon)">
-                    {{ icon }}
-                  </button>
+                  maxlength="100"
+                  placeholder="Ej: ¿Cuáles son los síntomas principales?"
+                  class="form-input">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="pillIcon">Icono: *</label>
+                <div class="icon-selector">
+                  <input
+                    type="text"
+                    id="pillIcon"
+                    name="pillIcon"
+                    [(ngModel)]="formData.icon"
+                    required
+                    maxlength="2"
+                    placeholder="🩺"
+                    class="form-input">
+                  <div class="icon-options">
+                    <button 
+                      type="button" 
+                      *ngFor="let icon of iconOptions" 
+                      class="icon-option"
+                      [class.selected]="formData.icon === icon"
+                      (click)="selectIcon(icon)">
+                      {{ icon }}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label for="pillCategory">Categoría: *</label>
-                <select
-                  id="pillCategory"
-                  name="pillCategory"
-                  [(ngModel)]="formData.category"
-                  required
-                  class="form-select">
-                  <option value="">Seleccionar...</option>
-                  <option value="diagnosis">Diagnóstico</option>
-                  <option value="symptoms">Síntomas</option>
-                  <option value="treatment">Tratamiento</option>
-                  <option value="medication">Medicamentos</option>
-                  <option value="tests">Exámenes</option>
-                  <option value="emergency">Emergencia</option>
-                  <option value="follow-up">Seguimiento</option>
-                  <option value="prevention">Prevención</option>
-                </select>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="pillCategory">Categoría: *</label>
+                  <select
+                    id="pillCategory"
+                    name="pillCategory"
+                    [(ngModel)]="formData.category"
+                    required
+                    class="form-select">
+                    <option value="general">General</option>
+                    <option value="emergency">Emergencia</option>
+                    <option value="prevention">Prevención</option>
+                    <option value="medication">Medicación</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="pillPriority">Prioridad: *</label>
+                  <select
+                    id="pillPriority"
+                    name="pillPriority"
+                    [(ngModel)]="formData.priority"
+                    required
+                    class="form-select">
+                    <option value="high">Alta</option>
+                    <option value="medium">Media</option>
+                    <option value="low">Baja</option>
+                  </select>
+                </div>
               </div>
+            </form>
+          </div>
 
-              <div class="form-group">
-                <label for="pillPriority">Prioridad: *</label>
-                <select
-                  id="pillPriority"
-                  name="pillPriority"
-                  [(ngModel)]="formData.priority"
-                  required
-                  class="form-select">
-                  <option value="">Seleccionar...</option>
-                  <option value="high">Alta</option>
-                  <option value="medium">Media</option>
-                  <option value="low">Baja</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="form-actions">
-              <button type="button" class="cancel-btn" (click)="closeFormModal()">❌ Cancelar</button>
-              <button type="submit" class="save-btn" [disabled]="!pillForm.valid">💾 Guardar</button>
-            </div>
-          </form>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeFormModal()">
+              <span>❌</span>
+              <span>Cancelar</span>
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="!pillForm.valid" (click)="savePill()">
+              <span>💾</span>
+              <span>Guardar</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Modal Delete siguiendo patrón existente -->
+      <!-- Modal Delete usando sistema estandarizado -->
       <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
-        <div class="modal-content delete-modal" (click)="$event.stopPropagation()">
+        <div class="modal-content modal-sm modal-danger" (click)="$event.stopPropagation()">
           <div class="modal-header">
-            <h3>🗑️ Eliminar Pastilla</h3>
-            <button class="close-btn" (click)="closeDeleteModal()">✕</button>
+            <h3 class="modal-title">🗑️ Eliminar Pastilla</h3>
+            <button class="modal-close" (click)="closeDeleteModal()">✕</button>
           </div>
 
-          <div class="delete-content">
-            <div class="warning-icon">⚠️</div>
-            <p>¿Estás seguro de eliminar esta pastilla?</p>
-            <div class="pill-preview" *ngIf="pillToDelete">
-              <span class="preview-icon">{{ pillToDelete.icon }}</span>
-              <span class="preview-text">"{{ pillToDelete.text }}"</span>
+          <div class="modal-body">
+            <div class="confirmation-content">
+              <div class="warning-icon">⚠️</div>
+              <p class="confirmation-message">¿Estás seguro de eliminar esta pastilla?</p>
+              <div class="item-preview" *ngIf="pillToDelete">
+                <span class="preview-icon">{{ pillToDelete.icon }}</span>
+                <span class="preview-text">"{{ pillToDelete.text }}"</span>
+              </div>
+              <p class="warning-text">Esta acción no se puede deshacer.</p>
             </div>
-            <p class="warning-text">Esta acción no se puede deshacer.</p>
           </div>
 
-          <div class="form-actions">
-            <button type="button" class="cancel-btn" (click)="closeDeleteModal()">❌ Cancelar</button>
-            <button type="button" class="delete-confirm-btn" (click)="confirmDelete()">🗑️ Sí, eliminar</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+              <span>❌</span>
+              <span>Cancelar</span>
+            </button>
+            <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+              <span>🗑️</span>
+              <span>Sí, eliminar</span>
+            </button>
           </div>
         </div>
       </div>
@@ -380,309 +452,188 @@ interface PillFormData {
       margin-top: 1rem;
     }
 
-    /* Modal siguiendo patrón premium existente */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      backdrop-filter: blur(15px);
-    }
-
-    .modal-content {
-      background: #ffffff;
-      border-radius: var(--bmb-radius-m, 1rem);
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), 0 10px 20px rgba(0, 0, 0, 0.25);
-      max-width: 600px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      animation: modalFadeIn 0.3s ease-out;
-      border: 1px solid rgba(0, 0, 0, 0.1);
-    }
-
-    @keyframes modalFadeIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95) translateY(-30px);
-        filter: blur(2px);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-        filter: blur(0);
-      }
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--medical-divider);
-      background: linear-gradient(135deg, 
-        rgba(var(--color-blue-tec), 0.03) 0%, 
-        rgba(var(--color-blue-tec), 0.01) 100%
-      );
-      backdrop-filter: blur(10px);
-    }
-      
-    .modal-header h3 {
-      margin: 0;
-      color: var(--medical-blue);
-      font-weight: 600;
-      font-size: 1.25rem;
-    }
-
-    .close-btn {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--medical-text-secondary);
-      padding: 0.5rem;
-      border-radius: var(--bmb-radius-s);
-      transition: all 0.3s ease;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-      
-    .close-btn:hover {
-      background: rgba(var(--color-blue-tec), 0.1);
-      color: var(--medical-text-primary);
-      transform: scale(1.05);
-      box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.2);
-    }
-
-    /* Form styles siguiendo patrón premium */
-    .pill-form {
-      padding: 1.5rem;
-    }
-
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-      
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: var(--medical-text-primary);
-    }
-
+    /* 🎯 FORM ROW - ESPECÍFICO DEL COMPONENTE */
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: var(--bmb-spacing-m);
     }
 
-    .form-input, .form-select {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--medical-divider);
-      border-radius: var(--bmb-radius-s);
-      font-size: 1rem;
-      transition: all 0.2s;
-    }
-
-    .form-input:focus, .form-select:focus {
-      outline: none;
-      border-color: var(--medical-blue);
-      box-shadow: 0 0 0 3px rgba(var(--color-blue-tec), 0.1);
-    }
-
-    /* Icon selector premium */
-    .icon-selector {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .icon-input {
-      width: 80px;
-      text-align: center;
-      font-size: 1.5rem;
-    }
-
-    .icon-options {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 0.5rem;
-    }
-
-    .icon-option {
-      background: var(--medical-background);
-      border: 1px solid var(--medical-divider);
-      padding: 0.5rem;
-      border-radius: var(--bmb-radius-s);
-      cursor: pointer;
-      font-size: 1.25rem;
-      transition: all 0.2s;
-    }
-
-    .icon-option:hover, .icon-option.selected {
-      background: var(--medical-blue);
-      color: white;
-      transform: scale(1.1);
-    }
-
-    /* Form actions */
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--medical-divider);
-    }
-
-    .cancel-btn, .save-btn, .delete-confirm-btn {
-      padding: 0.75rem 1.5rem;
-      border: none;
-      border-radius: var(--bmb-radius-s);
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .cancel-btn {
-      background: var(--medical-background);
-      color: var(--medical-text-secondary);
-      border: 1px solid var(--medical-divider);
-    }
-
-    .cancel-btn:hover {
-      background: rgba(var(--color-blue-tec), 0.05);
-      border-color: rgba(var(--color-blue-tec), 0.2);
-      color: var(--medical-text-primary);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .save-btn {
-      background: linear-gradient(135deg, var(--medical-blue) 0%, rgba(var(--color-blue-tec), 0.9) 100%);
-      color: white;
-    }
-
-    .save-btn:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(var(--color-blue-tec), 0.2);
-    }
-      
-    .save-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .delete-confirm-btn {
-      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-      color: white;
-      border: 1px solid rgba(220, 38, 38, 0.3);
-    }
-
-    .delete-confirm-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
-      background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
-    }
-
-    /* Delete modal específico */
-    .delete-modal {
-      max-width: 450px;
-    }
-
-    .delete-content {
-      padding: 2rem;
-      text-align: center;
-    }
-      
-    .delete-content .warning-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      animation: warningPulse 2s infinite;
-    }
-
-    @keyframes warningPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
-      
-    .delete-content p {
-      margin: 1rem 0;
-      color: var(--medical-text-primary);
-      font-size: 1rem;
-      line-height: 1.5;
-    }
-      
-    .delete-content .warning-text {
-      color: var(--medical-text-secondary);
-      font-size: 0.875rem;
-      font-style: italic;
-    }
-
-    .pill-preview {
-      background: linear-gradient(135deg, 
-        rgba(var(--color-blue-tec), 0.05) 0%, 
-        rgba(var(--color-blue-tec), 0.02) 100%
-      );
-      padding: 1rem;
-      border-radius: var(--bmb-radius-s);
-      margin: 1rem 0;
-      border: 1px solid rgba(var(--color-blue-tec), 0.2);
-      backdrop-filter: blur(10px);
-    }
-      
-    .pill-preview .preview-icon {
-      font-size: 1.5rem;
-      margin-right: 0.5rem;
-    }
-      
-    .pill-preview .preview-text {
-      font-weight: 500;
-      color: var(--medical-blue);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .admin-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
-      }
-        
-      .admin-header h1 {
-        text-align: center;
-        font-size: 1.25rem;
-      }
-      
-      .pills-table {
-        font-size: 0.875rem;
-      }
-        
-      .pills-table .text-cell {
-        max-width: 200px;
-      }
-      
+    @media (max-width: 950px) {
       .form-row {
         grid-template-columns: 1fr;
       }
+    }
+
+    /* 📱 VISTA MÓVIL - TARJETAS RESPONSIVE */
+    .mobile-view {
+      display: none; /* Oculto por defecto, se muestra en móvil */
+    }
+    
+    .pills-cards {
+      display: flex;
+      flex-direction: column;
+      gap: var(--bmb-spacing-m);
+    }
+
+    .pill-card {
+      background: var(--general_contrasts-15);
+      border: 1px solid var(--general_contrasts-container-outline);
+      border-radius: var(--bmb-radius-m);
+      padding: var(--bmb-spacing-m);
+      transition: all 0.3s ease;
       
-      .icon-options {
-        grid-template-columns: repeat(6, 1fr);
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+      }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: var(--bmb-spacing-m);
+      margin-bottom: var(--bmb-spacing-m);
+      padding-bottom: var(--bmb-spacing-m);
+      border-bottom: 1px solid var(--general_contrasts-25);
+      
+      .pill-icon {
+        font-size: 2rem;
+        min-width: 50px;
+        text-align: center;
       }
       
-      .modal-content {
-        width: 95%;
-        margin: 1rem;
+      .pill-text {
+        flex: 1;
+        font-weight: 600;
+        color: var(--general_contrasts-100);
+        font-size: 1.1rem;
+        line-height: 1.4;
+      }
+    }
+
+    .card-content {
+      .pill-info {
+        margin-bottom: var(--bmb-spacing-m);
+        
+        .info-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: var(--bmb-spacing-s);
+          
+          .info-label {
+            font-weight: 500;
+            color: var(--general_contrasts-75);
+            font-size: 0.9rem;
+          }
+        }
+      }
+      
+      .card-actions {
+        display: flex;
+        gap: var(--bmb-spacing-s);
+        
+        .action-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--bmb-spacing-xs);
+          padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+          border-radius: var(--bmb-radius-s);
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          border: none;
+          font-size: 0.9rem;
+          
+          &.edit-btn {
+            background: rgba(var(--color-blue-tec), 0.1);
+            color: rgb(var(--color-blue-tec));
+            
+            &:hover {
+              background: rgba(var(--color-blue-tec), 0.2);
+              transform: translateY(-1px);
+            }
+          }
+          
+          &.delete-btn {
+            background: rgba(244, 67, 54, 0.1);
+            color: #EF4444;
+            
+            &:hover {
+              background: rgba(244, 67, 54, 0.2);
+              transform: translateY(-1px);
+            }
+          }
+        }
+      }
+    }
+
+    /* 📱 RESPONSIVE BREAKPOINTS */
+    @media (max-width: 950px) {
+      .desktop-view {
+        display: none !important; /* Ocultar tabla en móvil */
+      }
+      
+      .mobile-view {
+        display: block !important; /* Mostrar tarjetas en móvil */
+      }
+      
+      .global-admin-panel {
+        padding: var(--bmb-spacing-m) !important;
+      }
+    }
+
+    @media (min-width: 951px) {
+      .desktop-view {
+        display: table !important; /* Mostrar tabla en desktop */
+      }
+      
+      .mobile-view {
+        display: none !important; /* Ocultar tarjetas en desktop */
+      }
+    }
+
+    /* 🎯 ICON SELECTOR - ESPECÍFICO DEL COMPONENTE */
+    .icon-selector {
+      .icon-options {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: var(--bmb-spacing-s);
+        margin-top: var(--bmb-spacing-s);
+      }
+
+      .icon-option {
+        aspect-ratio: 1;
+        border: 2px solid var(--general_contrasts-25);
+        border-radius: var(--bmb-radius-s);
+        background: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--text-xl);
+        transition: all 0.2s ease;
+
+        &:hover {
+          border-color: rgb(var(--color-blue-tec));
+          background: rgba(var(--color-blue-tec), 0.05);
+          transform: scale(1.05);
+        }
+
+        &.selected {
+          border-color: rgb(var(--color-blue-tec));
+          background: rgba(var(--color-blue-tec), 0.1);
+        }
+      }
+    }
+
+    /* 📱 RESPONSIVE ESPECÍFICO */
+    @media (max-width: 950px) {
+      .icon-selector .icon-options {
+        grid-template-columns: repeat(6, 1fr);
       }
     }
   `]
@@ -844,5 +795,9 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   trackByPill(index: number, pill: QuickPillData): string {
     return pill.id;
+  }
+  
+  goBack(): void {
+    window.history.back();
   }
 } 

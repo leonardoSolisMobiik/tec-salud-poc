@@ -13,20 +13,25 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
   standalone: true,
   imports: [CommonModule, FormsModule, BambooModule, ProcessingChoiceComponent],
   template: `
-    <div class="demo-container">
+    <div class="global-container">
       
       <!-- Header -->
-      <div class="demo-header">
-        <button 
-          class="back-button"
-          (click)="goBack()"
-          title="Volver">
-          ← Volver
-        </button>
-        <h1 class="demo-title">⚡ Demostración de Tipos de Procesamiento</h1>
-        <p class="demo-subtitle">
-          Explora las diferentes opciones de procesamiento para documentos médicos
-        </p>
+      <div class="global-header">
+        <div class="header-top">
+          <button 
+            class="global-back-button"
+            (click)="goBack()"
+            title="Volver">
+            <span class="back-icon">←</span>
+            <span class="back-text">Volver</span>
+          </button>
+          <div class="title-container">
+            <h1 class="main-title">⚡ Demostración de Tipos de Procesamiento</h1>
+            <div class="main-subtitle">
+              Explora las diferentes opciones de procesamiento para documentos médicos
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Demo Section -->
@@ -493,6 +498,61 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
             font-weight: 600;
             font-size: 0.875rem;
           }
+        }
+      }
+    }
+
+    /* ✅ RESPONSIVE LAYOUT FOR SMALL SCREENS */
+    @media (max-width: 950px) {
+      .demo-container {
+        padding: var(--bmb-spacing-s) !important;
+        padding-bottom: calc(var(--bmb-spacing-xxl) + var(--bmb-spacing-l)) !important;
+        max-height: 100vh !important;
+        overflow-y: auto !important;
+      }
+      
+      /* ✅ FORCE MOBILE HEADER LAYOUT */
+      .demo-header {
+        margin-bottom: var(--bmb-spacing-m) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: var(--bmb-spacing-s) !important;
+        text-align: center !important;
+        
+        .back-button {
+          margin-right: 0 !important;
+          margin-bottom: var(--bmb-spacing-s) !important;
+          order: 1 !important;
+          background: var(--general_contrasts-15) !important;
+          border: 1px solid var(--general_contrasts-container-outline) !important;
+          border-radius: var(--bmb-radius-s) !important;
+          padding: var(--bmb-spacing-s) var(--bmb-spacing-m) !important;
+          color: var(--general_contrasts-100) !important;
+          cursor: pointer !important;
+          transition: all 0.3s ease !important;
+          text-decoration: none !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: var(--bmb-spacing-xs) !important;
+          border: none !important;
+          
+          &:hover {
+            background: var(--general_contrasts-25) !important;
+            transform: translateX(-4px) !important;
+          }
+        }
+        
+        .demo-title {
+          order: 2 !important;
+          font-size: 1.3rem !important;
+          margin: 0 !important;
+        }
+        
+        .demo-subtitle {
+          order: 3 !important;
+          font-size: 0.9rem !important;
+          margin: 0 !important;
         }
       }
     }

@@ -15,10 +15,24 @@ import { RouterLink } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="patients-container">
-      <div class="patients-header">
-        <a routerLink="/dashboard">← Volver</a>
-        <h1>Gestión de Pacientes</h1>
+    <div class="global-container">
+      <div class="global-header">
+        <div class="header-top">
+          <button 
+            class="global-back-button"
+            (click)="goBack()"
+            title="Volver al dashboard">
+            <span class="back-icon">←</span>
+            <span class="back-text">Volver</span>
+          </button>
+          
+          <div class="title-container">
+            <h1 class="main-title">👥 Gestión de Pacientes</h1>
+            <div class="main-subtitle">
+              Administra la información de los pacientes del sistema
+            </div>
+          </div>
+        </div>
       </div>
       
       <div class="patients-placeholder">
@@ -109,8 +123,58 @@ import { RouterLink } from '@angular/router';
       background: var(--medical-primary-dark);
       transform: translateY(-2px);
     }
+    
+    /* ✅ RESPONSIVE LAYOUT FOR SMALL SCREENS */
+    @media (max-width: 950px) {
+      .patients-container {
+        padding: var(--bmb-spacing-s) !important;
+      }
+      
+      /* ✅ FORCE MOBILE HEADER LAYOUT */
+      .patients-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: var(--bmb-spacing-s) !important;
+        padding: var(--bmb-spacing-m) !important;
+        
+        .back-button {
+          margin-right: 0 !important;
+          margin-bottom: var(--bmb-spacing-s) !important;
+          order: 1 !important;
+          background: var(--general_contrasts-15) !important;
+          border: 1px solid var(--general_contrasts-container-outline) !important;
+          border-radius: var(--bmb-radius-s) !important;
+          padding: var(--bmb-spacing-s) var(--bmb-spacing-m) !important;
+          color: var(--general_contrasts-100) !important;
+          cursor: pointer !important;
+          transition: all 0.3s ease !important;
+          text-decoration: none !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: var(--bmb-spacing-xs) !important;
+          border: none !important;
+          
+          &:hover {
+            background: var(--general_contrasts-25) !important;
+            transform: translateX(-4px) !important;
+          }
+        }
+        
+        h1 {
+          order: 2 !important;
+          text-align: center !important;
+          font-size: 1.3rem !important;
+          margin: 0 !important;
+        }
+      }
+    }
   `]
 })
 export class PatientManagementComponent {
   // Component has been commented out and is not available in the current version
+  
+  goBack(): void {
+    window.history.back();
+  }
 }

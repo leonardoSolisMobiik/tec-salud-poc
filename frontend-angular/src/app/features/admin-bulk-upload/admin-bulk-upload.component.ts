@@ -60,21 +60,21 @@ interface BatchUpload {
   standalone: true,
   imports: [CommonModule, FormsModule, BambooModule],
   template: `
-    <div class="admin-bulk-container">
+    <div class="global-container">
       <!-- Header -->
-      <div class="admin-header">
+      <div class="global-header">
         <div class="header-top">
           <button 
-            class="back-button"
+            class="global-back-button"
             (click)="goBack()"
             title="Volver al dashboard">
             <span class="back-icon">←</span>
             <span class="back-text">Volver</span>
           </button>
           
-          <div class="header-content">
-            <h1 class="admin-title">🔧 Carga Masiva de Expedientes</h1>
-            <div class="admin-subtitle">
+          <div class="title-container">
+            <h1 class="main-title">🔧 Carga Masiva de Expedientes</h1>
+            <div class="main-subtitle">
               Procesamiento automático con OCR → OneLake + Cosmos DB
             </div>
           </div>
@@ -84,9 +84,9 @@ interface BatchUpload {
       <!-- Premium Upload Interface -->
       <div class="premium-upload-interface">
         <div class="upload-row">
-          <!-- Compact Drop Zone -->
+          <!-- Compact Drop Zone usando sistema estandarizado -->
           <div 
-            class="compact-drop-zone"
+            class="drop-zone-compact"
           [class.drag-over]="isDragOver"
           [class.has-files]="batchFiles.length > 0"
           (dragover)="onDragOver($event)"
@@ -95,9 +95,12 @@ interface BatchUpload {
           (click)="fileInput.click()">
           
             <div class="drop-icon">📁</div>
-            <div class="drop-info">
+            <div class="drop-content">
               <div class="drop-title">Seleccionar Expedientes</div>
-              <div class="drop-subtitle">PDF • Formato TecSalud</div>
+              <div class="drop-subtitle">
+                <span class="format-badge">PDF</span>
+                <span> • Formato TecSalud</span>
+            </div>
           </div>
           
           <input 
@@ -106,14 +109,14 @@ interface BatchUpload {
             multiple
               accept=".pdf"
             (change)="onFileSelected($event)"
-            style="display: none;">
+              class="file-input-hidden">
         </div>
 
           <!-- Process Controls -->
           <div class="process-controls">
-            <div class="files-count" *ngIf="batchFiles.length > 0">
+            <div class="file-counter" *ngIf="batchFiles.length > 0">
               <span class="count-number">{{ batchFiles.length }}</span>
-              <span class="count-label">archivos listos</span>
+              <span class="count-label">expedientes</span>
             </div>
             
         <button 
@@ -156,87 +159,74 @@ interface BatchUpload {
               </div>
             </div>
 
-      <!-- Files List -->
-      <div class="files-list-container" *ngIf="batchFiles.length > 0">
-        <div class="list-header">
-          <div class="header-title">
-            <span class="title-text">Expedientes en Cola</span>
-            <span class="title-count">{{ batchFiles.length }}</span>
-            </div>
-              <button 
-            *ngIf="!isProcessing && hasPendingFiles()"
-            class="clear-pending-btn"
-            (click)="clearPendingFiles()">
-            Limpiar pendientes
-              </button>
-            </div>
-
-        <div class="list-content">
-          <div 
-            *ngFor="let file of batchFiles; trackBy: trackByFile; let i = index"
-            class="file-row"
-            [class.processing]="file.status === 'processing'"
-            [class.completed]="file.status === 'completed'"
-            [class.error]="file.status === 'error'">
-            
-            <div class="row-index">{{ i + 1 }}</div>
-            
-                          <div class="file-info">
-                <div class="file-name" [title]="file.filename">
-                  {{ truncateFilename(file.filename, 60) }}
-          </div>
-              <div class="patient-info" *ngIf="file.patientInfo">
-                {{ file.patientInfo.apellido_paterno }} {{ file.patientInfo.apellido_materno }}, {{ file.patientInfo.nombre }}
-          </div>
-          </div>
-            
-            <div class="status-info">
-              <div class="status-indicator" [ngSwitch]="file.status">
-                <span *ngSwitchCase="'pending'" class="status pending">⏳</span>
-                <span *ngSwitchCase="'processing'" class="status processing">
-                  <span class="spinner">⚡</span>
-                </span>
-                <span *ngSwitchCase="'completed'" class="status completed">✅</span>
-                <span *ngSwitchCase="'error'" class="status error">❌</span>
-        </div>
-
-              <div class="status-text" [ngSwitch]="file.status">
-                <span *ngSwitchCase="'pending'">Pendiente</span>
-                <span *ngSwitchCase="'processing'">Procesando OCR...</span>
-                <span *ngSwitchCase="'completed'">Completado</span>
-                <span *ngSwitchCase="'error'">Error</span>
+        <!-- Files List -->
+        <div class="files-section" *ngIf="batchFiles.length > 0">
+          <h3 class="files-title">📋 Expedientes Seleccionados</h3>
+          
+          <div class="file-list">
+            <div 
+              *ngFor="let file of batchFiles; trackBy: trackByFile"
+              class="file-item"
+              [class]="'status-' + file.status">
+              
+              <!-- File Info -->
+              <div class="file-info">
+                <div class="file-name">{{ truncateFilename(file.filename, 60) }}</div>
+                <div class="file-details">
+                  {{ file.patientInfo?.apellido_paterno }} {{ file.patientInfo?.apellido_materno }}, {{ file.patientInfo?.nombre }}
         </div>
       </div>
 
-            <div class="action-info">
-              <button 
-                *ngIf="file.status === 'pending' && !isProcessing"
-                class="remove-file-btn"
-                (click)="removeFile(file)"
-                title="Eliminar">
-                ×
-              </button>
-              
-              <span *ngIf="file.status === 'processing' && file.estimatedTimeRemaining" 
-                    class="time-remaining">
-                ~{{ file.estimatedTimeRemaining }}s
-              </span>
-              
-              <span *ngIf="file.status === 'completed' && file.completedTime" 
-                    class="time-completed">
-                {{ formatCompletionTime(file.completedTime) }}
-              </span>
-              
-              <span *ngIf="file.status === 'error'" 
-                    class="error-text" 
-                    [title]="file.error">
-                Error
-              </span>
-            </div>
+              <!-- Status & Progress -->
+              <div class="file-status">
+                <div *ngIf="file.status === 'pending'" class="status-pending">
+                  ⏳ Pendiente
+        </div>
+
+                <div *ngIf="file.status === 'processing'" class="status-uploading">
+        <div class="progress-bar">
+          <div 
+            class="progress-fill" 
+                      [style.width.%]="file.progress">
           </div>
+        </div>
+                  <span>{{ file.progress }}%</span>
+      </div>
+
+                <div *ngIf="file.status === 'completed'" class="status-success">
+                  ✅ Completado
+                </div>
+                
+                <div *ngIf="file.status === 'error'" class="status-error">
+                  ❌ Error
             </div>
           </div>
           
+              <!-- Actions -->
+              <div class="file-actions">
+                <button 
+                  *ngIf="file.status === 'pending' && !isProcessing"
+                  class="remove-button"
+                  (click)="removeFile(file)"
+                  title="Eliminar archivo">
+                  🗑️
+                </button>
+                
+                <span *ngIf="file.status === 'processing' && file.estimatedTimeRemaining" 
+                      class="time-remaining">
+                  ~{{ file.estimatedTimeRemaining }}s
+                </span>
+                
+                <span *ngIf="file.status === 'completed' && file.completedTime" 
+                      class="time-completed">
+                  {{ formatCompletionTime(file.completedTime) }}
+                </span>
+          </div>
+          
+            </div>
+          </div>
+        </div>
+
       <!-- Reduced spacing before completion summary when processing -->
       <div style="height: 10px;"></div>
 
@@ -254,7 +244,7 @@ interface BatchUpload {
             </p>
           </div>
         </div>
-        
+
         <div class="completion-actions">
           <button 
             class="action-btn primary"
@@ -277,99 +267,7 @@ interface BatchUpload {
     </div>
   `,
   styles: [`
-    /* 🎨 PREMIUM CONTAINER - OPTIMIZED SPACING */
-    .admin-bulk-container {
-      height: 100vh; /* ✅ FIXED HEIGHT FOR PROPER SCROLL */
-      max-height: 100vh;
-      background: linear-gradient(135deg, 
-        var(--general_contrasts-15) 0%, 
-        var(--general_contrasts-5) 100%
-      );
-      padding: var(--bmb-spacing-l);
-      padding-bottom: 60px; /* ✅ REDUCED BOTTOM PADDING */
-      overflow-y: auto; /* ✅ SCROLL ONLY WHEN NEEDED */
-      overflow-x: hidden;
-      scroll-behavior: smooth;
-      
-      /* ✅ SUBTLE SCROLLBAR LIKE OTHER SCREENS */
-      &::-webkit-scrollbar {
-        width: 8px; /* ✅ STANDARD WIDTH */
-      }
-      
-      &::-webkit-scrollbar-track {
-        background: transparent; /* ✅ TRANSPARENT TRACK */
-      }
-      
-      &::-webkit-scrollbar-thumb {
-        background: var(--general_contrasts-50); /* ✅ SUBTLE COLOR */
-        border-radius: 4px;
-        
-        &:hover {
-          background: var(--general_contrasts-75); /* ✅ SUBTLE HOVER */
-        }
-      }
-      
-      /* ✅ FIREFOX STYLING */
-      scrollbar-width: thin;
-      scrollbar-color: var(--general_contrasts-50) transparent;
-    }
-
-    /* 📱 MODERN HEADER */
-    .admin-header {
-      margin-bottom: var(--bmb-spacing-l);
-      
-      .header-top {
-        display: flex;
-        align-items: center;
-        gap: var(--bmb-spacing-l);
-        
-        .back-button {
-          display: flex;
-          align-items: center;
-          gap: var(--bmb-spacing-xs);
-          background: var(--general_contrasts-input-background);
-          border: 1px solid var(--general_contrasts-container-outline);
-          border-radius: var(--bmb-radius-s);
-          padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-          color: var(--general_contrasts-100);
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-weight: 500;
-          
-          &:hover {
-            background: var(--general_contrasts-25);
-            transform: translateX(-2px);
-          }
-        }
-        
-        .header-content {
-          flex: 1;
-          text-align: center;
-          
-          .admin-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--general_contrasts-100);
-            margin: 0 0 var(--bmb-spacing-xs) 0;
-            background: linear-gradient(135deg, 
-              rgb(var(--color-blue-tec)) 0%, 
-              rgb(var(--color-mariner-100)) 100%
-            );
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-          }
-          
-          .admin-subtitle {
-            color: var(--general_contrasts-75);
-            font-size: 1rem;
-            margin: 0;
-            max-width: 500px;
-            margin: 0 auto;
-          }
-        }
-      }
-    }
+    /* 🎨 COMPONENTE ESPECÍFICO - BULK UPLOAD */
 
     /* 🎨 PREMIUM UPLOAD INTERFACE */
     .premium-upload-interface {
@@ -379,185 +277,120 @@ interface BatchUpload {
         display: grid;
         grid-template-columns: 1fr auto;
         gap: var(--bmb-spacing-l);
-        align-items: center;
-        background: var(--general_contrasts-input-background);
-        border: 1px solid var(--general_contrasts-container-outline);
-      border-radius: var(--bmb-radius-m);
-      padding: var(--bmb-spacing-l);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-        
-        &:hover {
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-      }
-    }
-
-    .compact-drop-zone {
-        display: flex;
-      align-items: center;
-        gap: var(--bmb-spacing-m);
-      padding: var(--bmb-spacing-m);
-      border: 2px dashed var(--general_contrasts-container-outline);
-      border-radius: var(--bmb-radius-s);
-      background: var(--general_contrasts-15);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      min-width: 300px;
-      
-      &:hover {
-        border-color: rgb(var(--color-blue-tec));
-        background: rgba(var(--color-blue-tec), 0.05);
-        transform: translateY(-1px);
-      }
-      
-      &.drag-over {
-        border-color: rgb(var(--color-blue-tec));
-        background: rgba(var(--color-blue-tec), 0.1);
-        border-style: solid;
-      }
-      
-      &.has-files {
-        border-color: var(--semantic-success);
-        background: rgba(76, 175, 80, 0.05);
-      }
-      
-      .drop-icon {
-        font-size: 2rem;
-        opacity: 0.8;
-        flex-shrink: 0;
-      }
-      
-      .drop-info {
-        flex: 1;
-        
-        .drop-title {
-          font-size: 1rem;
-          font-weight: 600;
-          color: var(--general_contrasts-100);
-          margin: 0 0 2px 0;
-        }
-        
-        .drop-subtitle {
-          font-size: 0.8rem;
-          color: var(--general_contrasts-75);
-          margin: 0;
-        }
-      }
-    }
-
-    .process-controls {
-      display: flex;
-      align-items: center;
-      gap: var(--bmb-spacing-m);
-      
-      .files-count {
-        text-align: center;
-        
-        .count-number {
-          display: block;
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: rgb(var(--color-blue-tec));
-          line-height: 1;
-        }
-        
-        .count-label {
-          font-size: 0.8rem;
-          color: var(--general_contrasts-75);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-top: 2px;
-        }
-      }
-      
-      .premium-process-btn {
-      display: flex;
-      align-items: center;
-        gap: var(--bmb-spacing-s);
-        background: linear-gradient(135deg, 
-          rgb(var(--color-blue-tec)) 0%, 
-          rgba(var(--color-blue-tec), 0.8) 100%
-        );
-        border: none;
-        border-radius: var(--bmb-radius-s);
-        padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
-        color: white;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 1rem;
-        box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.3);
-      
-      &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(var(--color-blue-tec), 0.4);
-        }
-        
-        .btn-icon {
-          font-size: 1.2rem;
-        }
-        
-        .btn-text {
-          line-height: 1;
-        }
-      }
-      
-      .processing-indicator {
-        display: flex;
-        align-items: center;
-        gap: var(--bmb-spacing-s);
-        color: rgb(var(--color-blue-tec));
-        font-weight: 600;
-        
-        .spinner-icon {
-          animation: spin 1s linear infinite;
-        }
-        
-        .processing-text {
-          font-size: 1rem;
-        }
-      }
-    }
-
-    /* 📊 PREMIUM GLOBAL PROGRESS */
-    .global-progress-section {
-      background: var(--general_contrasts-input-background);
-      border: 1px solid var(--general_contrasts-container-outline);
-      border-radius: var(--bmb-radius-m);
-      padding: var(--bmb-spacing-m); /* ✅ REDUCED PADDING FOR COMPACTNESS */
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      margin-bottom: var(--bmb-spacing-m); /* ✅ REDUCED MARGIN */
-      
-      .progress-header {
-        margin-bottom: var(--bmb-spacing-s); /* ✅ REDUCED MARGIN */
-        
-        .progress-info {
-          display: flex;
-          justify-content: space-between;
           align-items: center;
-          gap: var(--bmb-spacing-m);
+        background: var(--general_contrasts-input-background);
+          border: 1px solid var(--general_contrasts-container-outline);
+        border-radius: var(--bmb-radius-m);
+        padding: var(--bmb-spacing-l);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          transition: all 0.3s ease;
           
-          .progress-title {
-            font-size: 1.1rem; /* ✅ SMALLER TITLE */
-        font-weight: 600;
-            color: var(--general_contrasts-100);
-            margin: 0;
+          &:hover {
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+          }
+        }
           }
           
+    /* 🗑️ Estilos eliminados - Ahora usa .drop-zone-compact global */
+
+    /* 🎯 PROCESS CONTROLS */
+    .process-controls {
+        display: flex;
+        flex-direction: column;
+      align-items: center;
+        gap: var(--bmb-spacing-m);
+    }
+
+    .premium-process-btn {
+      background: linear-gradient(135deg, rgb(var(--color-blue-tec)) 0%, rgba(var(--color-blue-tec), 0.9) 100%);
+      color: white;
+        border: none;
+      padding: var(--bmb-spacing-m) var(--bmb-spacing-xl);
+        border-radius: var(--bmb-radius-m);
+        font-weight: 600;
+          cursor: pointer;
+        transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.3);
+      display: flex;
+      align-items: center;
+      gap: var(--bmb-spacing-s);
+      font-size: 1rem;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(var(--color-blue-tec), 0.4);
+        }
+        
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        }
+      }
+
+    .processing-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--bmb-spacing-s);
+      padding: var(--bmb-spacing-m);
+      background: rgba(var(--color-blue-tec), 0.1);
+      border-radius: var(--bmb-radius-m);
+      color: rgb(var(--color-blue-tec));
+      font-weight: 500;
+      
+      .spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(var(--color-blue-tec), 0.3);
+        border-top: 2px solid rgb(var(--color-blue-tec));
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* 📊 GLOBAL PROGRESS SECTION */
+    .global-progress-section {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 1px solid rgba(var(--color-blue-tec), 0.2);
+      border-radius: var(--bmb-radius-m);
+      padding: var(--bmb-spacing-l);
+        margin-bottom: var(--bmb-spacing-l);
+      
+      .progress-header {
+        margin-bottom: var(--bmb-spacing-m);
+        
+        .progress-info {
+        display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+        gap: var(--bmb-spacing-s);
+        
+          .progress-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        color: var(--general_contrasts-100);
+            margin: 0;
+      }
+      
           .progress-stats {
-            display: flex;
-            align-items: center;
+        display: flex;
             gap: var(--bmb-spacing-m);
+            align-items: center;
             
             .stat {
-              font-size: 0.85rem; /* ✅ SMALLER TEXT */
-        color: var(--general_contrasts-75);
-              font-weight: 500;
+          font-size: 1rem;
+              color: var(--general_contrasts-75);
+          font-weight: 500;
             }
             
             .percentage {
-              font-size: 1.2rem; /* ✅ SMALLER PERCENTAGE */
+              font-size: 1.5rem;
               font-weight: 700;
               color: rgb(var(--color-blue-tec));
             }
@@ -567,880 +400,321 @@ interface BatchUpload {
       
       .progress-bar-global {
         width: 100%;
-        height: 6px; /* ✅ THINNER PROGRESS BAR */
+        height: 12px;
         background: var(--general_contrasts-25);
-        border-radius: 3px;
+        border-radius: var(--bmb-radius-full);
         overflow: hidden;
-        margin-bottom: var(--bmb-spacing-s); /* ✅ REDUCED MARGIN */
+        margin-bottom: var(--bmb-spacing-m);
         
         .progress-fill-global {
           height: 100%;
           background: linear-gradient(90deg, 
-            rgb(var(--color-blue-tec)) 0%, 
-            rgb(var(--color-mariner-100)) 100%
+          rgb(var(--color-blue-tec)) 0%, 
+            var(--buttons-primary-hover) 100%
           );
-          transition: width 0.3s ease;
+          transition: width 0.5s ease;
         }
       }
       
       .progress-details {
+        text-align: center;
+        
         .errors-info {
           color: var(--semantic-error);
-          font-size: 0.8rem; /* ✅ SMALLER ERROR TEXT */
+          font-size: 0.875rem;
           font-weight: 500;
         }
       }
     }
 
-    /* 📋 PREMIUM FILES LIST */
-    .files-list-container {
-      background: var(--general_contrasts-input-background);
-      border: 1px solid var(--general_contrasts-container-outline);
-      border-radius: var(--bmb-radius-m);
-      padding: var(--bmb-spacing-m); /* ✅ REDUCED PADDING */
-      margin-bottom: var(--bmb-spacing-s); /* ✅ REDUCED BOTTOM MARGIN */
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-      display: flex;
-      flex-direction: column;
-      max-height: 350px; /* ✅ LIMIT HEIGHT TO PREVENT OVERFLOW */
+    /* 📋 FILES LIST - CONSISTENTE CON DOCUMENT-UPLOAD */
+    .files-section {
+      margin-bottom: var(--bmb-spacing-l);
       
-      .list-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--bmb-spacing-s); /* ✅ REDUCED MARGIN */
-        padding-bottom: var(--bmb-spacing-s);
-        border-bottom: 1px solid var(--general_contrasts-container-outline);
-        
-        .header-title {
-          display: flex;
-        align-items: center;
-        gap: var(--bmb-spacing-s);
-          
-          .title-text {
-            font-size: 1rem; /* ✅ SMALLER TITLE */
-            font-weight: 600;
-            color: var(--general_contrasts-100);
-          }
-          
-          .title-count {
-            background: rgb(var(--color-blue-tec));
-        color: white;
-            padding: 2px 6px; /* ✅ SMALLER BADGE */
-            border-radius: var(--bmb-radius-s);
-            font-size: 0.75rem; /* ✅ SMALLER TEXT */
+      .files-title {
+        color: var(--general_contrasts-100);
+        font-size: 1.5rem;
         font-weight: 600;
-          }
-        }
-        
-        .clear-pending-btn {
-          background: var(--general_contrasts-25);
-          color: var(--general_contrasts-100);
-          border: none;
-          border-radius: var(--bmb-radius-s);
-          padding: var(--bmb-spacing-xs) var(--bmb-spacing-s); /* ✅ SMALLER BUTTON */
-          font-size: 0.8rem; /* ✅ SMALLER TEXT */
-          font-weight: 500;
-        cursor: pointer;
-          transition: all 0.2s ease;
-          
-          &:hover {
-            background: var(--general_contrasts-50);
-            transform: translateY(-1px);
-          }
-        }
-      }
-      
-      .list-content {
-        flex: 1;
-        max-height: 180px; /* ✅ REDUCED HEIGHT WHEN PROGRESS IS VISIBLE */
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding-right: 4px;
-        padding-bottom: 40px; /* ✅ MORE BOTTOM SPACE */
-        scroll-behavior: smooth;
-        
-        /* ✅ CUSTOM SCROLLBAR FOR LIST */
-        &::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        &::-webkit-scrollbar-track {
-          background: var(--general_contrasts-15);
-          border-radius: 3px;
-        }
-        
-        &::-webkit-scrollbar-thumb {
-          background: var(--general_contrasts-50);
-          border-radius: 3px;
-          
-          &:hover {
-            background: var(--general_contrasts-75);
-          }
-        }
-      }
-    }
-
-    /* 📄 PREMIUM FILE ROWS */
-    .file-row {
-      display: grid;
-      grid-template-columns: auto 1fr auto auto;
-      gap: var(--bmb-spacing-m);
-      align-items: center;
-      padding: var(--bmb-spacing-m);
-      border-radius: var(--bmb-radius-s);
-      transition: all 0.2s ease;
-      border-left: 3px solid transparent;
-      
-      &:hover {
-        background: var(--general_contrasts-15);
-        transform: translateX(4px);
-      }
-      
-      &.processing {
-        background: rgba(var(--color-blue-tec), 0.05);
-        border-left-color: rgb(var(--color-blue-tec));
-        
-        .spinner {
-          animation: spin 1s linear infinite;
-        }
-      }
-      
-      &.completed {
-        background: rgba(76, 175, 80, 0.05);
-        border-left-color: var(--semantic-success);
-      }
-      
-      &.error {
-        background: rgba(244, 67, 54, 0.05);
-        border-left-color: var(--semantic-error);
-      }
-      
-      .row-index {
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: var(--general_contrasts-75);
-        width: 30px;
+        margin-bottom: var(--bmb-spacing-l);
         text-align: center;
       }
+    }
+
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--bmb-spacing-m);
+    }
+
+    .file-item {
+      background: var(--general_contrasts-15);
+      border: 1px solid var(--general_contrasts-container-outline);
+      border-radius: var(--bmb-radius-m);
+      padding: var(--bmb-spacing-m);
+      display: flex;
+      align-items: center;
+      gap: var(--bmb-spacing-m);
+      transition: all 0.3s ease;
       
-      .file-info {
-        min-width: 0;
-        
-        .file-name {
-          font-weight: 600;
-          color: var(--general_contrasts-100);
-          font-size: 0.95rem;
-          line-height: 1.3;
-          margin-bottom: 2px;
-        }
-        
-        .patient-info {
-            font-size: 0.8rem;
-          color: var(--general_contrasts-75);
-          line-height: 1.2;
-        }
+      &.status-completed {
+        border-color: var(--semantic-success);
+        background: rgba(76, 175, 80, 0.1);
       }
       
-      .status-info {
-          display: flex;
-        align-items: center;
-          gap: var(--bmb-spacing-s);
-        
-        .status-indicator {
-          .status {
-            font-size: 1.2rem;
-            line-height: 1;
-            
-            &.pending {
-              opacity: 0.7;
-            }
-            
-            &.processing {
-              color: rgb(var(--color-blue-tec));
-            }
-            
-            &.completed {
-              color: var(--semantic-success);
-            }
-            
-            &.error {
-              color: var(--semantic-error);
-            }
-          }
-        }
-        
-        .status-text {
-          font-size: 0.9rem;
-          font-weight: 500;
-          color: var(--general_contrasts-75);
-        }
+      &.status-error {
+        border-color: var(--semantic-error);
+        background: rgba(244, 67, 54, 0.1);
       }
       
-      .action-info {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        min-width: 80px;
-        
-        .remove-file-btn {
-          background: var(--semantic-error);
-          color: white;
-          border: none;
-          border-radius: 50%;
-          width: 24px;
-          height: 24px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          font-size: 0.9rem;
-          
-          &:hover {
-            background: #dc2626;
-            transform: scale(1.1);
-          }
-        }
-        
-        .time-remaining {
-          font-size: 0.8rem;
-          color: rgb(var(--color-blue-tec));
-        font-weight: 600;
-        }
-        
-        .time-completed {
-          font-size: 0.8rem;
-          color: var(--semantic-success);
-          font-weight: 500;
-        }
-        
-        .error-text {
-          font-size: 0.8rem;
-          color: var(--semantic-error);
-          font-weight: 500;
-          cursor: help;
-        }
+      &.status-processing {
+        border-color: rgb(var(--color-blue-tec));
+        background: rgba(var(--color-blue-tec), 0.1);
       }
     }
 
-    /* 🎉 MODERN COMPLETION SUMMARY */
-    .completion-summary {
-      background: linear-gradient(135deg, 
-        rgba(76, 175, 80, 0.08) 0%, 
-        rgba(76, 175, 80, 0.03) 100%
-      );
-      border: 1px solid rgba(76, 175, 80, 0.2);
-      border-radius: var(--bmb-radius-s);
-      padding: var(--bmb-spacing-m);
-      margin-top: 20px !important; /* ✅ REDUCED TOP MARGIN */
-      margin-bottom: 40px !important; /* ✅ REDUCED BOTTOM MARGIN */
+    .file-info {
+      flex: 1;
       
+      .file-name {
+            font-weight: 600;
+            color: var(--general_contrasts-100);
+        margin-bottom: var(--bmb-spacing-xs);
+          }
+          
+      .file-details {
+        font-size: 0.875rem;
+            color: var(--general_contrasts-75);
+      }
+    }
+
+    .file-status {
+      min-width: 120px;
+      text-align: center;
+      
+      .status-pending {
+        color: var(--general_contrasts-75);
+        font-size: 0.875rem;
+    }
+
+      .status-uploading {
+    .progress-bar {
+          width: 80px;
+          height: 6px;
+      background: var(--general_contrasts-25);
+          border-radius: var(--bmb-radius-full);
+      overflow: hidden;
+          margin-bottom: var(--bmb-spacing-xs);
+      
+      .progress-fill {
+            height: 100%;
+        background: linear-gradient(90deg, 
+          rgb(var(--color-blue-tec)) 0%, 
+              var(--buttons-primary-hover) 100%
+        );
+        transition: width 0.3s ease;
+      }
+    }
+
+        span {
+          font-size: 0.75rem;
+          color: rgb(var(--color-blue-tec));
+          font-weight: 600;
+        }
+      }
+      
+      .status-success {
+        color: var(--semantic-success);
+        font-weight: 600;
+      }
+      
+      .status-error {
+        color: var(--semantic-error);
+        font-size: 0.75rem;
+      }
+    }
+
+    .file-actions {
+      .remove-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: var(--bmb-spacing-xs);
+        border-radius: var(--bmb-radius-s);
+        transition: background 0.2s ease;
+          
+          &:hover {
+          background: rgba(244, 67, 54, 0.1);
+          }
+        }
+        
+      .time-remaining,
+      .time-completed {
+        font-size: 0.75rem;
+        color: var(--general_contrasts-75);
+      }
+    }
+
+    /* 🎉 COMPLETION SUMMARY */
+    .completion-summary {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 1px solid rgba(var(--color-blue-tec), 0.2);
+      border-radius: var(--bmb-radius-m);
+      padding: var(--bmb-spacing-l);
+        margin-bottom: var(--bmb-spacing-l);
+        
       .success-content {
         display: flex;
         align-items: center;
         gap: var(--bmb-spacing-m);
-        margin-bottom: var(--bmb-spacing-m);
+        margin-bottom: var(--bmb-spacing-l);
         
         .success-icon {
           font-size: 3rem;
-          flex-shrink: 0;
         }
         
         .success-info {
           flex: 1;
           
           .success-title {
-            font-size: 1.3rem;
-            font-weight: 600;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: var(--general_contrasts-100);
             margin: 0 0 var(--bmb-spacing-xs) 0;
-          }
-          
+      }
+      
           .success-subtitle {
-            font-size: 0.9rem;
             color: var(--general_contrasts-75);
             margin: 0;
-            line-height: 1.4;
           }
         }
       }
       
       .completion-actions {
         display: flex;
-        gap: var(--bmb-spacing-s);
-        justify-content: center;
-        margin-top: 15px; /* ✅ REDUCED TOP MARGIN FOR BUTTONS */
+        gap: var(--bmb-spacing-m);
         
         .action-btn {
-          display: flex;
-          align-items: center;
-          gap: var(--bmb-spacing-xs);
-          padding: 12px 24px; /* ✅ LARGER PADDING FOR BETTER VISIBILITY */
-          border: none;
+          padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
           border-radius: var(--bmb-radius-s);
-          font-weight: 600;
+          font-weight: 500;
           cursor: pointer;
           transition: all 0.2s ease;
-          font-size: 1rem; /* ✅ LARGER FONT SIZE */
-          min-height: 48px; /* ✅ MINIMUM HEIGHT FOR TOUCH */
-          
-          .btn-icon {
-            font-size: 1.2rem;
-          }
-          
-          .btn-text {
-            line-height: 1;
-          }
-          
+          display: flex;
+            align-items: center;
+            gap: var(--bmb-spacing-s);
+            
           &.primary {
             background: rgb(var(--color-blue-tec));
             color: white;
+            border: none;
             
             &:hover {
               background: rgba(var(--color-blue-tec), 0.9);
               transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.3);
-            }
-          }
-          
+        }
+      }
+      
           &.secondary {
-            background: var(--general_contrasts-25);
+            background: var(--general_contrasts-15);
             color: var(--general_contrasts-100);
+            border: 1px solid var(--general_contrasts-container-outline);
             
             &:hover {
-              background: var(--general_contrasts-50);
+              background: var(--general_contrasts-25);
               transform: translateY(-2px);
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             }
-          }
-        }
-      }
-    }
-
-    /* 🔄 ANIMATIONS */
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* ✅ BOTTOM SPACER REMOVED TO PREVENT OVERLAP */
-
-    /* 📱 IMPROVED RESPONSIVE DESIGN */
-    @media (max-width: 768px) {
-      .admin-bulk-container {
-        padding: var(--bmb-spacing-s);
-        padding-bottom: 120px; /* ✅ MORE SPACE ON MOBILE */
-      }
-      
-      .admin-header .header-top {
-        flex-direction: column;
-        gap: var(--bmb-spacing-s);
-        text-align: center;
-        
-        .header-content .admin-title {
-          font-size: 1.3rem; /* ✅ SMALLER ON MOBILE */
-        }
-        
-        .header-content .admin-subtitle {
-          font-size: 0.9rem;
-        }
-      }
-      
-      /* ✅ IMPROVED UPLOAD ROW FOR MOBILE */
-      .upload-row {
-        grid-template-columns: 1fr !important;
-        gap: var(--bmb-spacing-m);
-        padding: var(--bmb-spacing-m);
-        
-        .compact-drop-zone {
-          min-width: auto;
-          justify-content: center;
-          padding: var(--bmb-spacing-s);
-          
-          .drop-info {
-            text-align: center;
-            
-            .drop-title {
-          font-size: 0.9rem;
-        }
-        
-            .drop-subtitle {
-              font-size: 0.8rem;
-            }
-          }
-        }
-        
-        /* ✅ BETTER PROCESS CONTROLS LAYOUT */
-        .process-controls {
-          justify-content: center;
-          flex-direction: column;
-          gap: var(--bmb-spacing-s);
-          
-          .files-count {
-            text-align: center;
-            order: 1;
-          }
-          
-          .premium-process-btn {
-            width: 100%; /* ✅ FULL WIDTH ON MOBILE */
-            padding: var(--bmb-spacing-m);
-            font-size: 1rem;
-            justify-content: center;
-            order: 2;
-          }
-          
-          .processing-indicator {
-            justify-content: center;
-            order: 2;
-          }
-        }
-      }
-      
-      /* ✅ COMPACT PROGRESS SECTION */
-      .global-progress-section {
-            padding: var(--bmb-spacing-s);
-          
-        .progress-header .progress-info {
-            flex-direction: column;
-            align-items: center;
-            gap: var(--bmb-spacing-s);
-          text-align: center;
-          
-          .progress-title {
-            font-size: 1rem;
-          }
-          
-          .progress-stats {
-            flex-direction: column;
-            gap: var(--bmb-spacing-xs);
-            
-            .stat {
-              font-size: 0.8rem;
-            }
-            
-            .percentage {
-              font-size: 1.1rem;
-            }
-          }
-        }
-      }
-      
-      /* ✅ MOBILE FILE LIST - NO OVERLAPPING COLUMNS */
-      .files-list-container {
-        padding: var(--bmb-spacing-s);
-            margin-bottom: var(--bmb-spacing-m);
-            
-        .list-header {
-          flex-direction: column;
-          align-items: stretch;
-          gap: var(--bmb-spacing-s);
-          
-          .header-title {
-            justify-content: center;
-            
-            .title-text {
-              font-size: 0.9rem;
-            }
-          }
-          
-          .clear-pending-btn {
-            width: 100%;
-            padding: var(--bmb-spacing-s);
-          }
-        }
-        
-        /* ✅ MOBILE FILE ROWS - STACKED LAYOUT */
-        .list-content {
-          .file-row {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: var(--bmb-spacing-xs);
-            padding: var(--bmb-spacing-s);
-            border: 1px solid var(--general_contrasts-container-outline);
-            border-radius: var(--bmb-radius-s);
-            margin-bottom: var(--bmb-spacing-xs);
-            
-            .row-index {
-              display: none; /* ✅ HIDE INDEX ON MOBILE */
-            }
-            
-            .file-info {
-              order: 1;
-              
-              .file-name {
-                font-size: 0.85rem;
-                font-weight: 600;
-                margin-bottom: var(--bmb-spacing-xs);
-              }
-              
-              .patient-info {
-                font-size: 0.75rem;
-              }
-            }
-            
-            .status-info {
-              order: 2;
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              padding: var(--bmb-spacing-xs);
-              background: var(--general_contrasts-15);
-              border-radius: var(--bmb-radius-s);
-              
-              .status-indicator .status {
-          font-size: 1rem;
-              }
-              
-              .status-text {
-                font-size: 0.8rem;
-              }
-            }
-            
-            .action-info {
-              order: 3;
-              display: flex;
-              justify-content: center;
-              
-              .remove-file-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 1rem;
-              }
-              
-              .time-remaining,
-              .time-completed,
-              .error-text {
-                font-size: 0.75rem;
-                text-align: center;
-              }
-            }
-          }
-        }
-      }
-      
-      /* ✅ MOBILE COMPLETION SUMMARY */
-      .completion-summary {
-        margin: var(--bmb-spacing-m) 0;
-        padding: var(--bmb-spacing-s) !important;
-        
-        .success-content {
-          flex-direction: column;
-          text-align: center;
-        gap: var(--bmb-spacing-s);
-          
-          .success-icon {
-            font-size: 2rem;
-          }
-          
-          .success-info {
-            .success-title {
-              font-size: 1.1rem;
-            }
-            
-            .success-subtitle {
-              font-size: 0.8rem;
-            }
-          }
-        }
-        
-        .completion-actions {
-        flex-direction: column;
-          gap: var(--bmb-spacing-s);
-          margin-top: var(--bmb-spacing-s);
-          
-          .action-btn {
-            width: 100%; /* ✅ FULL WIDTH BUTTONS */
-            justify-content: center;
-            padding: var(--bmb-spacing-m);
-            font-size: 0.9rem;
           }
         }
       }
     }
     
-    /* 🖥️ TABLET RESPONSIVE IMPROVEMENTS */
-    @media (min-width: 769px) and (max-width: 1024px) {
-      .upload-row {
-        gap: var(--bmb-spacing-m);
-        
-        .compact-drop-zone {
-          min-width: 200px;
-        }
-        
-        .process-controls {
-          .premium-process-btn {
-            padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-            font-size: 0.9rem;
-          }
-        }
-      }
-      
-      .file-row {
-        .file-info .file-name {
-          font-size: 0.85rem;
-        }
-        
-        .status-info,
-        .action-info {
-          font-size: 0.8rem;
-        }
-      }
-    }
-
-    /* 📱 AGGRESSIVE RESPONSIVE FIXES */
+    /* 📱 RESPONSIVE DESIGN */
     @media (max-width: 950px) {
-      .admin-bulk-container {
-        padding: var(--bmb-spacing-s) !important;
-        padding-bottom: 80px !important; /* ✅ REDUCED MOBILE BOTTOM PADDING */
-      }
-      
-      /* ✅ FORCE SINGLE COLUMN LAYOUT */
       .upload-row {
-        display: flex !important;
-        flex-direction: column !important;
+        grid-template-columns: 1fr !important;
         gap: var(--bmb-spacing-m) !important;
-        padding: var(--bmb-spacing-m) !important;
         
         .compact-drop-zone {
           min-width: auto !important;
-          width: 100% !important;
           justify-content: center !important;
-          margin-bottom: var(--bmb-spacing-s) !important;
-        }
-        
+      }
+      
         .process-controls {
-          display: flex !important;
-          flex-direction: column !important;
           align-items: center !important;
-          gap: var(--bmb-spacing-s) !important;
-          width: 100% !important;
-          
-          .files-count {
-            text-align: center !important;
-            margin-bottom: var(--bmb-spacing-xs) !important;
-          }
           
           .premium-process-btn {
             width: 100% !important;
-            max-width: 300px !important;
-            padding: var(--bmb-spacing-m) var(--bmb-spacing-l) !important;
-            font-size: 1rem !important;
             justify-content: center !important;
           }
-          
-          .processing-indicator {
-            display: flex !important;
+        }
+      }
+      
+      .global-progress-section {
+        padding: var(--bmb-spacing-m) !important;
+        
+        .progress-header {
+          .progress-info {
             flex-direction: column !important;
             align-items: center !important;
             text-align: center !important;
-          }
-        }
-      }
-      
-      /* ✅ FORCE MOBILE FILE LIST LAYOUT */
-      .files-list-container {
-        margin-bottom: var(--bmb-spacing-m) !important;
-        padding: var(--bmb-spacing-s) !important;
-        
-        .list-header {
-          display: flex !important;
-          flex-direction: column !important;
-          gap: var(--bmb-spacing-s) !important;
-          
-          .header-title {
-            justify-content: center !important;
-            text-align: center !important;
-          }
-          
-          .clear-pending-btn {
-            width: 100% !important;
-            max-width: 200px !important;
-            align-self: center !important;
-          }
-        }
-        
-        .list-content {
-          .file-row {
-            display: block !important;
-            width: 100% !important;
-            padding: var(--bmb-spacing-s) !important;
-            margin-bottom: var(--bmb-spacing-s) !important;
-            border: 1px solid var(--general_contrasts-container-outline) !important;
-            border-radius: var(--bmb-radius-s) !important;
-            background: var(--general_contrasts-input-background) !important;
+            gap: var(--bmb-spacing-s) !important;
             
-            .row-index {
-              display: none !important;
-            }
-            
-            .file-info {
-              display: block !important;
-              width: 100% !important;
-              margin-bottom: var(--bmb-spacing-s) !important;
-              
-              .file-name {
-                display: block !important;
-                font-size: 0.9rem !important;
-                font-weight: 600 !important;
-                margin-bottom: var(--bmb-spacing-xs) !important;
-                word-break: break-word !important;
-              }
-              
-              .patient-info {
-                display: block !important;
-                font-size: 0.8rem !important;
-                color: var(--general_contrasts-75) !important;
-              }
-            }
-            
-            .status-info {
-              display: flex !important;
-              justify-content: space-between !important;
-              align-items: center !important;
-              width: 100% !important;
-              padding: var(--bmb-spacing-xs) !important;
-              background: var(--general_contrasts-25) !important;
-              border-radius: var(--bmb-radius-s) !important;
-              margin-bottom: var(--bmb-spacing-xs) !important;
-              
-              .status-indicator {
-                flex-shrink: 0 !important;
-              }
-              
-              .status-text {
-                flex: 1 !important;
-                text-align: right !important;
-                font-size: 0.8rem !important;
-              }
-            }
-            
-            .action-info {
-              display: flex !important;
-              justify-content: center !important;
-              width: 100% !important;
-              
-              .remove-file-btn,
-              .time-remaining,
-              .time-completed,
-              .error-text {
-                font-size: 0.8rem !important;
-              }
-            }
-          }
-        }
-      }
-      
-      /* ✅ FORCE MOBILE COMPLETION LAYOUT */
-      .completion-summary {
-        padding: var(--bmb-spacing-m) !important;
-        margin: var(--bmb-spacing-m) 0 !important;
-        
-        .success-content {
-          display: flex !important;
-          flex-direction: column !important;
-          align-items: center !important;
-          text-align: center !important;
-          gap: var(--bmb-spacing-s) !important;
-          
-          .success-icon {
-            font-size: 2.5rem !important;
-          }
-          
-          .success-info {
-            width: 100% !important;
-            
-            .success-title {
+            .progress-title {
               font-size: 1.2rem !important;
-              margin-bottom: var(--bmb-spacing-xs) !important;
-            }
-            
-            .success-subtitle {
-              font-size: 0.9rem !important;
-            }
+          }
+          
+            .progress-stats {
+              flex-direction: column !important;
+              gap: var(--bmb-spacing-xs) !important;
+              
+              .stat {
+                font-size: 0.9rem !important;
+      }
+      
+              .percentage {
+                font-size: 1.3rem !important;
+      }
+    }
           }
         }
+      }
+      
+      .file-list {
+        gap: var(--bmb-spacing-s) !important;
+      }
+      
+      .file-item {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: var(--bmb-spacing-s) !important;
+        text-align: center !important;
         
-        .completion-actions {
-          display: flex !important;
+        .file-info {
+          order: 1;
+      }
+      
+        .file-status {
+          order: 2;
+          min-width: auto !important;
+      }
+      
+        .file-actions {
+          order: 3;
+      }
+    }
+    
+      .completion-summary {
+        .success-content {
           flex-direction: column !important;
-          gap: var(--bmb-spacing-s) !important;
-          margin-top: var(--bmb-spacing-m) !important;
+          text-align: center !important;
+      }
+      
+        .completion-actions {
+          flex-direction: column !important;
           
           .action-btn {
             width: 100% !important;
-            padding: var(--bmb-spacing-m) !important;
-            font-size: 1rem !important;
             justify-content: center !important;
-            min-height: 48px !important;
-          }
-        }
-      }
-      
-      /* ✅ FORCE PROGRESS SECTION MOBILE */
-      .global-progress-section {
-        padding: var(--bmb-spacing-s) !important;
-        margin-bottom: var(--bmb-spacing-m) !important;
-        
-        .progress-header .progress-info {
-          display: flex !important;
-          flex-direction: column !important;
-          align-items: center !important;
-          text-align: center !important;
-          gap: var(--bmb-spacing-s) !important;
-          
-          .progress-title {
-            font-size: 1rem !important;
-          }
-          
-          .progress-stats {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: center !important;
-            gap: var(--bmb-spacing-xs) !important;
-            
-            .stat {
-              font-size: 0.85rem !important;
-            }
-            
-            .percentage {
-              font-size: 1.3rem !important;
-              font-weight: 700 !important;
-            }
-          }
-        }
-      }
-    }
-
-    /* 🖥️ MEDIUM SCREEN FIXES */
-    @media (max-width: 1200px) and (min-width: 951px) {
-      .upload-row {
-        gap: var(--bmb-spacing-s) !important;
-        
-        .compact-drop-zone {
-          min-width: 250px !important;
-          flex: 1 !important;
-        }
-        
-        .process-controls {
-          flex-shrink: 0 !important;
-          min-width: 200px !important;
-          
-          .premium-process-btn {
-            font-size: 0.85rem !important;
-            padding: var(--bmb-spacing-s) var(--bmb-spacing-m) !important;
-          }
-        }
-      }
-      
-      .file-row {
-        .file-info {
-          .file-name {
-            font-size: 0.85rem !important;
-          }
-          
-          .patient-info {
-            font-size: 0.75rem !important;
           }
         }
       }
@@ -1543,7 +817,7 @@ export class AdminBulkUploadComponent implements OnInit {
       error_files: 0,
       files: this.batchFiles,
       startTime: new Date()
-    };
+      };
 
     console.log('🚀 Starting async batch processing (MOCK) for', this.batchFiles.length, 'files');
 
@@ -1578,9 +852,9 @@ export class AdminBulkUploadComponent implements OnInit {
 
     // Wait for processing to complete
     await new Promise(resolve => setTimeout(resolve, processingTime));
-    
+          
     clearInterval(progressInterval);
-
+          
     // 85% success rate simulation
     const isSuccess = Math.random() > 0.15;
     
@@ -1593,8 +867,8 @@ export class AdminBulkUploadComponent implements OnInit {
       file.status = 'error';
       file.error = 'Error en OCR: formato no reconocido';
       this.batchUpload!.error_files++;
-    }
-    
+      }
+
     this.batchUpload!.processed_files++;
     
     // Check if all files are done

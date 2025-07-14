@@ -22,11 +22,7 @@ import { Patient } from '../../../core/models/patient.model';
             <p class="document-count">{{documents.length}} documento{{documents.length !== 1 ? 's' : ''}} disponible{{documents.length !== 1 ? 's' : ''}}</p>
           </div>
         </div>
-        <button class="close-btn" (click)="onClose()" title="Cerrar panel">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-        </button>
+        <!-- REMOVED: Close button eliminated -->
       </div>
 
       <!-- Tabs de documentos -->
@@ -160,30 +156,6 @@ import { Patient } from '../../../core/models/patient.model';
       margin: 0;
       font-size: 0.75rem;
       color: var(--general_contrasts-75, #6b7280);
-    }
-
-    .close-btn {
-      background: rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
-      border: 1px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.2);
-      color: var(--color-blue-tec, #0066cc);
-      width: 32px;
-      height: 32px;
-      border-radius: var(--bmb-radius-s, 0.5rem);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-
-      svg {
-        width: 16px;
-        height: 16px;
-      }
-
-      &:hover {
-        background: rgba(var(--color-blue-tec, 0, 57, 166), 0.15);
-        transform: scale(1.05);
-      }
     }
 
     /* Tabs de documentos */
@@ -605,10 +577,5 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   trackByDocId(index: number, doc: PatientDocument): string {
     return doc.id;
-  }
-
-  onClose(): void {
-    // Emitir evento al componente padre
-    console.log('🔄 Cerrando panel de documentos');
   }
 } 
