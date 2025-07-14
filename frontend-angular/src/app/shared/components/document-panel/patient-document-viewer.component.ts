@@ -7,11 +7,11 @@ import { Patient } from '../../../core/models/patient.model';
 
 /**
  * Patient Document Viewer Component for medical record display
- * 
+ *
  * @description Component for viewing and navigating patient medical documents.
  * Features tabbed interface for multiple documents, PDF viewing capabilities,
  * document type indicators, and download/print functionality.
- * 
+ *
  * @example
  * ```typescript
  * // In parent component template
@@ -19,10 +19,10 @@ import { Patient } from '../../../core/models/patient.model';
  *   [patient]="activePatient"
  *   [isVisible]="showDocumentViewer">
  * </app-patient-document-viewer>
- * 
+ *
  * // Component automatically loads and displays documents for the patient
  * ```
- * 
+ *
  * @features
  * - Tabbed interface for multiple documents
  * - PDF document display and viewing
@@ -31,15 +31,15 @@ import { Patient } from '../../../core/models/patient.model';
  * - Patient avatar and context display
  * - Responsive design for different screen sizes
  * - Loading states and error handling
- * 
+ *
  * @inputs
  * - patient: Patient object to load documents for
  * - isVisible: Whether the viewer should be visible
- * 
+ *
  * @documentTypes
  * - CONS: Consultation documents
  * - EMER: Emergency documents
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -64,7 +64,7 @@ import { Patient } from '../../../core/models/patient.model';
 
       <!-- Tabs de documentos -->
       <div class="document-tabs" *ngIf="documents.length > 1">
-        <button 
+        <button
           *ngFor="let doc of documents; trackBy: trackByDocId; let i = index"
           class="tab-btn"
           [class.active]="activeDocumentIndex === i"
@@ -138,6 +138,7 @@ import { Patient } from '../../../core/models/patient.model';
   styles: [`
     .document-viewer-container {
       height: 100%;
+      min-height: 100%;
       display: flex;
       flex-direction: column;
       background: var(--general_contrasts-input-background, #ffffff);
@@ -150,8 +151,8 @@ import { Patient } from '../../../core/models/patient.model';
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(135deg, 
-        var(--general_contrasts-input-background, #ffffff) 0%, 
+      background: linear-gradient(135deg,
+        var(--general_contrasts-input-background, #ffffff) 0%,
         rgba(var(--color-mariner-50, 224, 242, 254), 0.05) 100%
       );
     }
@@ -166,8 +167,8 @@ import { Patient } from '../../../core/models/patient.model';
       width: 40px;
       height: 40px;
       border-radius: var(--bmb-radius-s, 0.5rem);
-      background: linear-gradient(135deg, 
-        rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+      background: linear-gradient(135deg,
+        rgb(var(--color-blue-tec, 0, 57, 166)) 0%,
         rgba(var(--color-blue-tec, 0, 57, 166), 0.8) 100%
       );
       display: flex;
@@ -261,6 +262,7 @@ import { Patient } from '../../../core/models/patient.model';
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      min-height: 0;
     }
 
     .no-documents {
@@ -272,19 +274,27 @@ import { Patient } from '../../../core/models/patient.model';
       padding: var(--bmb-spacing-xl, 2rem);
       text-align: center;
       color: var(--general_contrasts-75, #6b7280);
+      min-height: 250px;
 
       .no-docs-icon {
         font-size: 3rem;
         margin-bottom: var(--bmb-spacing-m, 1rem);
+        opacity: 0.7;
       }
 
       h3 {
         margin: 0 0 var(--bmb-spacing-s, 0.75rem) 0;
         color: var(--general_contrasts-text-primary, #1f2937);
+        font-size: 1.125rem;
+        font-weight: 600;
+        line-height: 1.3;
       }
 
       p {
         margin: 0;
+        line-height: 1.5;
+        max-width: 280px;
+        font-size: 0.875rem;
       }
     }
 
@@ -432,8 +442,8 @@ import { Patient } from '../../../core/models/patient.model';
       }
 
       &.primary {
-        background: linear-gradient(135deg, 
-          rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+        background: linear-gradient(135deg,
+          rgb(var(--color-blue-tec, 0, 57, 166)) 0%,
           rgba(var(--color-blue-tec, 0, 57, 166), 0.9) 100%
         );
         color: white;
@@ -506,31 +516,92 @@ import { Patient } from '../../../core/models/patient.model';
       .pdf-controls {
         flex-wrap: wrap;
       }
+
+      .no-documents {
+        padding: var(--bmb-spacing-m, 1rem);
+        min-height: 200px;
+
+        .no-docs-icon {
+          font-size: 2.5rem;
+          margin-bottom: var(--bmb-spacing-s, 0.75rem);
+        }
+
+        h3 {
+          font-size: 1rem;
+          margin-bottom: var(--bmb-spacing-xs, 0.5rem);
+          line-height: 1.3;
+        }
+
+        p {
+          font-size: 0.875rem;
+          line-height: 1.4;
+          max-width: 200px;
+        }
+      }
+
+      .document-viewer-container {
+        min-height: 300px;
+      }
+
+      .viewer-header {
+        padding: var(--bmb-spacing-s, 0.75rem);
+
+        .patient-name {
+          font-size: 0.875rem;
+        }
+
+        .document-count {
+          font-size: 0.6875rem;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .no-documents {
+        padding: var(--bmb-spacing-s, 0.75rem);
+        min-height: 180px;
+
+        .no-docs-icon {
+          font-size: 2rem;
+          margin-bottom: var(--bmb-spacing-xs, 0.5rem);
+        }
+
+        h3 {
+          font-size: 0.875rem;
+          margin-bottom: var(--bmb-spacing-xs, 0.5rem);
+        }
+
+        p {
+          font-size: 0.75rem;
+          line-height: 1.3;
+          max-width: 180px;
+        }
+      }
     }
   `]
 })
 export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChanges {
   /** Patient object to load documents for */
   @Input() patient: Patient | null = null;
-  
+
   /** Whether the viewer should be visible */
   @Input() isVisible: boolean = false;
 
   /** Array of documents for the current patient */
   documents: PatientDocument[] = [];
-  
+
   /** Index of the currently active document */
   activeDocumentIndex: number = 0;
-  
+
   /** Loading state for document retrieval */
   isLoading: boolean = false;
-  
+
   /** Subject for component cleanup */
   private destroy$ = new Subject<void>();
 
   /**
    * Creates an instance of PatientDocumentViewerComponent
-   * 
+   *
    * @param patientDocumentsService - Service for patient document management
    */
   constructor(
@@ -539,7 +610,7 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Component initialization lifecycle hook
-   * 
+   *
    * @description Loads patient documents on component initialization
    */
   ngOnInit(): void {
@@ -548,7 +619,7 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Component destruction lifecycle hook
-   * 
+   *
    * @description Cleans up subscriptions to prevent memory leaks
    */
   ngOnDestroy(): void {
@@ -558,9 +629,9 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Input changes lifecycle hook
-   * 
+   *
    * @param changes - Object containing input property changes
-   * 
+   *
    * @description Reloads documents when patient input changes
    */
   ngOnChanges(changes: SimpleChanges): void {
@@ -571,9 +642,9 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Gets the currently active document
-   * 
+   *
    * @returns Currently active document or null if no documents
-   * 
+   *
    * @description Getter for the document at the active index
    */
   get activeDocument(): PatientDocument | null {
@@ -582,7 +653,7 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Loads documents for the current patient
-   * 
+   *
    * @private
    * @description Fetches documents from the service and updates component state.
    * Handles loading states and error scenarios.
@@ -594,7 +665,7 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
     }
 
     this.isLoading = true;
-    
+
     this.patientDocumentsService.mapPatientToDocuments(this.patient)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -614,11 +685,11 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Sets the active document by index
-   * 
+   *
    * @param index - Index of document to make active
-   * 
+   *
    * @description Changes the currently displayed document if index is valid
-   * 
+   *
    * @example
    * ```typescript
    * setActiveDocument(1); // Switch to second document
@@ -632,11 +703,11 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Gets patient initials for avatar display
-   * 
+   *
    * @returns Patient initials string (up to 2 characters) or '?' if no patient
-   * 
+   *
    * @description Extracts and formats patient initials from name for avatar display
-   * 
+   *
    * @example
    * ```typescript
    * // Patient: "María González López"
@@ -655,12 +726,12 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Gets the appropriate icon for a document type
-   * 
+   *
    * @param doc - Document to get icon for
    * @returns Icon string for the document type
-   * 
+   *
    * @description Returns different icons based on document type (consultation vs emergency)
-   * 
+   *
    * @example
    * ```typescript
    * getDocumentIcon(consultationDoc); // Returns "📋"
@@ -673,12 +744,12 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Gets a shortened display name for tab labels
-   * 
+   *
    * @param doc - Document to get short name for
    * @returns Truncated display name with ellipsis if needed
-   * 
+   *
    * @description Truncates long document names for tab display with 15 character limit
-   * 
+   *
    * @example
    * ```typescript
    * getShortDisplayName({ displayName: "Very Long Medical Document Name" });
@@ -687,31 +758,31 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
    */
   getShortDisplayName(doc: PatientDocument): string {
     const maxLength = 15;
-    return doc.displayName.length > maxLength 
+    return doc.displayName.length > maxLength
       ? doc.displayName.substring(0, maxLength) + '...'
       : doc.displayName;
   }
 
   /**
    * Gets the PDF URL for display and download
-   * 
+   *
    * @param doc - Document to get URL for
    * @returns PDF URL string
-   * 
+   *
    * @description Returns the document URL for PDF viewing and download operations
    */
   getPdfUrlString(doc: PatientDocument): string {
-    // Para descargas y nueva pestaña 
+    // Para descargas y nueva pestaña
     return doc.url;
   }
 
   /**
    * Downloads a PDF document
-   * 
+   *
    * @param doc - Document to download
-   * 
+   *
    * @description Creates a download link and triggers download of the document
-   * 
+   *
    * @example
    * ```typescript
    * downloadPdf(document); // Starts download with original filename
@@ -727,11 +798,11 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * Opens a PDF document in a new browser tab
-   * 
+   *
    * @param doc - Document to open
-   * 
+   *
    * @description Opens the document URL in a new browser tab for viewing
-   * 
+   *
    * @example
    * ```typescript
    * openInNewTab(document); // Opens PDF in new tab
@@ -744,14 +815,14 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
 
   /**
    * TrackBy function for ngFor performance optimization
-   * 
+   *
    * @param index - Array index (unused)
    * @param doc - Document object
    * @returns Unique identifier for the document
-   * 
+   *
    * @description Helps Angular track document items for efficient DOM updates
    */
   trackByDocId(index: number, doc: PatientDocument): string {
     return doc.id;
   }
-} 
+}

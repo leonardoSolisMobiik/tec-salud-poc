@@ -10,17 +10,17 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
 
 /**
  * Demo component for showcasing document processing type capabilities
- * 
+ *
  * @description Interactive demonstration of different document processing methods
  * including file simulation, processing type selection, and result visualization.
  * Helps users understand the differences between processing options.
- * 
+ *
  * @example
  * ```typescript
  * // Access via route
  * // URL: /processing-demo
  * ```
- * 
+ *
  * @features
  * - Interactive file simulation with various medical document types
  * - Real-time processing type comparison
@@ -28,13 +28,13 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
  * - Estimated chunk count and storage size calculations
  * - Processing time simulation with realistic delays
  * - Responsive design with medical styling
- * 
+ *
  * @uiComponents
  * - File simulation controls (add/remove/clear)
  * - Processing type selector integration
  * - Progress indicators and result displays
  * - Professional medical interface styling
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -43,21 +43,21 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
   imports: [CommonModule, FormsModule, BambooModule, ProcessingChoiceComponent],
   template: `
     <div class="global-container">
-      
+
       <!-- Header -->
       <div class="global-header">
         <div class="header-top">
-          <button 
+        <button
             class="global-back-button"
-            (click)="goBack()"
-            title="Volver">
+          (click)="goBack()"
+          title="Volver">
             <span class="back-icon">←</span>
             <span class="back-text">Volver</span>
-          </button>
+        </button>
           <div class="title-container">
             <h1 class="main-title">⚡ Demostración de Tipos de Procesamiento</h1>
             <div class="main-subtitle">
-              Explora las diferentes opciones de procesamiento para documentos médicos
+          Explora las diferentes opciones de procesamiento para documentos médicos
             </div>
           </div>
         </div>
@@ -65,33 +65,33 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
 
       <!-- Demo Section -->
       <div class="demo-section">
-        
+
         <!-- File Simulation -->
         <div class="file-simulation">
           <h2>📁 Simulación de Archivos</h2>
           <div class="file-controls">
-            <button 
+            <button
               class="add-file-btn"
               (click)="addSimulatedFile()"
               [disabled]="simulatedFiles.length >= 10">
               ➕ Agregar Archivo Simulado
             </button>
-            <button 
+            <button
               class="clear-files-btn"
               (click)="clearSimulatedFiles()"
               [disabled]="simulatedFiles.length === 0">
               🗑️ Limpiar Todo
             </button>
           </div>
-          
+
           <div class="simulated-files" *ngIf="simulatedFiles.length > 0">
-            <div 
+            <div
               *ngFor="let file of simulatedFiles; trackBy: trackByFile"
               class="simulated-file">
               <span class="file-icon">{{ file.icon }}</span>
               <span class="file-name">{{ file.name }}</span>
               <span class="file-size">{{ file.size }}</span>
-              <button 
+              <button
                 class="remove-file"
                 (click)="removeSimulatedFile(file.id)"
                 title="Eliminar">
@@ -104,7 +104,7 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
         <!-- Processing Choice Integration -->
         <div class="processing-choice-section">
           <h2>⚙️ Selección de Tipo de Procesamiento</h2>
-          
+
           <app-processing-choice
             [fileCount]="simulatedFiles.length"
             [initialType]="selectedProcessingType"
@@ -115,9 +115,9 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
         <!-- Live Results -->
         <div class="results-section" *ngIf="selectedProcessingType">
           <h2>📊 Vista Previa de Resultados</h2>
-          
+
           <div class="result-cards">
-            
+
             <!-- Processing Summary -->
             <div class="result-card summary">
               <h3>📋 Resumen de Procesamiento</h3>
@@ -191,8 +191,8 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
         <!-- Action Simulation -->
         <div class="action-section" *ngIf="simulatedFiles.length > 0 && selectedProcessingType">
           <h2>🚀 Simulación de Procesamiento</h2>
-          
-          <button 
+
+          <button
             class="simulate-btn"
             [class.processing]="isSimulating"
             [disabled]="isSimulating"
@@ -232,8 +232,8 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
   styles: [`
     .demo-container {
       min-height: 100vh;
-      background: linear-gradient(135deg, 
-        var(--general_contrasts-15) 0%, 
+      background: linear-gradient(135deg,
+        var(--general_contrasts-15) 0%,
         var(--general_contrasts-5) 100%
       );
       padding: var(--bmb-spacing-l);
@@ -243,7 +243,7 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       text-align: center;
       margin-bottom: var(--bmb-spacing-xl);
       position: relative;
-      
+
       .back-button {
         position: absolute;
         top: 0;
@@ -255,20 +255,20 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
         color: var(--general_contrasts-100);
         cursor: pointer;
         transition: all 0.3s ease;
-        
+
         &:hover {
           background: var(--general_contrasts-25);
           transform: translateX(-4px);
         }
       }
-      
+
       .demo-title {
         font-size: 2rem;
         font-weight: 600;
         color: var(--general_contrasts-100);
         margin: 0 0 var(--bmb-spacing-s) 0;
       }
-      
+
       .demo-subtitle {
         color: var(--general_contrasts-75);
         font-size: 1.1rem;
@@ -292,7 +292,7 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       border: 1px solid var(--general_contrasts-container-outline);
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-l);
-      
+
       h2 {
         color: var(--general_contrasts-100);
         font-size: 1.3rem;
@@ -305,7 +305,7 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       display: flex;
       gap: var(--bmb-spacing-m);
       margin-bottom: var(--bmb-spacing-m);
-      
+
       button {
         background: var(--buttons-primary-normal);
         color: white;
@@ -314,20 +314,20 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
         padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
         cursor: pointer;
         transition: all 0.3s ease;
-        
+
         &:hover:not(:disabled) {
           background: var(--buttons-primary-hover);
           transform: translateY(-2px);
         }
-        
+
         &:disabled {
           opacity: 0.6;
           cursor: not-allowed;
         }
-        
+
         &.clear-files-btn {
           background: var(--semantic-error);
-          
+
           &:hover:not(:disabled) {
             background: darkred;
           }
@@ -339,7 +339,7 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       display: flex;
       flex-direction: column;
       gap: var(--bmb-spacing-s);
-      
+
       .simulated-file {
         display: flex;
         align-items: center;
@@ -348,22 +348,22 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
         background: var(--general_contrasts-5);
         border: 1px solid var(--general_contrasts-container-outline);
         border-radius: var(--bmb-radius-s);
-        
+
         .file-icon {
           font-size: 1.2rem;
         }
-        
+
         .file-name {
           flex: 1;
           color: var(--general_contrasts-100);
           font-weight: 500;
         }
-        
+
         .file-size {
           color: var(--general_contrasts-75);
           font-size: 0.875rem;
         }
-        
+
         .remove-file {
           background: none;
           border: none;
@@ -372,7 +372,7 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
           padding: 2px;
           border-radius: var(--bmb-radius-s);
           transition: background 0.2s ease;
-          
+
           &:hover {
             background: rgba(244, 67, 54, 0.1);
           }
@@ -391,24 +391,24 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       border: 1px solid var(--general_contrasts-container-outline);
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-m);
-      
+
       h3 {
         color: var(--general_contrasts-100);
         font-size: 1.1rem;
         font-weight: 600;
         margin: 0 0 var(--bmb-spacing-m) 0;
       }
-      
+
       &.summary {
         border-color: rgba(var(--color-blue-tec), 0.5);
         background: rgba(var(--color-blue-tec), 0.05);
       }
-      
+
       &.vectorization {
         border-color: var(--semantic-success);
         background: rgba(76, 175, 80, 0.05);
       }
-      
+
       &.storage {
         border-color: #FF9800;
         background: rgba(255, 152, 0, 0.05);
@@ -419,17 +419,17 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       display: flex;
       flex-direction: column;
       gap: var(--bmb-spacing-s);
-      
+
       .detail-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        
+
         .detail-label {
           color: var(--general_contrasts-75);
           font-size: 0.875rem;
         }
-        
+
         .detail-value {
           color: var(--general_contrasts-100);
           font-weight: 600;
@@ -442,16 +442,16 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       display: flex;
       flex-direction: column;
       gap: var(--bmb-spacing-s);
-      
+
       .feature-item {
         display: flex;
         align-items: center;
         gap: var(--bmb-spacing-s);
-        
+
         .feature-icon {
           font-size: 1rem;
         }
-        
+
         .feature-text {
           color: var(--general_contrasts-75);
           font-size: 0.875rem;
@@ -462,8 +462,8 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
 
     .simulate-btn {
       width: 100%;
-      background: linear-gradient(135deg, 
-        var(--semantic-success) 0%, 
+      background: linear-gradient(135deg,
+        var(--semantic-success) 0%,
         #45a049 100%
       );
       color: white;
@@ -474,20 +474,20 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
-      
+
       &:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
       }
-      
+
       &:disabled {
         opacity: 0.8;
         cursor: not-allowed;
       }
-      
+
       &.processing {
-        background: linear-gradient(135deg, 
-          rgb(var(--color-blue-tec)) 0%, 
+        background: linear-gradient(135deg,
+          rgb(var(--color-blue-tec)) 0%,
           var(--buttons-primary-hover) 100%
         );
       }
@@ -499,29 +499,29 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       background: rgba(76, 175, 80, 0.1);
       border: 1px solid var(--semantic-success);
       border-radius: var(--bmb-radius-s);
-      
+
       .success-message {
         color: var(--semantic-success);
         font-weight: 600;
         margin-bottom: var(--bmb-spacing-m);
         text-align: center;
       }
-      
+
       .simulation-stats {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: var(--bmb-spacing-s);
-        
+
         .stat-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          
+
           .stat-label {
             color: var(--general_contrasts-75);
             font-size: 0.875rem;
           }
-          
+
           .stat-value {
             color: var(--general_contrasts-100);
             font-weight: 600;
@@ -539,7 +539,7 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
         max-height: 100vh !important;
         overflow-y: auto !important;
       }
-      
+
       /* ✅ FORCE MOBILE HEADER LAYOUT */
       .demo-header {
         margin-bottom: var(--bmb-spacing-m) !important;
@@ -548,7 +548,7 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
         align-items: center !important;
         gap: var(--bmb-spacing-s) !important;
         text-align: center !important;
-        
+
         .back-button {
           margin-right: 0 !important;
           margin-bottom: var(--bmb-spacing-s) !important;
@@ -565,19 +565,19 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
           align-items: center !important;
           gap: var(--bmb-spacing-xs) !important;
           border: none !important;
-          
+
           &:hover {
             background: var(--general_contrasts-25) !important;
             transform: translateX(-4px) !important;
           }
         }
-        
+
         .demo-title {
           order: 2 !important;
           font-size: 1.3rem !important;
           margin: 0 !important;
         }
-        
+
         .demo-subtitle {
           order: 3 !important;
           font-size: 0.9rem !important;
@@ -590,19 +590,19 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
       .demo-container {
         padding: var(--bmb-spacing-m);
       }
-      
+
       .demo-header .demo-title {
         font-size: 1.5rem;
       }
-      
+
       .file-controls {
         flex-direction: column;
       }
-      
+
       .result-cards {
         grid-template-columns: 1fr;
       }
-      
+
       .summary-details .detail-item,
       .simulation-stats .stat-item {
         flex-direction: column;
@@ -615,16 +615,16 @@ import { ProcessingTypeService } from '../../shared/services/processing-type.ser
 export class ProcessingChoiceDemoComponent implements OnInit {
   /** Array of simulated files for demonstration purposes */
   simulatedFiles: any[] = [];
-  
+
   /** Currently selected processing type for simulation */
   selectedProcessingType = 'both';
-  
+
   /** Flag indicating if processing simulation is running */
   isSimulating = false;
-  
+
   /** Current progress of processing simulation (0-100) */
   simulationProgress = 0;
-  
+
   /** Flag indicating if processing simulation has completed */
   simulationComplete = false;
 
@@ -640,7 +640,7 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   /**
    * Creates an instance of ProcessingChoiceDemoComponent
-   * 
+   *
    * @param router - Angular router for navigation
    * @param location - Location service for browser back navigation
    * @param processingTypeService - Service for processing type logic
@@ -653,7 +653,7 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   /**
    * Component initialization lifecycle method
-   * 
+   *
    * @description Initializes the demo with 3 sample simulated files
    * to provide an immediate demonstration of processing capabilities.
    */
@@ -666,7 +666,7 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   /**
    * Adds a new simulated file to the demonstration
-   * 
+   *
    * @description Creates a simulated medical document file with random
    * properties including file type, size, and name for demonstration purposes.
    * Limited to maximum of 10 files for performance reasons.
@@ -682,11 +682,11 @@ export class ProcessingChoiceDemoComponent implements OnInit {
       'LOPEZ_FERNANDEZ_JOSE_ANTONIO',
       'MARTINEZ_RAMIREZ_LUCIA_FERNANDA'
     ];
-    
+
     const patientName = patientNames[Math.floor(Math.random() * patientNames.length)];
     const expediente = '30000' + Math.floor(Math.random() * 99999).toString().padStart(5, '0');
     const docNumber = '600' + Math.floor(Math.random() * 9999999).toString().padStart(7, '0');
-    
+
     const file = {
       id: Date.now() + Math.random(),
       icon: fileType.icon,
@@ -700,9 +700,9 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   /**
    * Removes a simulated file from the demonstration
-   * 
+   *
    * @param id - Unique identifier of the file to remove
-   * 
+   *
    * @description Filters out the specified file from the simulated files array
    * and resets simulation completion status for fresh demonstrations.
    */
@@ -713,7 +713,7 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   /**
    * Clears all simulated files from the demonstration
-   * 
+   *
    * @description Resets the simulated files array to empty state and clears
    * simulation completion status for starting fresh demonstrations.
    */
@@ -724,9 +724,9 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   /**
    * Handles processing type selection changes
-   * 
+   *
    * @param type - The newly selected processing type
-   * 
+   *
    * @description Updates the component's selected processing type and resets
    * simulation completion to reflect new processing capabilities.
    */
@@ -737,7 +737,7 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   /**
    * Simulates the document processing workflow
-   * 
+   *
    * @description Runs a realistic simulation of document processing with
    * progress updates over 5 seconds to demonstrate processing flow to users.
    */
@@ -795,7 +795,7 @@ export class ProcessingChoiceDemoComponent implements OnInit {
 
   getSimulatedProcessingTime(): number {
     const baseTime = this.simulatedFiles.length * 0.5; // 0.5s per file base
-    const processingMultiplier = this.selectedProcessingType === 'both' ? 1.5 : 
+    const processingMultiplier = this.selectedProcessingType === 'both' ? 1.5 :
                                 this.selectedProcessingType === 'vectorized' ? 1.2 : 1.0;
     return Math.round(baseTime * processingMultiplier * 10) / 10; // Round to 1 decimal
   }
@@ -807,4 +807,4 @@ export class ProcessingChoiceDemoComponent implements OnInit {
   goBack(): void {
     this.location.back();
   }
-} 
+}

@@ -7,7 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 
 /**
  * Interface for Quick Pill data structure
- * 
+ *
  * @interface QuickPillData
  * @description Defines the structure for quick pill items with unique ID,
  * text content, visual icon, category classification, and priority level.
@@ -15,23 +15,23 @@ import { takeUntil } from 'rxjs/operators';
 interface QuickPillData {
   /** Unique identifier for the pill */
   id: string;
-  
+
   /** Text content or question template */
   text: string;
-  
+
   /** Icon emoji for visual representation */
   icon: string;
-  
+
   /** Category classification (symptoms, diagnosis, etc.) */
   category: string;
-  
+
   /** Priority level (high, medium, low) */
   priority: string;
 }
 
 /**
  * Interface for pill form data
- * 
+ *
  * @interface PillFormData
  * @description Structure for form input data when creating or editing pills.
  * Similar to QuickPillData but without ID (generated automatically).
@@ -39,30 +39,30 @@ interface QuickPillData {
 interface PillFormData {
   /** Text content or question template */
   text: string;
-  
+
   /** Icon emoji for visual representation */
   icon: string;
-  
+
   /** Category classification */
   category: string;
-  
+
   /** Priority level */
   priority: string;
 }
 
 /**
  * Admin Pills Manager Component for managing quick question templates
- * 
+ *
  * @description Administrative interface for managing quick pill templates
  * used in the medical chat system. Provides full CRUD operations for
  * organizing and maintaining question templates by category and priority.
- * 
+ *
  * @example
  * ```typescript
  * // Used in admin route
  * // Route: '/admin-pills'
  * <app-admin-pills-manager></app-admin-pills-manager>
- * 
+ *
  * // Provides:
  * // - List of existing pills with categorization
  * // - Create new pill with form modal
@@ -70,7 +70,7 @@ interface PillFormData {
  * // - Delete pill with confirmation
  * // - Category and priority management
  * ```
- * 
+ *
  * @features
  * - CRUD operations for quick pill templates
  * - Category-based organization (symptoms, diagnosis, treatment, etc.)
@@ -80,7 +80,7 @@ interface PillFormData {
  * - Responsive table layout with hover effects
  * - Confirmation dialogs for destructive actions
  * - Local storage persistence
- * 
+ *
  * @categories
  * - symptoms: Symptom-related questions
  * - diagnosis: Diagnostic inquiries
@@ -88,12 +88,12 @@ interface PillFormData {
  * - urgency: Urgency assessments
  * - history: Medical history questions
  * - general: General medical questions
- * 
+ *
  * @priorities
  * - high: Critical/urgent questions
  * - medium: Standard questions
  * - low: Optional/supplementary questions
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -105,113 +105,94 @@ interface PillFormData {
       <!-- Header siguiendo patrón existente -->
       <div class="global-header">
         <div class="header-top">
-          <button 
-            class="global-back-button"
-            (click)="goBack()"
-            title="Volver al dashboard">
-            <span class="back-icon">←</span>
-            <span class="back-text">Volver</span>
-          </button>
-          
-          <div class="title-container">
-            <h1 class="main-title">💊 Gestión de Pastillas</h1>
-            <div class="main-subtitle">
-              Administra las pastillas de preguntas rápidas para el chat médico
+          <div class="header-back-row">
+            <button
+              class="global-back-button"
+              (click)="goBack()"
+              title="Volver al dashboard">
+              <span class="back-icon">←</span>
+              <span class="back-text">Volver</span>
+            </button>
+          </div>
+
+          <div class="header-title-row">
+            <div class="title-container">
+              <h1 class="main-title">💊 Gestión de Pastillas</h1>
+              <div class="main-subtitle">
+                Administra las pastillas de preguntas rápidas para el chat médico
+              </div>
+            </div>
+
+            <div class="header-actions">
+              <button class="add-btn" (click)="openCreateModal()">
+                <span class="btn-icon">➕</span>
+                <span class="btn-text">Nueva Pastilla</span>
+              </button>
             </div>
           </div>
         </div>
-        
-        <div class="header-actions">
-          <button class="add-btn" (click)="openCreateModal()">
-            <span class="btn-icon">➕</span>
-            <span class="btn-text">Nueva Pastilla</span>
-          </button>
-        </div>
       </div>
 
-      <!-- Tabla simple siguiendo patrón existente -->
+      <!-- Premium Pills List -->
       <div class="admin-content">
-        <div class="global-admin-panel pills-table-container">
-          
-          <!-- Vista de tabla para pantallas grandes -->
-          <table class="pills-table desktop-view" *ngIf="pills.length > 0">
-            <thead>
-              <tr>
-                <th>Icono</th>
-                <th>Texto</th>
-                <th>Categoría</th>
-                <th>Prioridad</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let pill of pills; trackBy: trackByPill">
-                <td class="icon-cell">{{ pill.icon }}</td>
-                <td class="text-cell">{{ pill.text }}</td>
-                <td class="category-cell">
-                  <span class="category-badge" [class]="'category-' + pill.category">
-                    {{ getCategoryLabel(pill.category) }}
-                  </span>
-                </td>
-                <td class="priority-cell">
-                  <span class="priority-badge" [class]="'priority-' + pill.priority">
-                    {{ getPriorityLabel(pill.priority) }}
-                  </span>
-                </td>
-                <td class="actions-cell">
-                  <button class="action-btn edit-btn" (click)="openEditModal(pill)">✏️</button>
-                  <button class="action-btn delete-btn" (click)="openDeleteModal(pill)">🗑️</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="pills-section">
+          <h3 class="section-title">💊 Pastillas Disponibles</h3>
 
-          <!-- Vista de tarjetas para pantallas pequeñas -->
-          <div class="pills-cards mobile-view" *ngIf="pills.length > 0">
-            <div class="pill-card" *ngFor="let pill of pills; trackBy: trackByPill">
-              
-              <!-- Card Header -->
-              <div class="card-header">
-                <div class="pill-icon">{{ pill.icon }}</div>
-                <div class="pill-text">{{ pill.text }}</div>
-              </div>
-              
-              <!-- Card Content -->
-              <div class="card-content">
-                <div class="pill-info">
-                  <div class="info-item">
-                    <span class="info-label">Categoría:</span>
+          <!-- Premium Pills List -->
+          <div class="pills-list" *ngIf="pills.length > 0">
+            <div
+              *ngFor="let pill of pills; trackBy: trackByPill"
+              class="pill-item"
+              [class]="'priority-' + pill.priority">
+
+              <!-- Pill Icon & Info -->
+              <div class="pill-info">
+                <div class="pill-icon-container">
+                  <span class="pill-icon">{{ pill.icon }}</span>
+                </div>
+                <div class="pill-content">
+                  <div class="pill-text">{{ pill.text }}</div>
+                  <div class="pill-meta">
                     <span class="category-badge" [class]="'category-' + pill.category">
                       {{ getCategoryLabel(pill.category) }}
                     </span>
-                  </div>
-                  <div class="info-item">
-                    <span class="info-label">Prioridad:</span>
-                    <span class="priority-badge" [class]="'priority-' + pill.priority">
+                    <span class="priority-indicator" [class]="'priority-' + pill.priority">
                       {{ getPriorityLabel(pill.priority) }}
                     </span>
                   </div>
                 </div>
-                
-                <!-- Card Actions -->
-                <div class="card-actions">
-                  <button class="action-btn edit-btn" (click)="openEditModal(pill)">
-                    <span>✏️</span>
-                    <span>Editar</span>
-                  </button>
-                  <button class="action-btn delete-btn" (click)="openDeleteModal(pill)">
-                    <span>🗑️</span>
-                    <span>Eliminar</span>
-                  </button>
-                </div>
               </div>
-              
+
+              <!-- Pill Actions -->
+              <div class="pill-actions">
+                <button
+                  class="action-button edit-button"
+                  (click)="openEditModal(pill)"
+                  title="Editar pastilla">
+                  <span class="action-icon">✏️</span>
+                  <span class="action-text">Editar</span>
+                </button>
+                <button
+                  class="action-button delete-button"
+                  (click)="openDeleteModal(pill)"
+                  title="Eliminar pastilla">
+                  <span class="action-icon">🗑️</span>
+                  <span class="action-text">Eliminar</span>
+                </button>
+              </div>
+
             </div>
           </div>
 
+          <!-- Empty State -->
           <div class="empty-state" *ngIf="pills.length === 0">
-            <p>No hay pastillas configuradas.</p>
-            <button class="add-btn" (click)="openCreateModal()">➕ Crear Primera Pastilla</button>
+            <div class="empty-icon">💊</div>
+            <h3 class="empty-title">No hay pastillas configuradas</h3>
+            <p class="empty-subtitle">Crea tu primera pastilla para empezar a configurar preguntas rápidas</p>
+            <button class="empty-action-btn" (click)="openCreateModal()">
+              <span class="btn-icon">➕</span>
+              <span class="btn-text">Crear Primera Pastilla</span>
+            </button>
           </div>
         </div>
       </div>
@@ -252,9 +233,9 @@ interface PillFormData {
                     placeholder="🩺"
                     class="form-input">
                   <div class="icon-options">
-                    <button 
-                      type="button" 
-                      *ngFor="let icon of iconOptions" 
+                    <button
+                      type="button"
+                      *ngFor="let icon of iconOptions"
                       class="icon-option"
                       [class.selected]="formData.icon === icon"
                       (click)="selectIcon(icon)">
@@ -345,440 +326,398 @@ interface PillFormData {
     </div>
   `,
   styles: [`
-    /* Reutiliza patrones de dashboard.component.ts y patient-management.component.ts */
-    .admin-container {
-      min-height: 100vh;
-      background: var(--medical-background);
-    }
+    /* 🎨 ADMIN PILLS MANAGER - PREMIUM LIST DESIGN */
 
-    /* Header siguiendo patrón de patient-management */
-    .admin-header {
-      padding: 1rem 2rem;
-      background: var(--medical-surface);
-      border-bottom: 1px solid var(--medical-divider);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 2rem;
-    }
-
-    .back-link {
-      color: var(--medical-blue);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .back-link:hover {
-      color: var(--color-blue-tec);
-    }
-
-    .admin-header h1 {
-      flex: 1;
-      margin: 0;
-      color: var(--medical-blue);
-      font-size: 1.5rem;
-    }
-
-    .add-btn {
-      background: linear-gradient(135deg, var(--medical-blue) 0%, rgba(var(--color-blue-tec), 0.9) 100%);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: var(--bmb-radius-m, 1rem);
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.2);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.95rem;
-      white-space: nowrap;
-    }
-
-    .add-btn .btn-icon {
-      font-size: 1.1rem;
-      line-height: 1;
-    }
-
-    .add-btn .btn-text {
-      font-weight: 600;
-      color: white;
-    }
-
-    .add-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.3);
-    }
-
-    /* Content area */
     .admin-content {
-      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 var(--bmb-spacing-l);
     }
 
-    /* Tabla siguiendo patrón premium */
-    .pills-table-container {
-      background: var(--medical-surface);
-      border-radius: var(--bmb-radius-m, 1rem);
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-    }
+    .pills-section {
+      background: var(--general_contrasts-surface);
+      border: 1px solid var(--general_contrasts-container-outline);
+      border-radius: var(--bmb-radius-l);
+      padding: var(--bmb-spacing-l);
+      box-shadow: var(--medical-shadow);
+      transition: all 0.3s ease;
 
-    /* 🎯 RESET Y DEBUG DE TABLA */
-    .pills-table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: auto; /* Auto para distribución natural */
-    }
-    
-    .pills-table *,
-    .pills-table *::before,
-    .pills-table *::after {
-      box-sizing: border-box;
-    }
-      
-    .pills-table th {
-      background: linear-gradient(135deg, #f8fafb 0%, #f1f5f9 100%);
-      padding: 1rem;
-      text-align: left;
-      font-weight: 600;
-      color: var(--medical-text-primary);
-      border-bottom: 1px solid var(--medical-divider);
-      position: relative;
-      vertical-align: middle;
-    }
-    
-    /* DEBUG: Anchos específicos para cada columna */
-    .pills-table th:nth-child(1) {
-      width: 10%;
-      text-align: center;
-    }
-    
-    .pills-table th:nth-child(2) {
-      width: 40%;
-      text-align: left;
-    }
-    
-    .pills-table th:nth-child(3) {
-      width: 20%;
-      text-align: center;
-    }
-    
-    .pills-table th:nth-child(4) {
-      width: 15%;
-      text-align: center;
-    }
-    
-    .pills-table th:nth-child(5) {
-      width: 15%;
-      text-align: center;
-    }
-      
-    .pills-table td {
-      padding: 1rem;
-      border-bottom: 1px solid var(--medical-divider);
-      vertical-align: middle;
-      position: relative;
-    }
-    
-    /* DEBUG: Alineación de celdas de datos */
-    .pills-table td:nth-child(1) {
-      text-align: center;
-      font-size: 1.5rem;
-    }
-    
-    .pills-table td:nth-child(2) {
-      text-align: left;
-      font-weight: 500;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-    }
-    
-    .pills-table td:nth-child(3) {
-      text-align: center;
-    }
-    
-    .pills-table td:nth-child(4) {
-      text-align: center;
-    }
-    
-    .pills-table td:nth-child(5) {
-      text-align: center;
-    }
-      
-    .pills-table tbody tr:hover {
-      background: var(--medical-context-active);
-    }
+      &:hover {
+        box-shadow: var(--medical-shadow-hover);
+      }
 
-    /* Clases específicas removidas - Ahora se usan nth-child para mayor precisión */
-
-    .category-badge, .priority-badge {
-      padding: 0.25rem 0.75rem;
-      border-radius: var(--bmb-radius-full);
-      font-size: 0.875rem;
-      font-weight: 500;
-    }
-
-    /* Badges de categoría */
-    .category-diagnosis { background: #dbeafe; color: #1e40af; }
-    .category-symptoms { background: #fef3c7; color: #92400e; }
-    .category-treatment { background: #d1fae5; color: #065f46; }
-    .category-medication { background: #e0e7ff; color: #3730a3; }
-    .category-tests { background: #fce7f3; color: #be185d; }
-    .category-emergency { background: #fee2e2; color: #dc2626; }
-    .category-follow-up { background: #f0fdf4; color: #166534; }
-    .category-prevention { background: #ecfdf5; color: #047857; }
-
-    /* Badges de prioridad */
-    .priority-high { background: #fee2e2; color: #dc2626; }
-    .priority-medium { background: #fef3c7; color: #d97706; }
-    .priority-low { background: #ecfdf5; color: #059669; }
-
-    .actions-cell {
-      text-align: center;
-      width: 120px;
-    }
-
-    .action-btn {
-      background: none;
-      border: 1px solid var(--medical-divider);
-      padding: 0.5rem;
-      margin: 0 0.25rem;
-      border-radius: var(--bmb-radius-s);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 1rem;
-    }
-
-    .action-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .edit-btn:hover {
-      background: #fef3c7;
-      border-color: #d97706;
-    }
-
-    .delete-btn:hover {
-      background: #fee2e2;
-      border-color: #dc2626;
-    }
-
-    /* Estado vacío */
-    .empty-state {
-      text-align: center;
-      padding: 3rem;
-      color: var(--medical-text-secondary);
-    }
-
-    .empty-state .add-btn {
-      margin-top: 1rem;
-    }
-
-    /* 🎯 FORM ROW - ESPECÍFICO DEL COMPONENTE */
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--bmb-spacing-m);
-    }
-
-    @media (max-width: 950px) {
-      .form-row {
-        grid-template-columns: 1fr;
+      .section-title {
+        color: var(--general_contrasts-text-primary);
+        font-size: var(--text-2xl);
+        font-weight: var(--font-bold);
+        margin: 0 0 var(--bmb-spacing-l) 0;
+        text-align: center;
+        font-family: var(--font-display);
+        background: linear-gradient(135deg,
+          rgb(var(--color-blue-tec)) 0%,
+          rgb(var(--color-mariner-100)) 100%
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
     }
 
-    /* 📱 VISTA MÓVIL - TARJETAS RESPONSIVE */
-    .mobile-view {
-      display: none; /* Oculto por defecto, se muestra en móvil */
-    }
-    
-    .pills-cards {
+    /* 📋 PREMIUM PILLS LIST */
+    .pills-list {
       display: flex;
       flex-direction: column;
       gap: var(--bmb-spacing-m);
     }
 
-    .pill-card {
+    .pill-item {
       background: var(--general_contrasts-15);
       border: 1px solid var(--general_contrasts-container-outline);
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-m);
-      transition: all 0.3s ease;
-      
-      &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
-      }
-    }
-
-    .card-header {
       display: flex;
       align-items: center;
       gap: var(--bmb-spacing-m);
-      margin-bottom: var(--bmb-spacing-m);
-      padding-bottom: var(--bmb-spacing-m);
-      border-bottom: 1px solid var(--general_contrasts-25);
-      
-      .pill-icon {
-        font-size: 2rem;
-        min-width: 50px;
-        text-align: center;
-      }
-      
-      .pill-text {
-        flex: 1;
-        font-weight: 600;
-        color: var(--general_contrasts-100);
-        font-size: 1.1rem;
-        line-height: 1.4;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      border-left: none;
+      border-right: none;
+
+      &:hover {
+        background: rgba(var(--color-blue-tec), 0.15);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.15);
       }
     }
 
-    .card-content {
-      .pill-info {
-        margin-bottom: var(--bmb-spacing-m);
-        
-        .info-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: var(--bmb-spacing-s);
-          
-          .info-label {
-            font-weight: 500;
-            color: var(--general_contrasts-75);
-            font-size: 0.9rem;
-          }
-        }
-      }
-      
-      .card-actions {
-        display: flex;
-        gap: var(--bmb-spacing-s);
-        
-        .action-btn {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: var(--bmb-spacing-xs);
-          padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-          border-radius: var(--bmb-radius-s);
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          border: none;
-          font-size: 0.9rem;
-          
-          &.edit-btn {
-            background: rgba(var(--color-blue-tec), 0.1);
-            color: rgb(var(--color-blue-tec));
-            
-            &:hover {
-              background: rgba(var(--color-blue-tec), 0.2);
-              transform: translateY(-1px);
-            }
-          }
-          
-          &.delete-btn {
-            background: rgba(244, 67, 54, 0.1);
-            color: #EF4444;
-            
-            &:hover {
-              background: rgba(244, 67, 54, 0.2);
-              transform: translateY(-1px);
-            }
-          }
-        }
-      }
-    }
+    .pill-info {
+      display: flex;
+      align-items: center;
+      gap: var(--bmb-spacing-m);
+      flex: 1;
+      min-width: 0;
 
-    /* 📱 RESPONSIVE BREAKPOINTS */
-    @media (max-width: 950px) {
-      .desktop-view {
-        display: none !important; /* Ocultar tabla en móvil */
-      }
-      
-      .mobile-view {
-        display: block !important; /* Mostrar tarjetas en móvil */
-      }
-      
-      .global-admin-panel {
-        padding: var(--bmb-spacing-m) !important;
-      }
-    }
-
-    @media (min-width: 951px) {
-      .desktop-view {
-        display: table !important; /* Mostrar tabla en desktop */
-      }
-      
-      .mobile-view {
-        display: none !important; /* Ocultar tarjetas en desktop */
-      }
-    }
-
-    /* 🎯 ICON SELECTOR - ESPECÍFICO DEL COMPONENTE */
-    .icon-selector {
-      .icon-options {
-        display: grid;
-        grid-template-columns: repeat(8, 1fr);
-        gap: var(--bmb-spacing-s);
-        margin-top: var(--bmb-spacing-s);
-      }
-
-      .icon-option {
-        aspect-ratio: 1;
-        border: 2px solid var(--general_contrasts-25);
-        border-radius: var(--bmb-radius-s);
-        background: white;
-        cursor: pointer;
+      .pill-icon-container {
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 48px;
+        height: 48px;
+        background: rgba(var(--color-blue-tec), 0.1);
+        border: 1px solid rgba(var(--color-blue-tec), 0.2);
+        border-radius: var(--bmb-radius-m);
+        flex-shrink: 0;
+
+        .pill-icon {
+          font-size: var(--text-xl);
+        }
+      }
+
+      .pill-content {
+        flex: 1;
+        min-width: 0;
+
+        .pill-text {
+          font-size: var(--text-lg);
+          font-weight: var(--font-semibold);
+          color: var(--general_contrasts-text-primary);
+          margin-bottom: var(--bmb-spacing-xs);
+          line-height: var(--leading-tight);
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+
+        .pill-meta {
+          display: flex;
+          align-items: center;
+          gap: var(--bmb-spacing-s);
+          flex-wrap: wrap;
+
+          .category-badge {
+            padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
+            border-radius: var(--bmb-radius-s);
+            font-size: var(--text-xs);
+            font-weight: var(--font-semibold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+            &.category-symptoms {
+              background: rgba(244, 67, 54, 0.1);
+              color: var(--semantic-error);
+              border: 1px solid rgba(244, 67, 54, 0.2);
+            }
+
+            &.category-diagnosis {
+              background: rgba(var(--color-blue-tec), 0.1);
+              color: rgba(var(--color-blue-tec), 1);
+              border: 1px solid rgba(var(--color-blue-tec), 0.2);
+            }
+
+            &.category-treatment {
+              background: rgba(76, 175, 80, 0.1);
+              color: var(--semantic-success);
+              border: 1px solid rgba(76, 175, 80, 0.2);
+            }
+
+            &.category-general {
+              background: rgba(158, 158, 158, 0.1);
+              color: var(--general_contrasts-75);
+              border: 1px solid rgba(158, 158, 158, 0.2);
+            }
+          }
+
+          .priority-indicator {
+            padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
+            border-radius: var(--bmb-radius-s);
+            font-size: var(--text-xs);
+            font-weight: var(--font-bold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+
+            &.priority-high {
+              background: rgba(244, 67, 54, 0.1);
+              color: var(--semantic-error);
+            }
+
+            &.priority-medium {
+              background: rgba(var(--color-blue-tec), 0.1);
+              color: rgba(var(--color-blue-tec), 1);
+            }
+
+            &.priority-low {
+              background: rgba(76, 175, 80, 0.1);
+              color: var(--semantic-success);
+            }
+          }
+        }
+      }
+    }
+
+    .pill-actions {
+      display: flex;
+      gap: var(--bmb-spacing-s);
+      flex-shrink: 0;
+
+      .action-button {
+        display: flex;
+        align-items: center;
+        gap: var(--bmb-spacing-xs);
+        padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+        border: 1px solid var(--general_contrasts-container-outline);
+        border-radius: var(--bmb-radius-s);
+        background: var(--general_contrasts-surface);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: var(--text-sm);
+        font-weight: var(--font-medium);
+
+        .action-icon {
+          font-size: var(--text-sm);
+        }
+
+        .action-text {
+          font-size: var(--text-sm);
+        }
+
+        &.edit-button {
+          color: rgba(var(--color-blue-tec), 1);
+          border-color: rgba(var(--color-blue-tec), 0.2);
+
+          &:hover {
+            background: rgba(var(--color-blue-tec), 0.1);
+            border-color: rgba(var(--color-blue-tec), 0.4);
+            transform: translateY(-1px);
+          }
+        }
+
+        &.delete-button {
+          color: var(--semantic-error);
+          border-color: rgba(244, 67, 54, 0.2);
+
+          &:hover {
+            background: rgba(244, 67, 54, 0.1);
+            border-color: rgba(244, 67, 54, 0.4);
+            transform: translateY(-1px);
+          }
+        }
+      }
+    }
+
+    /* 🚫 EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: var(--bmb-spacing-xxl) var(--bmb-spacing-l);
+
+      .empty-icon {
+        font-size: 4rem;
+        margin-bottom: var(--bmb-spacing-l);
+        opacity: 0.6;
+      }
+
+      .empty-title {
         font-size: var(--text-xl);
-        transition: all 0.2s ease;
+        font-weight: var(--font-bold);
+        color: var(--general_contrasts-text-primary);
+        margin: 0 0 var(--bmb-spacing-s) 0;
+        font-family: var(--font-display);
+      }
+
+      .empty-subtitle {
+        font-size: var(--text-lg);
+        color: var(--general_contrasts-text-secondary);
+        margin: 0 0 var(--bmb-spacing-l) 0;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: var(--leading-relaxed);
+      }
+
+      .empty-action-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--bmb-spacing-s);
+        padding: var(--bmb-spacing-m) var(--bmb-spacing-xl);
+        background: linear-gradient(135deg,
+          rgba(var(--color-blue-tec), 1) 0%,
+          rgba(var(--color-blue-tec), 0.9) 100%
+        );
+        color: white;
+        border: none;
+        border-radius: var(--bmb-radius-m);
+        font-size: var(--text-lg);
+        font-weight: var(--font-semibold);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 auto;
+        box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.3);
 
         &:hover {
-          border-color: rgb(var(--color-blue-tec));
-          background: rgba(var(--color-blue-tec), 0.05);
-          transform: scale(1.05);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(var(--color-blue-tec), 0.4);
         }
 
-        &.selected {
-          border-color: rgb(var(--color-blue-tec));
-          background: rgba(var(--color-blue-tec), 0.1);
+        .btn-icon {
+          font-size: var(--text-lg);
         }
       }
     }
 
-    /* 📱 RESPONSIVE ESPECÍFICO */
+    /* 📱 RESPONSIVE DESIGN */
     @media (max-width: 950px) {
-      .icon-selector .icon-options {
-        grid-template-columns: repeat(6, 1fr);
+      .admin-content {
+        padding: 0 var(--bmb-spacing-s);
       }
-    }
 
-    /* 🎯 PILLS TABLE - ESTILOS SIMPLES PARA DEPURACIÓN */
-    .pills-table {
-      tbody tr {
-        transition: background-color 0.2s ease;
-        
-        &:hover {
-          background-color: rgba(var(--color-blue-tec), 0.05) !important;
+      .pills-section {
+        padding: var(--bmb-spacing-m);
+
+        .section-title {
+          font-size: var(--text-xl);
+        }
+
+        .pills-count {
+          flex-direction: column;
+          gap: var(--bmb-spacing-xs);
+
+          .count-number {
+            font-size: var(--text-lg);
+          }
+
+          .count-label {
+            font-size: var(--text-xs);
+          }
+        }
+      }
+
+      .pills-list {
+        gap: var(--bmb-spacing-s);
+      }
+
+      .pill-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--bmb-spacing-s);
+        padding: var(--bmb-spacing-s);
+
+        .pill-info {
+          flex-direction: row;
+          align-items: flex-start;
+
+          .pill-icon-container {
+            width: 40px;
+            height: 40px;
+
+            .pill-icon {
+              font-size: var(--text-lg);
+            }
+          }
+
+          .pill-content {
+            .pill-text {
+              font-size: var(--text-lg);
+              margin-bottom: var(--bmb-spacing-xs);
+            }
+
+            .pill-meta {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: var(--bmb-spacing-xs);
+            }
+          }
+        }
+
+        .pill-actions {
+          justify-content: center;
+          flex-wrap: wrap;
+
+          .action-button {
+            flex: 1;
+            min-width: 120px;
+            justify-content: center;
+
+            .action-text {
+              display: block;
+            }
+          }
+        }
+      }
+
+      .empty-state {
+        padding: var(--bmb-spacing-xl) var(--bmb-spacing-s);
+
+        .empty-icon {
+          font-size: 3rem;
+        }
+
+        .empty-title {
+          font-size: var(--text-lg);
+        }
+
+        .empty-subtitle {
+          font-size: var(--text-lg);
+        }
+
+        .empty-action-btn {
+          width: 100%;
+          max-width: 300px;
+          justify-content: center;
         }
       }
     }
-    
-    /* 📱 MOBILE CARDS - ESTILOS SIMPLES PARA DEPURACIÓN */
-    .pill-card {
-      transition: background-color 0.2s ease;
-      
-      &:hover {
-        background-color: rgba(var(--color-blue-tec), 0.05) !important;
+
+    @media (max-width: 1200px) and (min-width: 951px) {
+      .admin-content {
+        max-width: 1000px;
+      }
+
+      .pill-item {
+        .pill-actions {
+          .action-text {
+            display: none;
+          }
+        }
       }
     }
   `]
@@ -789,19 +728,19 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /** Array of quick pill data items */
   pills: QuickPillData[] = [];
-  
+
   /** Form modal visibility state */
   showFormModal = false;
-  
+
   /** Delete confirmation modal visibility state */
   showDeleteModal = false;
-  
+
   /** Flag indicating if form is in edit mode */
   isEditMode = false;
-  
+
   /** Reference to pill being deleted */
   pillToDelete: QuickPillData | null = null;
-  
+
   /** ID of pill being edited */
   editingPillId: string | null = null;
 
@@ -818,14 +757,14 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Creates an instance of AdminPillsManagerComponent
-   * 
+   *
    * @description Initializes the component with default form state
    */
   constructor() {}
 
   /**
    * Component initialization lifecycle hook
-   * 
+   *
    * @description Loads existing pills from localStorage on component initialization
    */
   ngOnInit(): void {
@@ -834,7 +773,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Component destruction lifecycle hook
-   * 
+   *
    * @description Cleans up subscriptions to prevent memory leaks
    */
   ngOnDestroy(): void {
@@ -844,7 +783,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Loads pills from mock data
-   * 
+   *
    * @private
    * @description Initializes the pills array with default medical templates
    * for demonstration purposes. In production, this would load from a service or API.
@@ -863,10 +802,10 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Opens the create pill modal
-   * 
+   *
    * @description Sets up the form for creating a new pill by resetting
    * form data and opening the modal in create mode
-   * 
+   *
    * @example
    * ```typescript
    * this.openCreateModal(); // Opens modal for new pill creation
@@ -880,12 +819,12 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Opens the edit pill modal
-   * 
+   *
    * @param pill - The pill to edit
-   * 
+   *
    * @description Sets up the form for editing an existing pill by
    * populating form data and opening the modal in edit mode
-   * 
+   *
    * @example
    * ```typescript
    * this.openEditModal(existingPill); // Opens modal for editing
@@ -905,12 +844,12 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Opens the delete confirmation modal
-   * 
+   *
    * @param pill - The pill to delete
-   * 
+   *
    * @description Sets up the delete confirmation modal with
    * reference to the pill to be deleted
-   * 
+   *
    * @example
    * ```typescript
    * this.openDeleteModal(pillToDelete); // Opens delete confirmation
@@ -923,7 +862,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Closes the form modal
-   * 
+   *
    * @description Hides the form modal and resets form data
    */
   closeFormModal(): void {
@@ -933,7 +872,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Closes the delete confirmation modal
-   * 
+   *
    * @description Hides the delete modal and clears delete reference
    */
   closeDeleteModal(): void {
@@ -943,7 +882,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Resets the form to default values
-   * 
+   *
    * @private
    * @description Clears all form data and resets to default state
    */
@@ -959,11 +898,11 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Selects an icon for the pill
-   * 
+   *
    * @param icon - The icon emoji to select
-   * 
+   *
    * @description Updates the form data with the selected icon
-   * 
+   *
    * @example
    * ```typescript
    * this.selectIcon('💊'); // Sets pill icon to medicine emoji
@@ -975,10 +914,10 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Saves the pill (create or update)
-   * 
+   *
    * @description Handles both creating new pills and updating existing ones
    * based on the current form mode. Uses mock data for demonstration.
-   * 
+   *
    * @example
    * ```typescript
    * this.savePill(); // Saves current form data as new or updated pill
@@ -1014,9 +953,9 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Confirms and executes pill deletion
-   * 
+   *
    * @description Removes the selected pill from the array using mock data
-   * 
+   *
    * @example
    * ```typescript
    * this.confirmDelete(); // Deletes the pill and closes modal
@@ -1032,12 +971,12 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Gets the display label for a category
-   * 
+   *
    * @param category - The category key
    * @returns Localized category label
-   * 
+   *
    * @description Converts category keys to user-friendly Spanish labels
-   * 
+   *
    * @example
    * ```typescript
    * this.getCategoryLabel('symptoms'); // Returns "Síntomas"
@@ -1059,12 +998,12 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * Gets the display label for a priority
-   * 
+   *
    * @param priority - The priority key
    * @returns Localized priority label
-   * 
+   *
    * @description Converts priority keys to user-friendly Spanish labels
-   * 
+   *
    * @example
    * ```typescript
    * this.getPriorityLabel('high'); // Returns "Alta"
@@ -1081,22 +1020,22 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
 
   /**
    * TrackBy function for pills list optimization
-   * 
+   *
    * @param index - Array index (unused)
    * @param pill - Pill object
    * @returns Unique identifier for the pill
-   * 
+   *
    * @description Helps Angular track pills for efficient DOM updates
    */
   trackByPill(index: number, pill: QuickPillData): string {
     return pill.id;
   }
-  
+
   /**
    * Navigates back to the previous page
-   * 
+   *
    * @description Uses browser history to go back to the previous page
-   * 
+   *
    * @example
    * ```typescript
    * this.goBack(); // Navigates back in browser history
@@ -1105,4 +1044,4 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
   goBack(): void {
     window.history.back();
   }
-} 
+}

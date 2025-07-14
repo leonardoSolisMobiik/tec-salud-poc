@@ -4,10 +4,10 @@ import { RouterLink } from '@angular/router';
 
 /**
  * Patient Management component - COMMENTED OUT
- * 
+ *
  * @description This component has been temporarily disabled as requested.
  * The patient management functionality is not available in the current version.
- * 
+ *
  * @todo Re-enable when patient management features are needed
  */
 @Component({
@@ -18,14 +18,14 @@ import { RouterLink } from '@angular/router';
     <div class="global-container">
       <div class="global-header">
         <div class="header-top">
-          <button 
+          <button
             class="global-back-button"
             (click)="goBack()"
             title="Volver al dashboard">
             <span class="back-icon">←</span>
             <span class="back-text">Volver</span>
           </button>
-          
+
           <div class="title-container">
             <h1 class="main-title">👥 Gestión de Pacientes</h1>
             <div class="main-subtitle">
@@ -34,7 +34,7 @@ import { RouterLink } from '@angular/router';
           </div>
         </div>
       </div>
-      
+
       <div class="patients-placeholder">
         <h2>⚠️ Funcionalidad Deshabilitada</h2>
         <p>La gestión de pacientes ha sido temporalmente deshabilitada.</p>
@@ -53,7 +53,7 @@ import { RouterLink } from '@angular/router';
       max-width: 1200px;
       margin: 0 auto;
     }
-    
+
     .patients-header {
       display: flex;
       align-items: center;
@@ -62,28 +62,28 @@ import { RouterLink } from '@angular/router';
       padding-bottom: 20px;
       border-bottom: 2px solid var(--medical-primary);
     }
-    
+
     .patients-header a {
       color: var(--medical-primary);
-      text-decoration: none;
+        text-decoration: none;
       font-weight: 600;
       padding: 8px 16px;
       background: var(--medical-background);
       border-radius: var(--bmb-radius-s);
       transition: all 0.2s;
     }
-    
+
     .patients-header a:hover {
       background: var(--medical-primary);
       color: white;
-    }
-    
+      }
+
     .patients-header h1 {
       color: var(--medical-primary);
-      margin: 0;
+        margin: 0;
       font-size: 2rem;
     }
-    
+
     .patients-placeholder {
       background: #fff3cd;
       padding: 40px;
@@ -91,23 +91,23 @@ import { RouterLink } from '@angular/router';
       text-align: center;
       border: 2px solid #ffc107;
     }
-    
+
     .patients-placeholder h2 {
       color: #856404;
       margin-bottom: 20px;
       font-size: 1.5rem;
     }
-    
+
     .patients-placeholder p {
       color: #856404;
       font-size: 1.1rem;
       margin-bottom: 15px;
     }
-    
+
     .placeholder-actions {
       margin-top: 30px;
     }
-    
+
     .back-button {
       display: inline-block;
       padding: 12px 24px;
@@ -118,18 +118,18 @@ import { RouterLink } from '@angular/router';
       font-weight: 600;
       transition: all 0.2s;
     }
-    
+
     .back-button:hover {
       background: var(--medical-primary-dark);
       transform: translateY(-2px);
     }
-    
+
     /* ✅ RESPONSIVE LAYOUT FOR SMALL SCREENS */
     @media (max-width: 950px) {
       .patients-container {
         padding: var(--bmb-spacing-s) !important;
       }
-      
+
       /* ✅ FORCE MOBILE HEADER LAYOUT */
       .patients-header {
         display: flex !important;
@@ -137,7 +137,7 @@ import { RouterLink } from '@angular/router';
         align-items: center !important;
         gap: var(--bmb-spacing-s) !important;
         padding: var(--bmb-spacing-m) !important;
-        
+
         .back-button {
           margin-right: 0 !important;
           margin-bottom: var(--bmb-spacing-s) !important;
@@ -154,13 +154,13 @@ import { RouterLink } from '@angular/router';
           align-items: center !important;
           gap: var(--bmb-spacing-xs) !important;
           border: none !important;
-          
+
           &:hover {
             background: var(--general_contrasts-25) !important;
             transform: translateX(-4px) !important;
           }
         }
-        
+
         h1 {
           order: 2 !important;
           text-align: center !important;
@@ -173,7 +173,7 @@ import { RouterLink } from '@angular/router';
 })
 export class PatientManagementComponent {
   // Component has been commented out and is not available in the current version
-  
+
   goBack(): void {
     window.history.back();
   }

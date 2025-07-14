@@ -38,11 +38,11 @@ interface SearchResult {
   imports: [CommonModule, FormsModule, BambooModule],
   template: `
     <div class="global-container">
-      
+
       <!-- Header -->
       <div class="global-header">
         <div class="header-top">
-          <button 
+          <button
             class="global-back-button"
             (click)="goBack()"
             title="Volver">
@@ -60,18 +60,18 @@ interface SearchResult {
 
       <!-- Action Bar -->
       <div class="action-bar">
-        
+
         <!-- Search Section -->
         <div class="search-section">
           <div class="search-input-group">
-            <input 
+            <input
               type="text"
               placeholder="Buscar en expedientes..."
               class="bamboo-search-input"
               [(ngModel)]="searchQuery"
               (input)="onSearchChange()"
               [disabled]="isSearching">
-            <button 
+            <button
               class="search-button"
               (click)="performSearch()"
               [disabled]="isSearching || !searchQuery.trim()">
@@ -83,19 +83,19 @@ interface SearchResult {
 
         <!-- Filters -->
         <div class="filter-section">
-          <select 
+          <select
             class="bamboo-select"
             [(ngModel)]="selectedPatient"
             (change)="onFilterChange()">
             <option value="">Todos los pacientes</option>
-            <option 
-              *ngFor="let patient of recentPatients" 
+            <option
+              *ngFor="let patient of recentPatients"
               [value]="patient.id">
               {{ patient.name }}
             </option>
           </select>
 
-          <select 
+          <select
             class="bamboo-select"
             [(ngModel)]="selectedDocumentType"
             (change)="onFilterChange()">
@@ -112,7 +112,7 @@ interface SearchResult {
         </div>
 
         <!-- Upload Button -->
-        <button 
+        <button
           class="upload-new-button"
           (click)="goToUpload()">
           📤 Subir Nuevos
@@ -141,36 +141,36 @@ interface SearchResult {
         <h3 class="results-title">
           🔍 Resultados de Búsqueda ({{ searchResults.length }})
         </h3>
-        
+
         <div class="search-results-list">
-          <div 
+          <div
             *ngFor="let result of searchResults; trackBy: trackBySearchResult"
             class="search-result-item">
-            
+
             <div class="result-header">
               <div class="result-title">{{ result.title }}</div>
               <div class="result-score">
                 {{ (result.relevance_score * 100).toFixed(0) }}% relevante
               </div>
             </div>
-            
+
             <div class="result-meta">
               <span class="result-type">{{ getDocumentTypeLabel(result.document_type) }}</span>
               <span class="result-patient">{{ getPatientName(result.patient_id) }}</span>
               <span class="result-date">{{ result.date }}</span>
             </div>
-            
+
             <div class="result-preview">
               {{ result.content_preview }}
             </div>
-            
+
             <div class="result-actions">
-              <button 
+              <button
                 class="action-button"
                 (click)="viewDocument(result.document_id)">
                 👁️ Ver
               </button>
-              <button 
+              <button
                 class="action-button"
                 (click)="chatWithDocument(result)">
                 💬 Chatear
@@ -186,7 +186,7 @@ interface SearchResult {
         <h3 class="documents-title">
           📋 Documentos ({{ filteredDocuments.length }})
         </h3>
-        
+
         <!-- Loading State -->
         <div *ngIf="isLoading" class="loading-state">
           <div class="loading-icon">⏳</div>
@@ -198,7 +198,7 @@ interface SearchResult {
           <div class="empty-icon">📄</div>
           <h4>No hay documentos</h4>
           <p>Sube algunos expedientes para comenzar</p>
-          <button 
+          <button
             class="upload-button"
             (click)="goToUpload()">
             📤 Subir Primer Documento
@@ -207,15 +207,15 @@ interface SearchResult {
 
         <!-- Documents Grid -->
         <div *ngIf="!isLoading && filteredDocuments.length > 0" class="documents-grid">
-          <div 
+          <div
             *ngFor="let doc of filteredDocuments; trackBy: trackByDocument"
             class="document-card">
-            
+
             <div class="doc-header">
               <div class="doc-icon">{{ getDocumentIcon(doc.document_type) }}</div>
               <div class="doc-type">{{ getDocumentTypeLabel(doc.document_type) }}</div>
             </div>
-            
+
             <div class="doc-body">
               <h4 class="doc-title">{{ doc.title }}</h4>
               <div class="doc-meta">
@@ -233,21 +233,21 @@ interface SearchResult {
                 {{ doc.preview }}
               </div>
             </div>
-            
+
             <div class="doc-actions">
-              <button 
+              <button
                 class="action-button primary"
                 (click)="viewDocument(doc.document_id)"
                 title="Ver documento completo">
                 👁️ Ver
               </button>
-              <button 
+              <button
                 class="action-button"
                 (click)="chatWithDocument(doc)"
                 title="Conversar sobre este documento">
                 💬 Chat
               </button>
-              <button 
+              <button
                 class="action-button danger"
                 (click)="deleteDocument(doc)"
                 title="Eliminar documento">
@@ -265,8 +265,8 @@ interface SearchResult {
     .document-list-container {
       min-height: 100vh;
       max-height: 100vh;
-      background: linear-gradient(135deg, 
-        var(--general_contrasts-15) 0%, 
+      background: linear-gradient(135deg,
+        var(--general_contrasts-15) 0%,
         var(--general_contrasts-5) 100%
       );
       padding: var(--bmb-spacing-l);
@@ -280,13 +280,13 @@ interface SearchResult {
 
     .list-header {
       margin-bottom: var(--bmb-spacing-xl);
-      
+
       .header-top {
         display: flex;
         align-items: center;
         gap: var(--bmb-spacing-l);
         margin-bottom: var(--bmb-spacing-m);
-        
+
         .back-button {
           background: var(--general_contrasts-15);
           border: 1px solid var(--general_contrasts-container-outline);
@@ -296,25 +296,25 @@ interface SearchResult {
           cursor: pointer;
           transition: all 0.3s ease;
           flex-shrink: 0;
-          
+
           &:hover {
             background: var(--general_contrasts-25);
             transform: translateX(-4px);
           }
         }
-        
+
         .title-container {
           flex: 1;
           text-align: center;
-          
+
           .list-title {
             font-size: 2.2rem;
             font-weight: 700;
             color: var(--general_contrasts-100);
             margin: 0 0 var(--bmb-spacing-s) 0;
             font-family: var(--font-display, 'Poppins', sans-serif);
-            background: linear-gradient(135deg, 
-              rgb(var(--color-blue-tec)) 0%, 
+            background: linear-gradient(135deg,
+              rgb(var(--color-blue-tec)) 0%,
               rgb(var(--color-mariner-100)) 100%
             );
             -webkit-background-clip: text;
@@ -322,7 +322,7 @@ interface SearchResult {
             background-clip: text;
             line-height: 1.2;
           }
-          
+
           .list-subtitle {
             color: var(--general_contrasts-75);
             font-size: 1.1rem;
@@ -348,18 +348,18 @@ interface SearchResult {
       border: 1px solid var(--general_contrasts-container-outline);
       overflow: hidden;
       box-sizing: border-box;
-      
+
       .search-section {
         flex: 1;
         min-width: 280px;
         max-width: 500px;
-        
+
         .search-input-group {
           display: flex;
           gap: var(--bmb-spacing-s);
           width: 100%;
           box-sizing: border-box;
-          
+
           .bamboo-search-input {
             flex: 1;
             padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
@@ -370,14 +370,14 @@ interface SearchResult {
             font-size: 1rem;
             min-width: 0;
             box-sizing: border-box;
-            
+
             &:focus {
               outline: none;
               border-color: rgb(var(--color-blue-tec));
               box-shadow: 0 0 0 2px rgba(var(--color-blue-tec), 0.2);
             }
           }
-          
+
           .search-button {
             background: var(--buttons-primary-normal);
             color: white;
@@ -393,11 +393,11 @@ interface SearchResult {
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
-            
+
             &:hover:not(:disabled) {
               background: var(--buttons-primary-hover);
             }
-            
+
             &:disabled {
               opacity: 0.6;
               cursor: not-allowed;
@@ -405,12 +405,12 @@ interface SearchResult {
           }
         }
       }
-      
+
       .filter-section {
         display: flex;
         gap: var(--bmb-spacing-s);
         flex-shrink: 0;
-        
+
         .bamboo-select {
           padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
           border: 1px solid var(--general_contrasts-container-outline);
@@ -422,7 +422,7 @@ interface SearchResult {
           max-width: 180px;
           width: 160px;
           box-sizing: border-box;
-          
+
           &:focus {
             outline: none;
             border-color: rgb(var(--color-blue-tec));
@@ -430,10 +430,10 @@ interface SearchResult {
           }
         }
       }
-      
+
       .upload-new-button {
-        background: linear-gradient(135deg, 
-          var(--semantic-success) 0%, 
+        background: linear-gradient(135deg,
+          var(--semantic-success) 0%,
           #45a049 100%
         );
         color: white;
@@ -445,7 +445,7 @@ interface SearchResult {
         transition: all 0.3s ease;
         white-space: nowrap;
         flex-shrink: 0;
-        
+
         &:hover {
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
@@ -459,10 +459,10 @@ interface SearchResult {
       display: flex;
       justify-content: center;
       gap: var(--bmb-spacing-xl);
-      
+
       .stat-item {
         text-align: center;
-        
+
         .stat-number {
           display: block;
           font-size: 2rem;
@@ -470,7 +470,7 @@ interface SearchResult {
           color: rgb(var(--color-blue-tec));
           margin-bottom: var(--bmb-spacing-xs);
         }
-        
+
         .stat-label {
           font-size: 0.875rem;
           color: var(--general_contrasts-75);
@@ -483,7 +483,7 @@ interface SearchResult {
     .results-section, .documents-section {
       max-width: 1200px;
       margin: 0 auto;
-      
+
       .results-title, .documents-title {
         color: var(--general_contrasts-100);
         font-size: 1.5rem;
@@ -496,23 +496,23 @@ interface SearchResult {
     .loading-state, .empty-state {
       text-align: center;
       padding: var(--bmb-spacing-xxl);
-      
+
       .loading-icon, .empty-icon {
         font-size: 4rem;
         margin-bottom: var(--bmb-spacing-m);
         opacity: 0.6;
       }
-      
+
       h4 {
         color: var(--general_contrasts-100);
         margin-bottom: var(--bmb-spacing-s);
       }
-      
+
       p {
         color: var(--general_contrasts-75);
         margin-bottom: var(--bmb-spacing-m);
       }
-      
+
       .upload-button {
         background: var(--buttons-primary-normal);
         color: white;
@@ -522,7 +522,7 @@ interface SearchResult {
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s ease;
-        
+
         &:hover {
           background: var(--buttons-primary-hover);
           transform: translateY(-2px);
@@ -541,25 +541,34 @@ interface SearchResult {
       border: 1px solid var(--general_contrasts-container-outline);
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-m);
+      display: flex;
+      flex-direction: column;
+      gap: var(--bmb-spacing-m);
       transition: all 0.3s ease;
-      
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      border-left: none;
+      border-right: none;
+
       &:hover {
+        background: rgba(var(--color-blue-tec), 0.15);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.1);
+        box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.15);
       }
-      
+
       .result-header {
         display: flex;
         justify-content: space-between;
         align-items: start;
         margin-bottom: var(--bmb-spacing-s);
-        
+
         .result-title {
           font-weight: 600;
           color: var(--general_contrasts-100);
           font-size: 1.1rem;
         }
-        
+
         .result-score {
           background: rgb(var(--color-blue-tec));
           color: white;
@@ -569,27 +578,27 @@ interface SearchResult {
           font-weight: 600;
         }
       }
-      
+
       .result-meta {
         display: flex;
         gap: var(--bmb-spacing-m);
         margin-bottom: var(--bmb-spacing-s);
         font-size: 0.875rem;
         color: var(--general_contrasts-75);
-        
+
         .result-type {
           background: var(--general_contrasts-25);
           padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
           border-radius: var(--bmb-radius-s);
         }
       }
-      
+
       .result-preview {
         color: var(--general_contrasts-100);
         line-height: 1.5;
         margin-bottom: var(--bmb-spacing-m);
       }
-      
+
       .result-actions {
         display: flex;
         gap: var(--bmb-spacing-s);
@@ -602,49 +611,37 @@ interface SearchResult {
       gap: var(--bmb-spacing-m);
     }
 
-    .document-card {
+        .document-card {
       background: var(--general_contrasts-15);
       border: 1px solid var(--general_contrasts-container-outline);
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-m);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      gap: var(--bmb-spacing-m);
+      transition: all 0.3s ease;
+      cursor: pointer;
       position: relative;
       overflow: hidden;
-      
-      &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, 
-          rgb(var(--color-blue-tec)) 0%, 
-          var(--buttons-primary-hover) 100%
-        );
-        transform: scaleX(0);
-        transition: transform 0.3s ease;
-      }
-      
+      border-left: none;
+      border-right: none;
+
       &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(var(--color-blue-tec), 0.15);
-        
-        &::before {
-          transform: scaleX(1);
-        }
+        background: rgba(var(--color-blue-tec), 0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.15);
       }
-      
+
       .doc-header {
         display: flex;
         align-items: center;
         gap: var(--bmb-spacing-s);
         margin-bottom: var(--bmb-spacing-m);
-        
+
         .doc-icon {
           font-size: 1.5rem;
         }
-        
+
         .doc-type {
           background: var(--general_contrasts-25);
           padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
@@ -655,10 +652,10 @@ interface SearchResult {
           text-transform: uppercase;
         }
       }
-      
+
       .doc-body {
         margin-bottom: var(--bmb-spacing-m);
-        
+
         .doc-title {
           color: var(--general_contrasts-100);
           font-size: 1.1rem;
@@ -666,7 +663,7 @@ interface SearchResult {
           margin: 0 0 var(--bmb-spacing-s) 0;
           line-height: 1.3;
         }
-        
+
         .doc-meta {
           display: flex;
           flex-direction: column;
@@ -675,7 +672,7 @@ interface SearchResult {
           font-size: 0.875rem;
           color: var(--general_contrasts-75);
         }
-        
+
         .doc-preview {
           color: var(--general_contrasts-100);
           line-height: 1.4;
@@ -685,7 +682,7 @@ interface SearchResult {
           overflow: hidden;
         }
       }
-      
+
       .doc-actions {
         display: flex;
         gap: var(--bmb-spacing-s);
@@ -702,27 +699,27 @@ interface SearchResult {
       font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.3s ease;
-      
+
       &:hover {
         background: var(--general_contrasts-35);
         transform: translateY(-1px);
       }
-      
+
       &.primary {
         background: var(--buttons-primary-normal);
         color: white;
         border-color: var(--buttons-primary-normal);
-        
+
         &:hover {
           background: var(--buttons-primary-hover);
         }
       }
-      
+
       &.danger {
         background: rgba(244, 67, 54, 0.1);
         color: var(--semantic-error);
         border-color: var(--semantic-error);
-        
+
         &:hover {
           background: rgba(244, 67, 54, 0.2);
         }
@@ -737,32 +734,32 @@ interface SearchResult {
         max-height: 100vh !important;
         overflow-y: auto !important;
       }
-      
+
       /* ✅ FORCE MOBILE HEADER LAYOUT */
       .list-header {
         margin-bottom: var(--bmb-spacing-m) !important;
-        
+
         .header-top {
           display: flex !important;
           flex-direction: column !important;
           align-items: center !important;
           gap: var(--bmb-spacing-s) !important;
-          
+
           .back-button {
             margin-right: 0 !important;
             margin-bottom: var(--bmb-spacing-s) !important;
             order: 1 !important;
           }
-          
+
           .title-container {
             order: 2 !important;
             text-align: center !important;
-            
+
             .list-title {
               font-size: 1.3rem !important;
               margin-bottom: var(--bmb-spacing-xs) !important;
             }
-            
+
             .list-subtitle {
               font-size: 0.9rem !important;
             }
@@ -778,66 +775,66 @@ interface SearchResult {
         max-height: 100vh;
         overflow-y: auto;
       }
-      
+
       .list-header {
         margin-bottom: var(--bmb-spacing-l);
-        
+
         .header-top {
           .title-container {
             .list-title {
               font-size: 1.5rem;
             }
-            
+
             .list-subtitle {
               font-size: 1rem;
             }
           }
         }
       }
-      
+
       .action-bar {
         flex-direction: column;
         align-items: stretch;
         gap: var(--bmb-spacing-m);
-        
+
         .search-section {
           width: 100%;
           min-width: auto;
           max-width: none;
         }
-        
+
         .filter-section {
           width: 100%;
           flex-direction: column;
           gap: var(--bmb-spacing-s);
-          
+
           .bamboo-select {
             width: 100%;
             min-width: auto;
             max-width: none;
           }
         }
-        
+
         .upload-new-button {
           width: 100%;
         }
       }
-      
+
       .stats-section {
         flex-direction: column;
         gap: var(--bmb-spacing-m);
         margin-bottom: var(--bmb-spacing-l);
       }
-      
+
       .documents-grid {
         grid-template-columns: 1fr;
         gap: var(--bmb-spacing-m);
       }
-      
+
       .document-card {
         margin-bottom: var(--bmb-spacing-m);
       }
-      
+
       .results-section, .documents-section {
         margin-bottom: var(--bmb-spacing-xl);
       }
@@ -855,17 +852,17 @@ export class DocumentListComponent implements OnInit {
   filteredDocuments: DocumentItem[] = [];
   searchResults: SearchResult[] = [];
   recentPatients: Patient[] = [];
-  
+
   // UI state
   isLoading = false;
   isSearching = false;
   isSearchMode = false;
-  
+
   // Filter state
   searchQuery = '';
   selectedPatient = '';
   selectedDocumentType = '';
-  
+
   // Stats
   totalDocuments = 0;
   uniquePatients = 0;
@@ -913,20 +910,20 @@ export class DocumentListComponent implements OnInit {
 
   async performSearch(): Promise<void> {
     if (!this.searchQuery.trim()) return;
-    
+
     this.isSearching = true;
     this.isSearchMode = true;
-    
+
     try {
       const response = await this.apiService.searchDocuments(
         this.searchQuery,
         this.selectedPatient || undefined,
         this.selectedDocumentType || undefined
       ).toPromise();
-      
+
       this.searchResults = response.results || [];
       console.log(`🔍 Search found ${this.searchResults.length} results`);
-      
+
     } catch (error) {
       console.error('❌ Search error:', error);
       this.searchResults = [];
@@ -954,11 +951,11 @@ export class DocumentListComponent implements OnInit {
   async viewDocument(documentId: string): Promise<void> {
     try {
       const response = await this.apiService.getDocumentById(documentId).toPromise();
-      
+
       // Show document in modal or navigate to detail view
       console.log('📄 Document content:', response);
       alert(`Documento: ${response.metadata?.title}\n\nContenido: ${response.content.substring(0, 500)}...`);
-      
+
     } catch (error) {
       console.error('❌ Error viewing document:', error);
       alert('Error al cargar el documento');
@@ -968,16 +965,16 @@ export class DocumentListComponent implements OnInit {
   chatWithDocument(doc: any): void {
     // Set document context and navigate to chat
     console.log('💬 Starting chat with document:', doc.title);
-    
+
     const patient = this.recentPatients.find(p => p.id === doc.patient_id);
     if (patient) {
       this.medicalStateService.setActivePatient(patient);
     }
-    
+
     this.router.navigate(['/chat'], {
-      queryParams: { 
+      queryParams: {
         document: doc.document_id,
-        context: doc.title 
+        context: doc.title
       }
     });
   }
@@ -985,16 +982,16 @@ export class DocumentListComponent implements OnInit {
   async deleteDocument(doc: DocumentItem): Promise<void> {
     const confirmed = confirm(`¿Eliminar el documento "${doc.title}"?\nEsta acción no se puede deshacer.`);
     if (!confirmed) return;
-    
+
     try {
       await this.apiService.deleteDocument(doc.document_id).toPromise();
       console.log(`🗑️ Deleted document: ${doc.title}`);
-      
+
       // Remove from local list
       this.documents = this.documents.filter(d => d.document_id !== doc.document_id);
       this.updateStats();
       this.applyFilters();
-      
+
     } catch (error) {
       console.error('❌ Error deleting document:', error);
       alert('Error al eliminar el documento');
@@ -1057,4 +1054,4 @@ export class DocumentListComponent implements OnInit {
   trackBySearchResult(index: number, result: SearchResult): string {
     return result.document_id;
   }
-} 
+}

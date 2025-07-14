@@ -1,0 +1,150 @@
+<div class="admin-dashboard">
+  <div class="dashboard-content">
+    <!-- Header Section -->
+    <div class="global-header">
+      <div class="header-top">
+        <div class="header-back-row">
+          <button
+            class="global-back-button"
+            (click)="goBack()"
+            title="Volver">
+            <span class="back-icon">←</span>
+            <span class="back-text">Volver</span>
+          </button>
+        </div>
+
+        <div class="header-title-row">
+          <div class="title-container">
+            <h1 class="main-title">📊 Dashboard Administrativo</h1>
+            <div class="main-subtitle">
+              Métricas operacionales del sistema TecSalud
+            </div>
+          </div>
+
+          <div class="header-actions">
+            <button class="refresh-button" (click)="refreshDashboard()" [disabled]="isLoadingMetrics || isLoadingCharts">
+              <span class="refresh-icon">🔄</span>
+              Actualizar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-banner" *ngIf="hasError">
+      <div class="error-content">
+        <span class="error-icon">⚠️</span>
+        <span class="error-message">{{ errorMessage }}</span>
+        <button class="error-retry" (click)="refreshDashboard()">
+          Reintentar
+        </button>
+      </div>
+    </div>
+
+    <!-- Metrics Cards Grid -->
+    <section class="metrics-section">
+      <div class="metrics-grid">
+        <!-- Consultas Hoy -->
+        <app-metric-card
+          title="Consultas Hoy"
+          [value]="formatMetricValue(metrics.consultationsToday)"
+          icon="💬"
+          subtitle="Interacciones médicas"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
+
+        <!-- Tiempo Promedio -->
+        <app-metric-card
+          title="Tiempo Promedio"
+          [value]="formatTimeValue(metrics.averageResponseTime)"
+          icon="⏱️"
+          subtitle="Respuesta del AI"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
+
+        <!-- Tokens Utilizados -->
+        <app-metric-card
+          title="Tokens Utilizados"
+          [value]="formatMetricValue(metrics.tokensUsed)"
+          icon="🎯"
+          subtitle="Últimas 24h"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
+
+        <!-- Documentos Procesados -->
+        <app-metric-card
+          title="Documentos Procesados"
+          [value]="formatMetricValue(metrics.documentsProcessed.total)"
+          icon="📄"
+          subtitle="Por tipo y análisis"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
+      </div>
+    </section>
+
+    <!-- Charts Section -->
+    <section class="charts-section">
+      <div class="charts-grid">
+        <!-- Interactions Timeline -->
+        <div class="chart-container">
+          <app-analytics-chart
+            title="Interacciones por Hora"
+            type="line"
+            [data]="interactionsChartData"
+            [isLoading]="isLoadingCharts"
+            [showLegend]="false">
+          </app-analytics-chart>
+        </div>
+
+        <!-- Pills Distribution -->
+        <div class="chart-container">
+          <app-analytics-chart
+            title="Distribución de Categorías"
+            type="doughnut"
+            [data]="pillsChartData"
+            [isLoading]="isLoadingCharts"
+            [showLegend]="true">
+          </app-analytics-chart>
+        </div>
+      </div>
+    </section>
+
+    <!-- Document Types Breakdown -->
+    <section class="document-breakdown" *ngIf="!isLoadingMetrics && metrics.documentsProcessed.total > 0">
+      <div class="breakdown-header">
+        <h3 class="breakdown-title">Documentos por Tipo</h3>
+        <span class="breakdown-total">
+          Total: {{ metrics.documentsProcessed.total }}
+        </span>
+      </div>
+
+      <div class="breakdown-grid">
+        <div class="breakdown-item" *ngFor="let type of getDocumentTypes()">
+          <div class="breakdown-label">{{ type.name }}</div>
+          <div class="breakdown-bar">
+            <div class="breakdown-fill"
+                 [style.width.%]="type.percentage"
+                 [style.background-color]="type.color">
+            </div>
+          </div>
+          <div class="breakdown-value">{{ type.count }}</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Stats Footer -->
+    <footer class="dashboard-footer">
+      <div class="footer-stats">
+        <div class="stat-item">
+          <span class="stat-label">Última actualización:</span>
+          <span class="stat-value">{{ getCurrentTime() }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Próxima actualización:</span>
+          <span class="stat-value">{{ getNextUpdateTime() }}</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>

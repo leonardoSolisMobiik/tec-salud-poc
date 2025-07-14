@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 /**
  * Interface for processing option configuration
- * 
+ *
  * @interface ProcessingOption
  * @description Defines the structure for document processing options
  * including display information, benefits, and use cases.
@@ -12,33 +12,33 @@ import { FormsModule } from '@angular/forms';
 export interface ProcessingOption {
   /** Unique identifier for the processing option */
   value: string;
-  
+
   /** Display label for the option */
   label: string;
-  
+
   /** Detailed description of the processing method */
   description: string;
-  
+
   /** Icon emoji for visual representation */
   icon: string;
-  
+
   /** List of benefits/features for this processing type */
   benefits: string[];
-  
+
   /** Whether this option is recommended */
   recommended?: boolean;
-  
+
   /** Use case description for when to use this option */
   useCase: string;
 }
 
 /**
  * Processing Type Selector Component for document processing options
- * 
+ *
  * @description Interactive component that allows users to select between different
  * document processing methods (vectorization, complete storage, or hybrid approach).
  * Features detailed option descriptions, benefits, and recommendations.
- * 
+ *
  * @example
  * ```typescript
  * // In parent component template
@@ -46,14 +46,14 @@ export interface ProcessingOption {
  *   [selectedType]="processingType"
  *   (typeChange)="onProcessingTypeChange($event)">
  * </app-processing-type-selector>
- * 
+ *
  * // In parent component
  * onProcessingTypeChange(type: string) {
  *   this.processingType = type;
  *   // Handle processing type change
  * }
  * ```
- * 
+ *
  * @features
  * - Three processing options: vectorized, complete, and hybrid
  * - Visual option cards with icons and descriptions
@@ -61,18 +61,18 @@ export interface ProcessingOption {
  * - Recommended option highlighting
  * - Responsive design for mobile devices
  * - Smooth animations and transitions
- * 
+ *
  * @inputs
  * - selectedType: Currently selected processing type
- * 
+ *
  * @outputs
  * - typeChange: Emits when processing type selection changes
- * 
+ *
  * @processingTypes
  * - vectorized: Fast semantic search with vector embeddings
  * - complete: Full document storage with original context
  * - both: Hybrid approach combining vectorization and storage
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -85,15 +85,15 @@ export interface ProcessingOption {
       <p class="selector-description">
         Selecciona cómo quieres procesar tus documentos médicos
       </p>
-      
+
       <div class="processing-options">
-        <div 
+        <div
           *ngFor="let option of processingOptions"
           class="processing-option"
           [class.selected]="selectedType === option.value"
           [class.recommended]="option.recommended"
           (click)="selectOption(option.value)">
-          
+
           <div class="option-header">
             <div class="option-icon">{{ option.icon }}</div>
             <div class="option-content">
@@ -110,7 +110,7 @@ export interface ProcessingOption {
               </div>
             </div>
           </div>
-          
+
           <div class="option-benefits" *ngIf="selectedType === option.value">
             <h5>✨ Características:</h5>
             <ul>
@@ -119,7 +119,7 @@ export interface ProcessingOption {
           </div>
         </div>
       </div>
-      
+
       <!-- Processing Info Panel -->
       <div class="processing-info" *ngIf="selectedType">
         <div class="info-card">
@@ -171,30 +171,30 @@ export interface ProcessingOption {
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       background: var(--general_contrasts-5);
-      
+
       &:hover {
         border-color: rgba(var(--color-blue-tec), 0.7);
         background: rgba(var(--color-blue-tec), 0.05);
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.15);
       }
-      
+
       &.selected {
         border-color: rgb(var(--color-blue-tec));
         background: rgba(var(--color-blue-tec), 0.1);
         box-shadow: 0 4px 16px rgba(var(--color-blue-tec), 0.25);
         transform: translateY(-1px);
       }
-      
+
       &.recommended {
         border-color: var(--semantic-success);
         background: rgba(76, 175, 80, 0.05);
-        
+
         &:hover {
           border-color: var(--semantic-success);
           background: rgba(76, 175, 80, 0.1);
         }
-        
+
         &.selected {
           border-color: var(--semantic-success);
           background: rgba(76, 175, 80, 0.15);
@@ -207,16 +207,16 @@ export interface ProcessingOption {
       display: flex;
       align-items: flex-start;
       gap: var(--bmb-spacing-m);
-      
+
       .option-icon {
         font-size: 2rem;
         filter: grayscale(0.3);
         flex-shrink: 0;
       }
-      
+
       .option-content {
         flex: 1;
-        
+
         .option-title {
           margin: 0 0 var(--bmb-spacing-xs) 0;
           color: var(--general_contrasts-100);
@@ -225,7 +225,7 @@ export interface ProcessingOption {
           display: flex;
           align-items: center;
           gap: var(--bmb-spacing-s);
-          
+
           .recommended-badge {
             background: var(--semantic-success);
             color: white;
@@ -237,14 +237,14 @@ export interface ProcessingOption {
             letter-spacing: 0.5px;
           }
         }
-        
+
         .option-description {
           margin: 0 0 var(--bmb-spacing-xs) 0;
           color: var(--general_contrasts-75);
           font-size: 0.875rem;
           line-height: 1.4;
         }
-        
+
         .option-use-case {
           margin: 0;
           color: var(--general_contrasts-60);
@@ -253,11 +253,11 @@ export interface ProcessingOption {
           line-height: 1.3;
         }
       }
-      
+
       .option-selector {
         flex-shrink: 0;
         margin-top: 2px;
-        
+
         .radio-button {
           width: 20px;
           height: 20px;
@@ -268,11 +268,11 @@ export interface ProcessingOption {
           align-items: center;
           justify-content: center;
           transition: all 0.3s ease;
-          
+
           &.active {
             border-color: rgb(var(--color-blue-tec));
             background: rgb(var(--color-blue-tec));
-            
+
             .radio-inner {
               width: 8px;
               height: 8px;
@@ -289,24 +289,24 @@ export interface ProcessingOption {
       padding-top: var(--bmb-spacing-m);
       border-top: 1px solid var(--general_contrasts-container-outline);
       animation: expandBenefits 0.3s ease-out;
-      
+
       h5 {
         margin: 0 0 var(--bmb-spacing-s) 0;
         color: var(--general_contrasts-100);
         font-size: 0.875rem;
         font-weight: 600;
       }
-      
+
       ul {
         margin: 0;
         padding-left: var(--bmb-spacing-m);
-        
+
         li {
           color: var(--general_contrasts-75);
           font-size: 0.875rem;
           line-height: 1.4;
           margin-bottom: var(--bmb-spacing-xs);
-          
+
           &:last-child {
             margin-bottom: 0;
           }
@@ -316,34 +316,34 @@ export interface ProcessingOption {
 
     .processing-info {
       margin-top: var(--bmb-spacing-m);
-      
+
       .info-card {
-        background: linear-gradient(135deg, 
-          rgba(var(--color-blue-tec), 0.1) 0%, 
+        background: linear-gradient(135deg,
+          rgba(var(--color-blue-tec), 0.1) 0%,
           rgba(var(--color-blue-tec), 0.05) 100%
         );
         border: 1px solid rgba(var(--color-blue-tec), 0.3);
         border-radius: var(--bmb-radius-m);
         padding: var(--bmb-spacing-m);
-        
+
         h3 {
           margin: 0 0 var(--bmb-spacing-m) 0;
           color: var(--general_contrasts-100);
           font-size: 1rem;
           font-weight: 600;
         }
-        
+
         .info-content {
           .info-item {
             display: flex;
             align-items: center;
             gap: var(--bmb-spacing-m);
-            
+
             .info-icon {
               font-size: 1.5rem;
               filter: grayscale(0.2);
             }
-            
+
             .info-details {
               .info-title {
                 color: var(--general_contrasts-100);
@@ -351,7 +351,7 @@ export interface ProcessingOption {
                 font-size: 0.9rem;
                 margin-bottom: 2px;
               }
-              
+
               .info-subtitle {
                 color: var(--general_contrasts-75);
                 font-size: 0.8rem;
@@ -381,17 +381,17 @@ export interface ProcessingOption {
         flex-direction: column;
         align-items: flex-start;
         gap: var(--bmb-spacing-s);
-        
+
         .option-selector {
           align-self: flex-end;
           margin-top: 0;
         }
       }
-      
+
       .processing-option {
         padding: var(--bmb-spacing-s);
       }
-      
+
       .option-content {
         .option-title {
           font-size: 1rem;
@@ -404,14 +404,14 @@ export interface ProcessingOption {
 export class ProcessingTypeSelectorComponent {
   /** Currently selected processing type */
   @Input() selectedType: string = '';
-  
+
   /** Event emitter for processing type changes */
   @Output() typeChange = new EventEmitter<string>();
 
   /** Array of available processing options with configurations */
   processingOptions: ProcessingOption[] = [
     {
-              value: 'vectorized',
+      value: 'vectorized',
         label: 'Búsqueda Semántica',
         description: 'Procesa documentos para búsqueda semántica inteligente',
       icon: '🔍',
@@ -457,12 +457,12 @@ export class ProcessingTypeSelectorComponent {
 
   /**
    * Selects a processing option and emits the change
-   * 
+   *
    * @param value - The processing type value to select
-   * 
+   *
    * @description Updates the selected processing type and emits the change
    * event to notify parent components of the selection.
-   * 
+   *
    * @example
    * ```typescript
    * selectOption('vectorized'); // Selects vectorization and emits change
@@ -475,12 +475,12 @@ export class ProcessingTypeSelectorComponent {
 
   /**
    * Gets the currently selected processing option configuration
-   * 
+   *
    * @returns The selected ProcessingOption or undefined if none selected
-   * 
+   *
    * @description Finds and returns the configuration object for the
    * currently selected processing type.
-   * 
+   *
    * @example
    * ```typescript
    * const option = getSelectedOption();
@@ -492,4 +492,4 @@ export class ProcessingTypeSelectorComponent {
   getSelectedOption(): ProcessingOption | undefined {
     return this.processingOptions.find(option => option.value === this.selectedType);
   }
-} 
+}

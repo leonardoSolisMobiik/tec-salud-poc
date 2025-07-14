@@ -7,23 +7,23 @@ import { MedicalStateService } from '@core/services';
 
 /**
  * Chat input component for medical consultations
- * 
+ *
  * @description Provides a text input interface for medical chat with patient context validation,
  * quick action buttons, character limits, and streaming state management. Includes automatic
  * textarea resizing and keyboard shortcuts for improved user experience.
- * 
+ *
  * @example
  * ```typescript
  * // In parent component template
  * <app-chat-input (messageSent)="onMessageSent($event)"></app-chat-input>
- * 
+ *
  * // In parent component
  * onMessageSent(message: string) {
  *   console.log('User message:', message);
  *   this.processMedicalQuery(message);
  * }
  * ```
- * 
+ *
  * @features
  * - Patient context validation
  * - 2000 character limit with visual feedback
@@ -32,9 +32,9 @@ import { MedicalStateService } from '@core/services';
  * - Streaming state awareness
  * - Automatic disabled state when no patient selected
  * - Responsive design for mobile and desktop
- * 
+ *
  * @emits messageSent - Emitted when user sends a message
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -48,11 +48,11 @@ import { MedicalStateService } from '@core/services';
         <span class="warning-icon">⚠️</span>
         <span>Selecciona un paciente para comenzar a chatear</span>
       </div>
-      
+
       <!-- Chat Input -->
       <div class="input-section" [class.disabled]="!(activePatient$ | async) || (isStreaming$ | async)">
         <div class="input-wrapper">
-          <textarea 
+          <textarea
             class="message-input"
             [(ngModel)]="messageText"
             (keydown)="onKeyDown($event)"
@@ -65,7 +65,7 @@ import { MedicalStateService } from '@core/services';
             <span class="char-count" [class.near-limit]="messageText.length > 1800">
               {{ messageText.length }}/2000
             </span>
-            <button 
+            <button
               class="send-button"
               [disabled]="!canSend"
               (click)="sendMessage()">
@@ -74,11 +74,11 @@ import { MedicalStateService } from '@core/services';
             </button>
           </div>
         </div>
-        
+
         <!-- Quick Actions -->
         <div class="quick-actions" *ngIf="messageText.length === 0 && (activePatient$ | async)">
-          <button 
-            *ngFor="let action of quickActions" 
+          <button
+            *ngFor="let action of quickActions"
             class="quick-action-btn"
             (click)="insertQuickAction(action.text)"
             [disabled]="isStreaming$ | async">
@@ -92,15 +92,15 @@ import { MedicalStateService } from '@core/services';
   styles: [`
     /* 🎯 PREMIUM CHAT INPUT CON TOKENS BAMBOO */
     .chat-input-container {
-      background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.95) 0%, 
+      background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.95) 0%,
         rgba(255, 255, 255, 0.9) 100%
       );
       border-top: 2px solid rgba(var(--general_contrasts-container-outline), 0.2);
       padding: var(--bmb-spacing-m);
       backdrop-filter: blur(10px);
       position: relative;
-      
+
       /* Efecto glass superior */
       &::before {
         content: '';
@@ -109,22 +109,22 @@ import { MedicalStateService } from '@core/services';
         left: 0;
         right: 0;
         height: 1px;
-        background: linear-gradient(90deg, 
-          transparent 0%, 
-          rgba(var(--color-blue-tec), 0.3) 50%, 
+        background: linear-gradient(90deg,
+          transparent 0%,
+          rgba(var(--color-blue-tec), 0.3) 50%,
           transparent 100%
         );
       }
     }
-    
+
     /* 🎨 CONTEXT WARNING PREMIUM */
     .context-warning {
       display: flex;
       align-items: center;
       gap: var(--bmb-spacing-s);
       padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-      background: linear-gradient(135deg, 
-        rgba(255, 243, 205, 0.9) 0%, 
+      background: linear-gradient(135deg,
+        rgba(255, 243, 205, 0.9) 0%,
         rgba(255, 243, 205, 0.8) 100%
       );
       border: 1px solid rgba(255, 234, 167, 0.5);
@@ -135,29 +135,29 @@ import { MedicalStateService } from '@core/services';
       margin-bottom: var(--bmb-spacing-m);
       backdrop-filter: blur(5px);
       box-shadow: 0 2px 8px rgba(255, 152, 0, 0.1);
-      
+
       .warning-icon {
         font-size: 1.2rem;
         filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
       }
     }
-    
+
     /* 🎯 INPUT SECTION PREMIUM */
     .input-section {
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      
+
       &.disabled {
         opacity: 0.6;
         pointer-events: none;
         transform: scale(0.98);
       }
     }
-    
+
     /* 🎨 INPUT WRAPPER PREMIUM */
     .input-wrapper {
       display: flex;
-      background: linear-gradient(135deg, 
-        rgba(255, 255, 255, 0.95) 0%, 
+      background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.95) 0%,
         rgba(255, 255, 255, 0.9) 100%
       );
       border: 2px solid rgba(var(--general_contrasts-container-outline), 0.2);
@@ -168,7 +168,7 @@ import { MedicalStateService } from '@core/services';
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       position: relative;
       overflow: hidden;
-      
+
       &::before {
         content: '';
         position: absolute;
@@ -176,28 +176,28 @@ import { MedicalStateService } from '@core/services';
         left: 0;
         right: 0;
         height: 1px;
-        background: linear-gradient(90deg, 
-          transparent 0%, 
-          rgba(var(--color-blue-tec), 0.3) 50%, 
+        background: linear-gradient(90deg,
+          transparent 0%,
+          rgba(var(--color-blue-tec), 0.3) 50%,
           transparent 100%
         );
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-      
+
       &:focus-within {
         border-color: rgba(var(--color-blue-tec), 0.4);
-        box-shadow: 
+        box-shadow:
           0 0 0 3px rgba(var(--color-blue-tec), 0.1),
           0 4px 12px rgba(var(--color-blue-tec), 0.15);
         transform: translateY(-2px);
-        
+
         &::before {
           opacity: 1;
         }
       }
     }
-    
+
     /* 🎯 MESSAGE INPUT PREMIUM */
     .message-input {
       flex: 1;
@@ -213,18 +213,18 @@ import { MedicalStateService } from '@core/services';
       font-weight: 500;
       color: rgb(var(--general_contrasts-text-primary));
       padding: var(--bmb-spacing-xs);
-      
+
       &::placeholder {
         color: rgb(var(--general_contrasts-text-secondary));
         font-weight: 400;
       }
-      
+
       &:disabled {
         cursor: not-allowed;
         opacity: 0.6;
       }
     }
-    
+
     /* 🎨 INPUT ACTIONS PREMIUM */
     .input-actions {
       display: flex;
@@ -233,28 +233,28 @@ import { MedicalStateService } from '@core/services';
       gap: var(--bmb-spacing-s);
       margin-left: var(--bmb-spacing-s);
     }
-    
+
     .char-count {
       font-size: 0.75rem;
       color: rgb(var(--general_contrasts-text-secondary));
       font-weight: 500;
-      
+
       &.near-limit {
         color: #f44336;
         font-weight: 600;
         animation: pulse-warning 2s infinite;
       }
     }
-    
+
     @keyframes pulse-warning {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.7; }
     }
-    
+
     /* 🎯 SEND BUTTON PREMIUM */
     .send-button {
-      background: linear-gradient(135deg, 
-        rgb(var(--color-blue-tec)) 0%, 
+      background: linear-gradient(135deg,
+        rgb(var(--color-blue-tec)) 0%,
         rgb(var(--color-blue-tec)) 100%
       );
       color: white;
@@ -270,7 +270,7 @@ import { MedicalStateService } from '@core/services';
       font-size: 1.1rem;
       box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.3);
       position: relative;
-      
+
       &::before {
         content: '';
         position: absolute;
@@ -279,49 +279,49 @@ import { MedicalStateService } from '@core/services';
         right: 0;
         bottom: 0;
         border-radius: var(--bmb-radius-full);
-        background: linear-gradient(135deg, 
-          rgba(255, 255, 255, 0.2) 0%, 
+        background: linear-gradient(135deg,
+          rgba(255, 255, 255, 0.2) 0%,
           rgba(255, 255, 255, 0.1) 100%
         );
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-      
+
       &:hover:not(:disabled) {
-        background: linear-gradient(135deg, 
-          rgba(var(--color-blue-tec), 0.9) 0%, 
+        background: linear-gradient(135deg,
+          rgba(var(--color-blue-tec), 0.9) 0%,
           rgba(var(--color-blue-tec), 0.8) 100%
         );
         transform: translateY(-2px) scale(1.05);
         box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.4);
-        
+
         &::before {
           opacity: 1;
         }
       }
-      
+
       &:disabled {
         background: rgba(var(--general_contrasts-container-outline), 0.5);
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
-        
+
         &::before {
           opacity: 0;
         }
       }
-      
+
       .loading-spinner {
         animation: spin 1s linear infinite;
         font-size: 1rem;
       }
     }
-    
+
     @keyframes spin {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
-    
+
     /* 🎨 QUICK ACTIONS PREMIUM */
     .quick-actions {
       display: flex;
@@ -330,14 +330,14 @@ import { MedicalStateService } from '@core/services';
       flex-wrap: wrap;
       justify-content: center;
     }
-    
+
     .quick-action-btn {
       display: flex;
       align-items: center;
       gap: var(--bmb-spacing-s);
       padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
-      background: linear-gradient(135deg, 
-        rgba(var(--general_contrasts-surface), 0.9) 0%, 
+      background: linear-gradient(135deg,
+        rgba(var(--general_contrasts-surface), 0.9) 0%,
         rgba(var(--general_contrasts-surface), 0.8) 100%
       );
       border: 1px solid rgba(var(--general_contrasts-container-outline), 0.2);
@@ -349,7 +349,7 @@ import { MedicalStateService } from '@core/services';
       backdrop-filter: blur(5px);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       position: relative;
-      
+
       &::before {
         content: '';
         position: absolute;
@@ -358,77 +358,77 @@ import { MedicalStateService } from '@core/services';
         right: 0;
         bottom: 0;
         border-radius: var(--bmb-radius-full);
-        background: linear-gradient(135deg, 
-          rgba(var(--color-blue-tec), 0.1) 0%, 
+        background: linear-gradient(135deg,
+          rgba(var(--color-blue-tec), 0.1) 0%,
           rgba(var(--color-blue-tec), 0.05) 100%
         );
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-      
+
       &:hover:not(:disabled) {
-        background: linear-gradient(135deg, 
-          rgba(var(--color-blue-tec), 0.1) 0%, 
+        background: linear-gradient(135deg,
+          rgba(var(--color-blue-tec), 0.1) 0%,
           rgba(var(--color-blue-tec), 0.05) 100%
         );
         border-color: rgba(var(--color-blue-tec), 0.3);
         color: rgb(var(--color-blue-tec));
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.15);
-        
+
         &::before {
           opacity: 1;
         }
       }
-      
+
       &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        
+
         &::before {
           opacity: 0;
         }
       }
-      
+
       .action-icon {
         font-size: 1.1rem;
         filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
       }
-      
+
       .action-text {
         white-space: nowrap;
         position: relative;
         z-index: 1;
       }
     }
-    
+
     /* 🎨 MOBILE RESPONSIVE PREMIUM */
     @media (max-width: 768px) {
       .chat-input-container {
         padding: var(--bmb-spacing-s);
       }
-      
+
       .input-wrapper {
         padding: var(--bmb-spacing-xs);
       }
-      
+
       .send-button {
         width: 40px;
         height: 40px;
         font-size: 1rem;
       }
-      
+
       .quick-actions {
         justify-content: center;
         gap: var(--bmb-spacing-xs);
       }
-      
+
       .quick-action-btn {
         font-size: 0.8rem;
         padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
-        
+
         .action-icon {
           font-size: 1rem;
         }
@@ -439,19 +439,19 @@ import { MedicalStateService } from '@core/services';
 export class ChatInputComponent implements OnDestroy {
   /** Event emitted when user sends a message */
   @Output() messageSent = new EventEmitter<string>();
-  
+
   /** Subject for handling component destruction */
   private destroy$ = new Subject<void>();
-  
+
   /** Current message text being typed */
   messageText = '';
-  
+
   /** Observable stream of the currently active patient */
   activePatient$!: Observable<Patient | null>;
-  
+
   /** Observable stream indicating if AI is currently streaming a response */
   isStreaming$!: Observable<boolean>;
-  
+
   /** Quick action templates for common medical queries */
   quickActions = [
     { icon: '🩺', text: 'Realizar diagnóstico inicial' },
@@ -459,47 +459,47 @@ export class ChatInputComponent implements OnDestroy {
     { icon: '📋', text: 'Analizar síntomas' },
     { icon: '🏥', text: 'Recomendar especialista' }
   ];
-  
+
   /**
    * Creates an instance of ChatInputComponent
-   * 
+   *
    * @param medicalState - Service for managing medical application state
    */
   constructor(private medicalState: MedicalStateService) {
     this.activePatient$ = this.medicalState.activePatient$;
     this.isStreaming$ = this.medicalState.isStreaming$;
   }
-  
+
   /**
    * Component cleanup lifecycle method
-   * 
+   *
    * @description Properly destroys observables to prevent memory leaks
    */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
+
   /**
    * Determines if the send button should be enabled
-   * 
+   *
    * @returns True if message can be sent, false otherwise
-   * 
+   *
    * @description Validates that message has content, is within character limit,
    * a patient is selected, and AI is not currently streaming a response.
    */
   get canSend(): boolean {
-    return this.messageText.trim().length > 0 && 
+    return this.messageText.trim().length > 0 &&
            this.messageText.length <= 2000 &&
            this.medicalState.activePatientValue !== null &&
            !this.medicalState.isStreamingValue;
   }
-  
+
   /**
    * Handles keyboard events for the textarea
-   * 
+   *
    * @param event - Keyboard event from textarea
-   * 
+   *
    * @description Enables Ctrl+Enter shortcut for sending messages.
    * Prevents default behavior when shortcut is used and message can be sent.
    */
@@ -508,20 +508,20 @@ export class ChatInputComponent implements OnDestroy {
     const textarea = event.target as HTMLTextAreaElement;
     textarea.style.height = 'auto';
     textarea.style.height = Math.min(textarea.scrollHeight, 96) + 'px';
-    
+
     // Send message with Ctrl/Cmd + Enter
     if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
       event.preventDefault();
       this.sendMessage();
     }
   }
-  
+
   /**
    * Sends the current message if validation passes
-   * 
+   *
    * @description Validates the message, emits the messageSent event with the trimmed text,
    * clears the input, and resets the textarea height. Only sends if canSend validation passes.
-   * 
+   *
    * @example
    * ```typescript
    * // Called when send button is clicked or Ctrl+Enter is pressed
@@ -530,11 +530,11 @@ export class ChatInputComponent implements OnDestroy {
    */
   sendMessage(): void {
     if (!this.canSend) return;
-    
+
     const message = this.messageText.trim();
     this.messageSent.emit(message);
     this.messageText = '';
-    
+
     // Reset textarea height
     setTimeout(() => {
       const textarea = document.querySelector('.message-input') as HTMLTextAreaElement;
@@ -543,16 +543,16 @@ export class ChatInputComponent implements OnDestroy {
       }
     });
   }
-  
+
   /**
    * Inserts a quick action template into the message input
-   * 
+   *
    * @param actionText - The template text to insert
-   * 
+   *
    * @description Sets the message text to the selected quick action template
    * and focuses the textarea for immediate editing. Useful for speeding up
    * common medical consultation patterns.
-   * 
+   *
    * @example
    * ```typescript
    * // Called when quick action button is clicked
@@ -562,7 +562,7 @@ export class ChatInputComponent implements OnDestroy {
    */
   insertQuickAction(actionText: string): void {
     this.messageText = actionText;
-    
+
     // Focus on textarea
     setTimeout(() => {
       const textarea = document.querySelector('.message-input') as HTMLTextAreaElement;
@@ -570,5 +570,5 @@ export class ChatInputComponent implements OnDestroy {
         textarea.focus();
       }
     });
-  }
-} 
+}
+}

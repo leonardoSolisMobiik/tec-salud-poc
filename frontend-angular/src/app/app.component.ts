@@ -17,23 +17,23 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
 
 /**
  * Main application component for TecSalud Medical Assistant
- * 
+ *
  * @description Root component that provides the complete medical assistant interface
  * including sidebar patient management, medical AI chat, navigation, and responsive design.
  * Combines chat functionality with patient context management.
- * 
+ *
  * @example
  * ```typescript
  * // Used as the root component in main.ts
  * bootstrapApplication(AppComponent, appConfig);
- * 
+ *
  * // Provides the complete medical interface:
  * // - Patient search and selection
  * // - Medical AI chat with streaming responses
  * // - Navigation to different modules
  * // - Responsive sidebar design
  * ```
- * 
+ *
  * @features
  * - **Patient Management**: Search, select, and manage patient context
  * - **Medical AI Chat**: Streaming responses with markdown support
@@ -41,21 +41,21 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
  * - **Responsive Design**: Collapsible sidebar for mobile/tablet
  * - **Real-time Updates**: Live patient search and chat streaming
  * - **Context Awareness**: Patient-specific medical consultations
- * 
+ *
  * @userInterface
  * - Collapsible sidebar with patient search
  * - Main chat area with AI responses
  * - Header with navigation and patient context
  * - Premium send button with airplane animation
  * - Loading states and error handling
- * 
+ *
  * @state
  * - activePatient: Currently selected patient for medical context
  * - currentChat: Chat message history with AI
  * - searchResults: Real-time patient search results
  * - streamingMessage: Live AI response being typed
  * - sidebarCollapsed: Responsive sidebar state
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -80,8 +80,8 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                 <p class="brand-subtitle">Asistente Virtual</p>
               </div>
             </div>
-            <button 
-              class="collapse-btn" 
+            <button
+              class="collapse-btn"
               (click)="sidebarCollapsed = !sidebarCollapsed"
               title="Contraer panel lateral">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -91,23 +91,23 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
             </button>
           </div>
         </div>
-        
+
         <!-- Collapsed Header -->
         <div class="sidebar-header-collapsed" *ngIf="sidebarCollapsed">
-          <button 
-            class="expand-btn" 
+          <button
+            class="expand-btn"
             (click)="sidebarCollapsed = false"
             title="Expandir panel lateral">
             T
           </button>
         </div>
-        
+
         <!-- Main Content -->
         <div class="sidebar-content" *ngIf="!sidebarCollapsed">
           <!-- Search with Bamboo Tokens -->
           <div class="search-container">
             <div class="bamboo-search-group">
-            <input 
+            <input
                 #searchInput
                 class="search-input bamboo-search-input"
               placeholder="Buscar paciente..."
@@ -119,7 +119,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                 [disabled]="isSearching"
               type="text"
             />
-              <button 
+              <button
                 *ngIf="searchQuery"
                 class="bamboo-clear-button"
                 (click)="clearSearch()"
@@ -128,14 +128,14 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
               </button>
             </div>
           </div>
-          
+
           <!-- Patients List -->
           <div class="patients-container">
             <div class="patients-title-container">
-              <h3 class="patients-title">
-                {{searchQuery ? (isSearching ? 'Buscando...' : 'Resultados (' + patientsToShow.length + ')') : 'Pacientes Recientes'}}
-              </h3>
-              <button 
+            <h3 class="patients-title">
+              {{searchQuery ? (isSearching ? 'Buscando...' : 'Resultados (' + patientsToShow.length + ')') : 'Pacientes Recientes'}}
+            </h3>
+              <button
                 *ngIf="!searchQuery"
                 class="collapse-toggle-btn"
                 (click)="toggleRecentPatientsCollapse()"
@@ -146,19 +146,19 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                 </svg>
               </button>
             </div>
-            
+
             <div class="patients-list" *ngIf="!recentPatientsCollapsed || searchQuery">
               <!-- Loading -->
               <div *ngIf="isSearching" class="loading-state">
                 <div class="loading-spinner"></div>
                 <p>Buscando pacientes...</p>
               </div>
-              
+
               <!-- Error -->
               <div *ngIf="searchError" class="error-state">
                 <p>{{searchError}}</p>
               </div>
-              
+
               <!-- No Results -->
               <div *ngIf="!isSearching && !searchError && patientsToShow.length === 0 && searchQuery" class="no-results">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -167,9 +167,9 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                 </svg>
                 <p>No se encontraron pacientes</p>
               </div>
-              
+
               <!-- Patient Cards -->
-              <div 
+              <div
                 *ngFor="let patient of patientsToShow; trackBy: trackPatient"
                 class="patient-card-html"
                 [class.active]="activePatient?.id === patient.id"
@@ -190,7 +190,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
             </div>
           </div>
         </div>
-        
+
         <!-- Collapsed Content -->
         <div class="sidebar-collapsed-content" *ngIf="sidebarCollapsed">
           <!-- Search Button -->
@@ -202,10 +202,10 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
               </svg>
             </button>
           </div>
-          
+
           <!-- Recent Patients -->
           <div class="collapsed-patients">
-            <div 
+            <div
               *ngFor="let patient of recentPatients.slice(0, 5); let i = index"
               class="collapsed-patient"
               [class.active]="activePatient?.id === patient.id"
@@ -219,7 +219,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
           </div>
         </div>
       </div>
-      
+
       <!-- Main Panel -->
       <div class="main-panel">
         <!-- Header -->
@@ -235,10 +235,10 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
               <span class="patient-separator">•</span>
               <span class="patient-context">Contexto activo</span>
               </div>
-            
+
             <!-- ⚙️ NAVIGATION DROPDOWN - USANDO CLASES CSS CON TOKENS BAMBOO -->
             <div class="nav-dropdown-container">
-              <button class="nav-dropdown-toggle" 
+              <button class="nav-dropdown-toggle"
                       (click)="toggleNavDropdown()"
                       title="Menú de navegación">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="gear-icon">
@@ -262,14 +262,14 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                   <path d="M19.43 12.98C19.47 12.66 19.5 12.34 19.5 12C19.5 11.66 19.47 11.34 19.43 11.02L21.54 9.37C21.73 9.22 21.78 8.95 21.66 8.73L19.66 5.27C19.54 5.05 19.27 4.97 19.05 5.05L16.56 6.05C16.04 5.65 15.48 5.32 14.87 5.07L14.49 2.42C14.46 2.18 14.25 2 14 2H10C9.75 2 9.54 2.18 9.51 2.42L9.13 5.07C8.52 5.32 7.96 5.66 7.44 6.05L4.95 5.05C4.72 4.96 4.46 5.05 4.34 5.27L2.34 8.73C2.21 8.95 2.27 9.22 2.46 9.37L4.57 11.02C4.53 11.34 4.5 11.67 4.5 12C4.5 12.33 4.53 12.66 4.57 12.98L2.46 14.63C2.27 14.78 2.21 15.05 2.34 15.27L4.34 18.73C4.46 18.95 4.73 19.03 4.95 18.95L7.44 17.95C7.96 18.35 8.52 18.68 9.13 18.93L9.51 21.58C9.54 21.82 9.75 22 10 22H14C14.25 22 14.46 21.82 14.49 21.58L14.87 18.93C15.48 18.68 16.04 18.34 16.56 17.95L19.05 18.95C19.28 19.04 19.54 18.95 19.66 18.73L21.66 15.27C21.78 15.05 21.73 14.78 21.54 14.63L19.43 12.98Z" fill="url(#gearGradient)" filter="url(#gearShadow)"/>
                 </svg>
               </button>
-              
+
               <!-- 📋 DROPDOWN MENU SIMPLE -->
               <div *ngIf="isNavDropdownOpen" class="simple-dropdown" (click)="closeNavDropdown()">
                 <div class="dropdown-content" (click)="$event.stopPropagation()">
                   <div class="dropdown-header">
                     <h3>Navegación</h3>
             </div>
-                  
+
                   <button class="dropdown-item" (click)="navigateTo('/chat')">
                     <span class="dropdown-icon">🩺</span>
                     <div class="dropdown-text">
@@ -277,7 +277,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                       <div class="dropdown-subtitle">Asistente inteligente</div>
           </div>
                   </button>
-                  
+
                   <button class="dropdown-item" (click)="navigateTo('/dashboard')">
                     <span class="dropdown-icon">📊</span>
                     <div class="dropdown-text">
@@ -285,7 +285,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                       <div class="dropdown-subtitle">Panel de control</div>
         </div>
                   </button>
-                  
+
                   <!-- COMMENTED OUT: Patient Management functionality -->
                   <!-- <button class="dropdown-item" (click)="navigateTo('/patients')">
                     <span class="dropdown-icon">👥</span>
@@ -294,11 +294,11 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                       <div class="dropdown-subtitle">Base de datos</div>
                     </div>
                   </button> -->
-                  
 
-                  
+
+
                   <div class="dropdown-separator"></div>
-                  
+
                   <button class="dropdown-item" (click)="navigateTo('/admin-bulk-upload')">
                     <span class="dropdown-icon">🔧</span>
                     <div class="dropdown-text">
@@ -306,7 +306,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                       <div class="dropdown-subtitle">Procesamiento de lotes TecSalud</div>
                     </div>
                   </button>
-                  
+
                   <button class="dropdown-item" (click)="navigateTo('/admin-pills')">
                     <span class="dropdown-icon">💊</span>
                     <div class="dropdown-text">
@@ -314,9 +314,9 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                       <div class="dropdown-subtitle">Configurar preguntas rápidas</div>
                     </div>
                   </button>
-                  
 
-                  
+
+
                   <button class="dropdown-item" (click)="navigateTo('/documents')">
                     <span class="dropdown-icon">📄</span>
                     <div class="dropdown-text">
@@ -324,7 +324,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                       <div class="dropdown-subtitle">Procesamiento automático</div>
                     </div>
                   </button>
-                  
+
                   <!-- DISABLED: Expedientes Procesados -->
                   <!--
                   <button class="dropdown-item" (click)="navigateTo('/documents/list')">
@@ -340,13 +340,13 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
             </div>
           </div>
         </div>
-        
+
         <!-- Chat Content / Router Outlet -->
         <div class="chat-container">
-          
+
           <!-- 🎯 ROUTER OUTLET PARA PÁGINAS DE NAVEGACIÓN -->
           <router-outlet *ngIf="shouldShowRouterOutlet"></router-outlet>
-          
+
           <div class="chat-area" *ngIf="!shouldShowRouterOutlet">
             <!-- Messages Area -->
             <div class="messages-area" #messagesArea>
@@ -359,35 +359,35 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                   <div class="welcome-title">Copiloto Médico</div>
                   <div class="welcome-status">• En línea</div>
                   <div class="welcome-text">
-                    {{activePatient 
+                    {{activePatient
                       ? '¡Hola! Soy tu Copiloto médico. Tengo acceso al expediente completo de ' + activePatient.name + '. ¿En qué puedo ayudarte hoy? Puedo consultar laboratorios, medicamentos, diagnósticos, estudios de imagen y más.'
                       : '👋 Hola, soy tu Copiloto médico. Selecciona un paciente del panel izquierdo para comenzar a consultar su expediente.'
                     }}
                   </div>
                 </div>
               </div>
-              
+
               <!-- Chat Messages with Bubble Design -->
-              <div *ngFor="let message of currentChat; trackBy: trackMessage" 
+              <div *ngFor="let message of currentChat; trackBy: trackMessage"
                    class="message-wrapper"
                    [class.user-wrapper]="message.role === 'user'"
                    [class.assistant-wrapper]="message.role === 'assistant'">
-                
+
                 <!-- Avatar -->
-                <div class="message-avatar" 
+                <div class="message-avatar"
                      [class.user-avatar]="message.role === 'user'"
                      [class.assistant-avatar]="message.role === 'assistant'">
                   <span *ngIf="message.role === 'user'">👨‍⚕️</span>
                   <span *ngIf="message.role === 'assistant'">🤖</span>
                 </div>
-                
+
                 <!-- Bubble Container -->
                 <div class="bubble-container">
                   <!-- Speech Bubble -->
                   <div class="speech-bubble"
                        [class.user-bubble]="message.role === 'user'"
                        [class.assistant-bubble]="message.role === 'assistant'">
-                    
+
                     <!-- Message Content -->
                     <div class="bubble-content">
                       <div class="message-text">
@@ -395,14 +395,14 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                         <div *ngIf="message.role === 'user'">{{message.content}}</div>
                       </div>
                     </div>
-                    
+
                     <!-- Bubble Tail -->
                     <div class="bubble-tail"
                          [class.user-tail]="message.role === 'user'"
                          [class.assistant-tail]="message.role === 'assistant'">
                     </div>
                   </div>
-                  
+
                   <!-- Timestamp -->
                   <div class="message-timestamp"
                        [class.user-timestamp]="message.role === 'user'"
@@ -411,14 +411,14 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                   </div>
                 </div>
               </div>
-              
+
               <!-- Streaming Message with Bubble Design -->
               <div *ngIf="isStreaming" class="message-wrapper assistant-wrapper">
                 <!-- Avatar -->
                 <div class="message-avatar assistant-avatar">
                   <span class="typing-indicator">🤖</span>
                 </div>
-                
+
                 <!-- Bubble Container -->
                 <div class="bubble-container">
                   <!-- Speech Bubble -->
@@ -435,18 +435,18 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                         <span class="typing-cursor">|</span>
                       </div>
                     </div>
-                    
+
                     <!-- Bubble Tail -->
                     <div class="bubble-tail assistant-tail"></div>
                   </div>
-                  
+
                   <!-- Timestamp -->
                   <div class="message-timestamp assistant-timestamp">
                     Escribiendo...
                   </div>
                 </div>
               </div>
-              
+
               <!-- Loading -->
               <div *ngIf="isLoading && !isStreaming" class="loading-message">
                 <div class="loading-dots">
@@ -457,17 +457,17 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                 <p>Procesando consulta...</p>
               </div>
             </div>
-            
+
             <!-- Input Area -->
             <div class="input-area">
               <!-- Quick Pills Premium - Reutiliza patrón existente -->
-              <app-quick-pills 
+              <app-quick-pills
                 *ngIf="activePatient && !isLoading"
                 [patient]="activePatient"
                 [showRotationIndicator]="true"
                 (questionSelected)="onQuickPillSelected($event)">
               </app-quick-pills>
-              
+
               <div class="input-container">
                 <input
                   #messageInput
@@ -505,36 +505,36 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                           </feMerge>
                         </filter>
                       </defs>
-                      
+
                       <!-- Estelas animadas de fondo -->
                       <g class="plane-trails">
                         <path d="M2 8L8 10" stroke="url(#planeGradient)" stroke-width="3" stroke-linecap="round" opacity="0.3" class="trail-1"/>
                         <path d="M3 12L10 14" stroke="url(#planeGradient)" stroke-width="2.5" stroke-linecap="round" opacity="0.4" class="trail-2"/>
                         <path d="M5 16L12 17" stroke="url(#planeGradient)" stroke-width="2" stroke-linecap="round" opacity="0.5" class="trail-3"/>
                       </g>
-                      
+
                       <!-- Cuerpo principal del avión con sombra -->
-                      <path d="M28 3L3 13L11 16L18 9L13 23L18 26L28 3Z" 
-                            fill="url(#planeGradient)" 
-                            stroke="rgba(255,255,255,1)" 
+                      <path d="M28 3L3 13L11 16L18 9L13 23L18 26L28 3Z"
+                            fill="url(#planeGradient)"
+                            stroke="rgba(255,255,255,1)"
                             stroke-width="1.5"
                             stroke-linejoin="round"
                             filter="url(#planeShadow)"
                             class="plane-body"/>
-                      
+
                       <!-- Detalles premium -->
                       <circle cx="20" cy="7" r="1.5" fill="rgba(255,255,255,1)" opacity="0.9" class="window-1"/>
                       <circle cx="17" cy="9" r="1" fill="rgba(255,255,255,1)" opacity="0.8" class="window-2"/>
-                      
+
                       <!-- Brillo del fuselaje -->
                       <path d="M15 8L22 5" stroke="rgba(255,255,255,0.6)" stroke-width="1" stroke-linecap="round" class="shine"/>
                     </svg>
-                    
+
                     <!-- 🔄 ÍCONO DE CARGA PREMIUM -->
                     <div *ngIf="isLoading" class="loading-airplane">
                       <div class="rotating-plane">✈️</div>
                     </div>
-                    
+
                     <span class="premium-btn-text">
                       {{ isLoading ? 'Volando...' : 'Enviar' }}
                     </span>
@@ -545,7 +545,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
           </div>
         </div>
       </div>
-      
+
       <!-- Document Panel (Derecho) -->
       <app-document-panel
         [activePatient]="activePatient"
@@ -560,87 +560,87 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   /** Reference to the messages area for auto-scrolling */
   @ViewChild('messagesArea') messagesArea!: ElementRef;
   @ViewChild('searchInput') searchInput!: ElementRef;
-  
+
   /** Subject for component cleanup and unsubscription */
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
   private shouldScrollToBottom = false;
-  
+
   // =====================================
   // COMPONENT STATE PROPERTIES
   // =====================================
-  
+
   /** Whether the sidebar is collapsed (responsive design) */
   sidebarCollapsed = false;
-  
+
   /** Whether the recent patients section is collapsed */
   recentPatientsCollapsed = false;
-  
+
   /** Whether the document panel (right) is collapsed */
   documentPanelCollapsed = true;
-  
+
   /** Current search query for patient lookup */
   searchQuery = '';
-  
+
   /** Debounced search query to prevent excessive API calls */
   debouncedSearchQuery = '';
-  
+
   /** Search results from patient lookup API */
   searchResults: Patient[] = [];
-  
+
   /** Flag indicating if user is currently searching */
   isSearching = false;
-  
+
   /** Flag indicating if user is currently typing in search */
   isTyping = false;
-  
+
   /** Flag indicating if search input has focus */
   searchInputHasFocus = false;
-  
+
   /** Current search error message, if any */
   searchError: string | null = null;
-  
+
   /** Window reference for TypeScript compatibility */
   window = window;
-  
+
   // =====================================
   // CHAT STATE PROPERTIES
   // =====================================
-  
+
   /** Current message being typed by user */
   inputMessage = '';
-  
+
   /** Loading state for API calls */
   isLoading = false;
-  
+
   /** Current streaming message from AI (live typing effect) */
   streamingMessage = '';
-  
+
   /** Whether AI is currently streaming a response */
   isStreaming = false;
-  
+
   /** Internal reference for streaming content management */
   private streamingContentRef = '';
-  
+
   // =====================================
   // DATA STATE PROPERTIES
   // =====================================
-  
+
   /** Currently selected patient for medical context */
   activePatient: Patient | null = null;
-  
+
   /** List of recent patients loaded on component initialization */
   recentPatients: Patient[] = [];
-  
+
   /** List of patients to show in the UI (either search results or recent patients) */
   patientsToShow: Patient[] = [];
-  
+
   /** Array of chat messages for the current conversation */
   currentChat: ChatMessage[] = [];
-  
+
   /**
    * Creates an instance of AppComponent
-   * 
+   *
    * @param medicalStateService - Service for medical state management
    * @param apiService - Service for API communication
    * @param streamingService - Service for AI response streaming
@@ -658,10 +658,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     private router: Router,
     @Inject(DOCUMENT) private document: Document
   ) {}
-  
+
   /**
    * Component initialization lifecycle hook
-   * 
+   *
    * @description Initializes all component functionality including subscriptions,
    * search debouncing, and initial state setup.
    */
@@ -670,20 +670,20 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.setupSubscriptions();
     this.setupSearchDebounce();
   }
-  
+
   /**
    * Component destruction lifecycle hook
-   * 
+   *
    * @description Cleans up subscriptions to prevent memory leaks
    */
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
-  
+
   /**
    * After view checked lifecycle hook
-   * 
+   *
    * @description Handles auto-scrolling to bottom when new messages arrive
    */
   ngAfterViewChecked() {
@@ -692,10 +692,10 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.shouldScrollToBottom = false;
     }
   }
-  
+
   /**
    * Initializes component state and dependencies
-   * 
+   *
    * @private
    * @description Sets up initial patient state and loads recent patients.
    * Now preserves persisted state from localStorage.
@@ -703,7 +703,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   private initializeComponent() {
     // Check if there's persisted state
     const stateInfo = this.medicalStateService.getPersistedStateInfo();
-    
+
     if (stateInfo.hasActivePatient) {
       console.log('🔄 TecSalud: Estado restaurado desde localStorage', {
         pacienteActivo: stateInfo.hasActivePatient,
@@ -714,14 +714,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     } else {
       console.log('🆕 TecSalud: Sesión nueva iniciada');
     }
-    
+
     // Don't clear active patient - let persistence handle it
     // Recent patients are loaded automatically by the service
   }
-  
+
   /**
    * Sets up reactive subscriptions for component state management
-   * 
+   *
    * @private
    * @description Subscribes to active patient, recent patients, and chat state changes
    */
@@ -732,7 +732,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       .subscribe(patient => {
         this.activePatient = patient;
       });
-    
+
     // Recent Patients
     this.medicalStateService.recentPatients$
       .pipe(takeUntil(this.destroy$))
@@ -740,7 +740,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.recentPatients = patients;
         this.updatePatientsToShow();
       });
-    
+
     // Chat Messages
     this.medicalStateService.currentChatMessages$
       .pipe(takeUntil(this.destroy$))
@@ -748,7 +748,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.currentChat = messages;
         this.shouldScrollToBottom = true;
       });
-    
+
     // 🎯 Router Events - Control Router Outlet Visibility
     this.router.events
       .pipe(
@@ -761,7 +761,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.shouldShowRouterOutlet = showRouterOutletRoutes.some(route => event.url.startsWith(route));
       });
   }
-  
+
   private setupSearchDebounce() {
     // Debounce search query
     this.searchSubject.pipe(
@@ -774,12 +774,12 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.performSearch(query);
     });
   }
-  
+
   onSearchInput(event: Event) {
     const target = event.target as HTMLInputElement;
     this.searchQuery = target.value;
     this.isTyping = true;
-    
+
     // If field is completely empty, immediately show recent patients
     if (!this.searchQuery.trim()) {
       this.searchResults = [];
@@ -788,7 +788,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.updatePatientsToShow();
       console.log('🔍 Campo vaciado - mostrando pacientes recientes inmediatamente');
     }
-    
+
     // Use setTimeout to avoid blocking the input
     setTimeout(() => {
       this.searchSubject.next(this.searchQuery);
@@ -812,7 +812,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.isSearching = false;
     this.isTyping = false;
     this.updatePatientsToShow(); // Use the improved logic instead of force update
-    
+
     // Maintain focus on the input
     if (this.searchInput?.nativeElement) {
       this.searchInput.nativeElement.value = '';
@@ -820,11 +820,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.searchInput.nativeElement.focus();
       }, 0);
     }
-    
+
     this.searchSubject.next('');
     console.log('🧹 Búsqueda limpiada - mostrando pacientes recientes');
   }
-  
+
   private async performSearch(query: string) {
     if (!query.trim()) {
       this.searchResults = [];
@@ -834,11 +834,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       console.log('🔍 Búsqueda vacía - mostrando pacientes recientes');
       return;
     }
-    
+
     this.isSearching = true;
     this.searchError = null;
     console.log('🔍 Buscando pacientes:', query);
-    
+
     try {
       const response = await this.apiService.searchPatients(query).toPromise();
       this.searchResults = response || [];
@@ -853,14 +853,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.updatePatientsToShow();
     }
   }
-  
+
   private updatePatientsToShow() {
     // Only block updates when user is typing AND there's text in the search
     // Allow updates when search is empty to show recent patients
     if ((this.isTyping || this.searchInputHasFocus) && this.searchQuery.trim()) {
       return;
     }
-    
+
     // Only update if the list would actually change
     const newList = this.searchQuery.trim() ? this.searchResults : this.recentPatients;
     if (JSON.stringify(this.patientsToShow) !== JSON.stringify(newList)) {
@@ -868,19 +868,19 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       console.log('📋 Lista de pacientes actualizada:', this.searchQuery.trim() ? 'Resultados de búsqueda' : 'Pacientes recientes', newList.length);
     }
   }
-  
+
   private forceUpdatePatientsToShow() {
     this.patientsToShow = this.searchQuery.trim() ? this.searchResults : this.recentPatients;
   }
-  
+
   selectPatient(patient: Patient) {
     console.log('🎯 AppComponent.selectPatient called for:', patient.name);
-    
+
     // Use the centralized method that guarantees state preservation
     this.medicalStateService.selectPatientAndNavigate(patient, this.router).then((success) => {
       if (success) {
         console.log('✅ Patient selection successful:', patient.name);
-        
+
         // Record interaction using ApiService directly
         this.apiService.recordPatientInteraction(patient.id, {
           interaction_type: 'chat',
@@ -895,7 +895,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
     });
   }
-  
+
   async sendMessage() {
     if (!this.inputMessage.trim() || !this.activePatient) return;
 
@@ -934,7 +934,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
         ...this.currentChat.slice(-5),
         userMessage
       ];
-      
+
       // Set component flag immediately
       this.isStreaming = true;
       this.streamingMessage = '';
@@ -955,7 +955,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
               this.streamingContentRef += chunk.content;
               updateUI(); // Update UI immediately
             } else if (chunk.type === 'done') {
-              
+
               // Handle completion locally
               if (this.streamingContentRef) {
                 const assistantMessage: ChatMessage = {
@@ -965,7 +965,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
                 };
                 this.medicalStateService.addMessage(assistantMessage);
               }
-              
+
               // Reset local streaming state
               this.isStreaming = false;
               this.streamingMessage = '';
@@ -973,26 +973,26 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
               updateUI();
             } else if (chunk.type === 'error') {
               console.error('❌ Streaming error:', chunk.error);
-              
+
               // Reset local streaming state on error
               this.isStreaming = false;
               this.streamingMessage = '';
               this.streamingContentRef = '';
               updateUI();
-              
+
               throw new Error(chunk.error || 'Streaming error');
             }
           });
         },
         error: (error) => {
           console.error('❌ Stream error:', error);
-          
+
           // Reset local streaming state on error
           this.isStreaming = false;
           this.streamingMessage = '';
           this.streamingContentRef = '';
           updateUI();
-          
+
           throw error;
         },
         complete: () => {
@@ -1002,13 +1002,13 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     } catch (error) {
       console.error('❌ Chat error:', error);
-      
+
       // Reset local streaming state on error
       this.isStreaming = false;
       this.streamingMessage = '';
       this.streamingContentRef = '';
       this.cdr.detectChanges();
-      
+
       const errorMessage: ChatMessage = {
         role: 'assistant',
         content: 'Lo siento, hubo un error al procesar tu consulta. Por favor intenta de nuevo.',
@@ -1019,7 +1019,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.isLoading = false;
     }
   }
-  
+
   onKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter' && !this.isLoading) {
       this.sendMessage();
@@ -1032,7 +1032,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   onQuickPillSelected(questionText: string): void {
     // Reutiliza la misma lógica de insertQuickAction existente
     this.inputMessage = questionText;
-    
+
     // Focus en el input después de un delay corto
     setTimeout(() => {
       const messageInput = document.querySelector('.message-input') as HTMLInputElement;
@@ -1056,14 +1056,14 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.toggleDocumentPanel();
     }
   }
-  
+
   private scrollToBottom() {
     if (this.messagesArea) {
       const element = this.messagesArea.nativeElement;
       element.scrollTop = element.scrollHeight;
     }
   }
-  
+
   // Utility methods
   getPatientInitials(patient: Patient): string {
     return patient.name
@@ -1073,22 +1073,22 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       .substring(0, 2)
       .toUpperCase();
   }
-  
+
   trackPatient(index: number, patient: Patient): string {
     return patient.id;
   }
-  
+
   trackMessage(index: number, message: ChatMessage): string {
     return `${index}-${message.role}-${message.content.substring(0, 10)}`;
   }
-  
+
   // 🎯 NAVIGATION DROPDOWN - SIMPLE BOOLEAN STATE
   isNavDropdownOpen = false;
-  
+
   // 🎯 ROUTER OUTLET CONTROL
   shouldShowRouterOutlet = false;
-  
-    toggleNavDropdown(): void {
+
+  toggleNavDropdown(): void {
     this.isNavDropdownOpen = !this.isNavDropdownOpen;
   }
 
@@ -1116,19 +1116,19 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   onDropdownClick(route: string): void {
     this.navigateTo(route);
   }
-  
+
   /** Navigate to root/home page */
   navigateToHome(): void {
     this.router.navigate(['/']);
   }
-  
+
   getCurrentTime(): string {
     return new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
   }
 
   /**
    * Clears all persisted state and resets the application
-   * 
+   *
    * @description Useful for logout or reset functionality
    */
   clearPersistedState(): void {
@@ -1138,7 +1138,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   /**
    * Gets information about current persisted state
-   * 
+   *
    * @returns Object with state persistence information
    */
   getPersistedStateInfo() {
@@ -1147,7 +1147,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   /**
    * Checks if the application has persisted state
-   * 
+   *
    * @returns True if there's saved state in localStorage
    */
   hasPersistedState(): boolean {

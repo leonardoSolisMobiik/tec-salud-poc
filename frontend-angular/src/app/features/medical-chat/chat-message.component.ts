@@ -5,19 +5,19 @@ import { marked } from 'marked';
 
 /**
  * Chat message display component for medical conversations
- * 
+ *
  * @description Renders individual chat messages with role-based styling, timestamps,
  * and markdown formatting. Distinguishes between user and AI assistant messages
  * with different visual styles and avatars.
- * 
+ *
  * @example
  * ```typescript
  * // In parent component template
- * <app-chat-message 
- *   *ngFor="let msg of messages" 
+ * <app-chat-message
+ *   *ngFor="let msg of messages"
  *   [message]="msg">
  * </app-chat-message>
- * 
+ *
  * // Message object structure
  * const message: ChatMessage = {
  *   role: 'user', // or 'assistant'
@@ -25,7 +25,7 @@ import { marked } from 'marked';
  *   timestamp: new Date()
  * };
  * ```
- * 
+ *
  * @features
  * - Role-based visual styling (user vs assistant)
  * - Markdown content rendering for rich formatting
@@ -33,10 +33,10 @@ import { marked } from 'marked';
  * - Responsive message bubbles
  * - Medical-themed avatars and colors
  * - HTML sanitization for security
- * 
+ *
  * @inputs
  * - message: ChatMessage - The message object to display
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -64,36 +64,36 @@ import { marked } from 'marked';
       gap: 0.75rem;
       margin-bottom: 1.5rem;
       max-width: 80%;
-      
+
       &.user {
         margin-left: auto;
         flex-direction: row-reverse;
-        
+
         .message-content {
           background: var(--medical-blue);
           color: white;
         }
-        
+
         .message-avatar {
           background: var(--medical-blue);
           color: white;
         }
       }
-      
+
       &.assistant {
         margin-right: auto;
-        
+
         .message-content {
           background: var(--medical-surface);
           border: 1px solid var(--medical-divider);
         }
-        
+
         .message-avatar {
           background: var(--medical-context-active);
         }
       }
     }
-    
+
     .message-avatar {
       width: 40px;
       height: 40px;
@@ -104,14 +104,14 @@ import { marked } from 'marked';
       font-size: 1.2rem;
       flex-shrink: 0;
     }
-    
+
     .message-content {
       border-radius: 1rem;
       padding: 0.75rem 1rem;
       min-width: 0;
       flex: 1;
     }
-    
+
     .message-header {
       display: flex;
       justify-content: space-between;
@@ -120,32 +120,32 @@ import { marked } from 'marked';
       font-size: 0.75rem;
       opacity: 0.8;
     }
-    
+
     .message-role {
       font-weight: 600;
     }
-    
+
     .message-time {
       font-size: 0.7rem;
     }
-    
+
     .message-text {
       line-height: 1.5;
       word-wrap: break-word;
-      
+
       /* Markdown styling */
       :deep(p) {
         margin: 0.5rem 0;
-        
+
         &:first-child {
           margin-top: 0;
         }
-        
+
         &:last-child {
           margin-bottom: 0;
         }
       }
-      
+
       :deep(code) {
         background: rgba(0, 0, 0, 0.1);
         padding: 0.125rem 0.25rem;
@@ -153,7 +153,7 @@ import { marked } from 'marked';
         font-family: 'Monaco', 'Menlo', monospace;
         font-size: 0.875em;
       }
-      
+
       :deep(pre) {
         background: rgba(0, 0, 0, 0.05);
         padding: 0.75rem;
@@ -163,37 +163,37 @@ import { marked } from 'marked';
         font-family: 'Monaco', 'Menlo', monospace;
         font-size: 0.875em;
       }
-      
+
       :deep(ul), :deep(ol) {
         margin: 0.5rem 0;
         padding-left: 1.5rem;
       }
-      
+
       :deep(li) {
         margin: 0.25rem 0;
       }
-      
+
       :deep(strong) {
         font-weight: 600;
       }
-      
+
       :deep(em) {
         font-style: italic;
       }
     }
-    
+
     /* Mobile responsive */
     @media (max-width: 768px) {
       .message {
         max-width: 90%;
       }
-      
+
       .message-avatar {
         width: 32px;
         height: 32px;
         font-size: 1rem;
       }
-      
+
       .message-content {
         padding: 0.5rem 0.75rem;
       }
@@ -206,22 +206,22 @@ export class ChatMessageComponent {
 
   /**
    * Gets formatted time for the current message
-   * 
+   *
    * @returns Formatted time string (HH:MM format)
-   * 
+   *
    * @description Returns the current time if message timestamp is not available,
    * otherwise formats the message timestamp to HH:MM format.
    */
   getFormattedTime(): string {
     return this.formatTime(this.message.timestamp || new Date());
   }
-  
+
   /**
    * Formats a timestamp to HH:MM format
-   * 
+   *
    * @param timestamp - Date object to format
    * @returns Formatted time string in Mexican Spanish locale (HH:MM)
-   * 
+   *
    * @description Converts a Date object to a localized time string
    * using Mexican Spanish locale formatting for consistency with the application.
    */
@@ -231,17 +231,17 @@ export class ChatMessageComponent {
       minute: '2-digit'
     }).format(new Date(timestamp));
   }
-  
+
   /**
    * Formats message content with markdown rendering
-   * 
+   *
    * @param content - Raw message content that may contain markdown
    * @returns HTML string with rendered markdown
-   * 
+   *
    * @description Processes markdown syntax in message content and converts
    * it to HTML for rich text display. Handles escaped characters, line breaks,
    * and GitHub-flavored markdown. Includes error handling with manual fallback.
-   * 
+   *
    * @example
    * ```typescript
    * const content = '## Diagnosis\\n**Hypertension**\\n- High blood pressure';
@@ -261,13 +261,13 @@ export class ChatMessageComponent {
         // Handle other common escapes
         .replace(/\\t/g, '\t')
         .replace(/\\\\/g, '\\');
-      
+
       // Configure marked for medical content
       marked.setOptions({
         breaks: true, // Convert \n to <br>
         gfm: true // GitHub flavored markdown
       });
-      
+
       // Parse markdown to HTML
       const html = marked.parse(cleanContent);
       return html as string;
@@ -284,4 +284,4 @@ export class ChatMessageComponent {
         .replace(/\n/g, '<br>');
     }
   }
-} 
+}

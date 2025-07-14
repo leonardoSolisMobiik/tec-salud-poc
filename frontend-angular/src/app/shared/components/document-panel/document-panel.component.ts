@@ -8,11 +8,11 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
 
 /**
  * Document Panel Component for medical records display
- * 
+ *
  * @description Side panel component that displays medical documents and records
  * for the currently active patient. Features collapsible design, patient context
  * awareness, and integration with the patient document viewer.
- * 
+ *
  * @example
  * ```typescript
  * // In parent component template
@@ -21,13 +21,13 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
  *   [isCollapsed]="documentPanelCollapsed"
  *   (toggleCollapse)="onDocumentPanelToggle($event)">
  * </app-document-panel>
- * 
+ *
  * // In parent component
  * onDocumentPanelToggle(isCollapsed: boolean) {
  *   this.documentPanelCollapsed = isCollapsed;
  * }
  * ```
- * 
+ *
  * @features
  * - Collapsible side panel design
  * - Patient-specific document listing
@@ -35,14 +35,14 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
  * - Patient initials avatar
  * - Responsive design with mobile support
  * - Integration with document viewer
- * 
+ *
  * @inputs
  * - activePatient: Current patient for document context
  * - isCollapsed: Whether panel should be collapsed
- * 
+ *
  * @outputs
  * - toggleCollapse: Emits when panel collapse state changes
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -64,8 +64,8 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
               <p class="panel-subtitle">Documentos médicos</p>
             </div>
           </div>
-          <button 
-            class="collapse-btn" 
+          <button
+            class="collapse-btn"
             (click)="togglePanel()"
             title="Contraer panel de expedientes">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -75,17 +75,17 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
           </button>
         </div>
       </div>
-      
+
       <!-- Header Colapsado -->
       <div class="panel-header-collapsed" *ngIf="isCollapsed">
-        <button 
-          class="expand-btn" 
+        <button
+          class="expand-btn"
           (click)="togglePanel()"
           title="Expandir panel de expedientes">
           📄
         </button>
       </div>
-      
+
       <!-- Contenido Principal -->
       <div class="panel-content" *ngIf="!isCollapsed">
         <!-- Visor de documentos -->
@@ -108,8 +108,8 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
   `,
   styles: [`
     .document-panel {
-      background: linear-gradient(180deg, 
-        var(--general_contrasts-input-background, #ffffff) 0%, 
+      background: linear-gradient(180deg,
+        var(--general_contrasts-input-background, #ffffff) 0%,
         rgba(var(--color-mariner-50, 224, 242, 254), 0.05) 100%
       );
       border-left: 1px solid var(--general_contrasts-container-outline, #e5e7eb);
@@ -118,7 +118,7 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
       overflow: hidden;
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       backdrop-filter: blur(20px);
-      box-shadow: 
+      box-shadow:
         inset 1px 0 0 rgba(255, 255, 255, 0.1),
         -2px 0 10px rgba(0, 0, 0, 0.05);
       position: relative;
@@ -129,8 +129,8 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
     .panel-header {
       padding: var(--bmb-spacing-m, 1rem);
       border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb);
-      background: linear-gradient(135deg, 
-        var(--general_contrasts-input-background, #ffffff) 0%, 
+      background: linear-gradient(135deg,
+        var(--general_contrasts-input-background, #ffffff) 0%,
         rgba(var(--color-mariner-50, 224, 242, 254), 0.1) 100%
       );
       backdrop-filter: blur(10px);
@@ -154,8 +154,8 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
       width: 36px;
       height: 36px;
       border-radius: var(--bmb-radius-s, 0.5rem);
-      background: linear-gradient(135deg, 
-        rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+      background: linear-gradient(135deg,
+        rgb(var(--color-blue-tec, 0, 57, 166)) 0%,
         rgba(var(--color-blue-tec, 0, 57, 166), 0.8) 100%
       );
       display: flex;
@@ -163,7 +163,7 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
       justify-content: center;
       color: white;
       font-size: 1.125rem;
-      box-shadow: 
+      box-shadow:
         0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
         0 2px 4px rgba(0, 0, 0, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -205,24 +205,24 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       flex-shrink: 0;
-      
+
       svg {
         width: 16px;
         height: 16px;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      
+
       &:hover {
         background: rgba(var(--color-blue-tec, 0, 57, 166), 0.15);
         border-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.3);
         transform: scale(1.05);
         box-shadow: 0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.2);
-        
+
         svg {
           transform: translateX(1px);
         }
       }
-      
+
       &:active {
         transform: scale(0.95);
       }
@@ -232,8 +232,8 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
     .panel-header-collapsed {
       padding: var(--bmb-spacing-m, 1rem) var(--bmb-spacing-s, 0.75rem);
       border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb);
-      background: linear-gradient(135deg, 
-        var(--general_contrasts-input-background, #ffffff) 0%, 
+      background: linear-gradient(135deg,
+        var(--general_contrasts-input-background, #ffffff) 0%,
         rgba(var(--color-mariner-50, 224, 242, 254), 0.1) 100%
       );
       backdrop-filter: blur(10px);
@@ -243,8 +243,8 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
     }
 
     .expand-btn {
-      background: linear-gradient(135deg, 
-        rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+      background: linear-gradient(135deg,
+        rgb(var(--color-blue-tec, 0, 57, 166)) 0%,
         rgba(var(--color-blue-tec, 0, 57, 166), 0.9) 100%
       );
       border: none;
@@ -258,20 +258,20 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       font-size: 1.125rem;
-      box-shadow: 
+      box-shadow:
         0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
         0 2px 4px rgba(0, 0, 0, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
       animation: expandPulse 3s ease-in-out infinite;
-      
+
       &:hover {
         transform: scale(1.05);
-        box-shadow: 
+        box-shadow:
           0 6px 20px rgba(var(--color-blue-tec, 0, 57, 166), 0.4),
           0 3px 8px rgba(0, 0, 0, 0.15),
           inset 0 1px 0 rgba(255, 255, 255, 0.3);
       }
-      
+
       &:active {
         transform: scale(0.95);
       }
@@ -307,8 +307,8 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
       width: 32px;
       height: 32px;
       border-radius: var(--bmb-radius-xs, 0.25rem);
-      background: linear-gradient(135deg, 
-        rgb(var(--color-blue-tec, 0, 57, 166)) 0%, 
+      background: linear-gradient(135deg,
+        rgb(var(--color-blue-tec, 0, 57, 166)) 0%,
         rgba(var(--color-blue-tec, 0, 57, 166), 0.8) 100%
       );
       display: flex;
@@ -385,13 +385,13 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
     /* Animaciones */
     @keyframes expandPulse {
       0%, 100% {
-        box-shadow: 
+        box-shadow:
           0 4px 12px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
           0 2px 4px rgba(0, 0, 0, 0.1),
           inset 0 1px 0 rgba(255, 255, 255, 0.2);
       }
       50% {
-        box-shadow: 
+        box-shadow:
           0 6px 20px rgba(var(--color-blue-tec, 0, 57, 166), 0.4),
           0 3px 8px rgba(0, 0, 0, 0.15),
           inset 0 1px 0 rgba(255, 255, 255, 0.3),
@@ -401,12 +401,30 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
 
     /* Responsive */
     @media (max-width: 768px) {
+      .document-panel {
+        height: 100vh;
+        min-height: 100vh;
+      }
+
       .panel-header {
         padding: var(--bmb-spacing-s, 0.75rem);
+        flex-shrink: 0;
       }
 
       .panel-title {
         font-size: 1rem;
+      }
+
+      .panel-content {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .document-viewer-area {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
       }
 
       .patient-context-card {
@@ -415,6 +433,7 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
 
       .no-patient-state {
         padding: var(--bmb-spacing-m, 1rem);
+        min-height: 200px;
 
         h3 {
           font-size: 1rem;
@@ -422,6 +441,48 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
 
         p {
           font-size: 0.875rem;
+          line-height: 1.4;
+          max-width: 250px;
+        }
+      }
+    }
+
+    @media (max-width: 480px) {
+      .document-panel {
+        height: 100vh;
+        min-height: 100vh;
+      }
+
+      .panel-header {
+        padding: var(--bmb-spacing-xs, 0.5rem);
+      }
+
+      .panel-title {
+        font-size: 0.875rem;
+      }
+
+      .panel-subtitle {
+        font-size: 0.75rem;
+      }
+
+      .no-patient-state {
+        padding: var(--bmb-spacing-s, 0.75rem);
+        min-height: 180px;
+
+        .no-patient-icon {
+          font-size: 2.5rem;
+          margin-bottom: var(--bmb-spacing-s, 0.75rem);
+        }
+
+        h3 {
+          font-size: 0.875rem;
+          margin-bottom: var(--bmb-spacing-xs, 0.5rem);
+        }
+
+        p {
+          font-size: 0.75rem;
+          line-height: 1.3;
+          max-width: 200px;
         }
       }
     }
@@ -430,22 +491,22 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
 export class DocumentPanelComponent implements OnInit, OnDestroy {
   /** Current patient for document context */
   @Input() activePatient: Patient | null = null;
-  
+
   /** Whether the panel should be collapsed */
   @Input() isCollapsed: boolean = true;
-  
+
   /** Emits when panel collapse state changes */
   @Output() toggleCollapse = new EventEmitter<boolean>();
 
   /** Number of documents available for the current patient */
   documentCount: number = 0;
-  
+
   /** Subject for component cleanup */
   private destroy$ = new Subject<void>();
 
   /**
    * Creates an instance of DocumentPanelComponent
-   * 
+   *
    * @param patientDocumentsService - Service for patient document management
    */
   constructor(
@@ -454,7 +515,7 @@ export class DocumentPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Component initialization lifecycle hook
-   * 
+   *
    * @description Updates document count on component initialization
    */
   ngOnInit(): void {
@@ -463,7 +524,7 @@ export class DocumentPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Component destruction lifecycle hook
-   * 
+   *
    * @description Cleans up subscriptions to prevent memory leaks
    */
   ngOnDestroy(): void {
@@ -473,7 +534,7 @@ export class DocumentPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Input changes lifecycle hook
-   * 
+   *
    * @description Updates document count when patient changes
    */
   ngOnChanges(): void {
@@ -482,9 +543,9 @@ export class DocumentPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Toggles the panel between collapsed and expanded states
-   * 
+   *
    * @description Changes panel state and emits the new collapse state
-   * 
+   *
    * @example
    * ```typescript
    * // Called when user clicks collapse/expand button
@@ -498,16 +559,16 @@ export class DocumentPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Gets patient initials for avatar display
-   * 
+   *
    * @returns Patient initials string (up to 2 characters) or '?' if no patient
-   * 
+   *
    * @description Extracts and formats patient initials from name for avatar display
-   * 
+   *
    * @example
    * ```typescript
    * // Patient: "Juan Pérez García"
    * getPatientInitials(); // Returns "JP"
-   * 
+   *
    * // No patient
    * getPatientInitials(); // Returns "?"
    * ```
@@ -524,7 +585,7 @@ export class DocumentPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Updates the document count for the current patient
-   * 
+   *
    * @private
    * @description Fetches and updates the count of documents available for the active patient.
    * Sets count to 0 if no patient is selected or on error.
@@ -550,10 +611,10 @@ export class DocumentPanelComponent implements OnInit, OnDestroy {
 
   /**
    * Handles document viewer close event
-   * 
+   *
    * @description Closes the panel when document viewer is closed
    */
   onDocumentViewerClose(): void {
     this.togglePanel();
   }
-} 
+}
