@@ -69,8 +69,7 @@ import { PatientDocumentsService, PatientDocument } from '../../services/patient
             (click)="togglePanel()"
             title="Contraer panel de expedientes">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M13 19l-7-7 7-7"/>
-              <path d="M21 12H3" opacity="0.6"/>
+              <path d="M9 18l6-6-6-6"/>
             </svg>
           </button>
         </div>

@@ -8,6 +8,7 @@ import { BambooModule } from '../../shared/bamboo.module';
 import { ApiService } from '../../core/services/api.service';
 import { MedicalStateService } from '../../core/services/medical-state.service';
 import { Patient } from '../../core/models/patient.model';
+import { DocumentUploadResponse } from '../../core/models/api.model';
 
 interface ProcessingOption {
   value: string;
@@ -19,13 +20,12 @@ interface ProcessingOption {
 
 interface DocumentUpload {
   file: File;
-  patient_id: string;
-  document_type: string;
-  processing_type: string;
-  title: string;
+  user_id: string;
+  description: string;
+  tags: string;
   status: 'pending' | 'uploading' | 'success' | 'error';
-  progress: number;
   error?: string;
+  warning?: string;
   result?: any;
 }
 
@@ -78,13 +78,13 @@ interface DocumentUpload {
               </div>
 
               <div class="drop-text-content">
-                <h3 class="drop-title">Arrastra archivos aquí</h3>
+                <h3 class="drop-title">Arrastra archivo aquí</h3>
                 <div class="drop-subtitle">
                   <span class="format-badge-premium">PDF</span>
                   <span class="format-badge-premium">DOCX</span>
                   <span class="format-badge-premium">TXT</span>
                 </div>
-                <div class="drop-hint">o haz clic para seleccionar archivos</div>
+                <div class="drop-hint">o haz clic para seleccionar archivo</div>
               </div>
 
               <div class="drop-action-indicator">
@@ -111,7 +111,7 @@ interface DocumentUpload {
             <label class="config-label">👤 Paciente por Defecto</label>
             <select
               class="bamboo-select"
-              [(ngModel)]="defaultPatientId">
+              [(ngModel)]="defaultUserId">
               <option value="">Seleccionar paciente...</option>
               <option
                 *ngFor="let patient of recentPatients"
@@ -123,34 +123,47 @@ interface DocumentUpload {
 
           <!-- Document Type -->
           <div class="config-section">
-            <label class="config-label">📋 Tipo de Documento</label>
-            <select
-              class="bamboo-select"
-              [(ngModel)]="defaultDocumentType">
-              <option value="expediente_medico">📄 Expediente Médico</option>
-              <option value="laboratorio">🧪 Laboratorios</option>
-              <option value="radiologia">🩻 Radiología</option>
-              <option value="consulta">👩‍⚕️ Consulta</option>
-              <option value="cirugia">🏥 Cirugía</option>
-              <option value="farmacia">💊 Farmacia</option>
-              <option value="enfermeria">👩‍⚕️ Enfermería</option>
-              <option value="especialidad">🔬 Especialidad</option>
-            </select>
+            <label class="config-label">📋 Descripción</label>
+            <input
+              type="text"
+              class="bamboo-input"
+              [(ngModel)]="defaultDescription"
+              placeholder="Descripción del documento (opcional)">
+          </div>
+
+          <!-- Tags -->
+          <div class="config-section">
+            <label class="config-label">🏷️ Etiquetas</label>
+            <input
+              type="text"
+              class="bamboo-input"
+              [(ngModel)]="defaultTags"
+              placeholder="Etiquetas separadas por comas (opcional)">
           </div>
 
           <!-- Upload Button -->
           <button
-            class="upload-button"
-            [disabled]="isUploading || !defaultPatientId"
+          *ngIf="selectedFiles.length > 0 && !isUploading"
+          class="premium-process-btn"
+          [disabled]="!defaultUserId"
             (click)="startUpload()">
-            <span *ngIf="!isUploading">🚀 Subir {{ selectedFiles.length }} archivo(s)</span>
-            <span *ngIf="isUploading">⏳ Subiendo...</span>
+            <span class="btn-icon">🚀</span>
+            <span class="btn-text">Subir {{ selectedFiles.length }} {{ selectedFiles.length === 1 ? 'Expediente' : 'Expedientes' }}</span>
           </button>
+
+        <div *ngIf="isUploading" class="processing-indicator">
+          <span class="processing-text">Subiendo</span>
+          <div class="processing-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+        </div>
       </div>
 
       <!-- File List -->
       <div class="files-section" *ngIf="uploads.length > 0">
-        <h3 class="section-title">📋 Archivos Seleccionados</h3>
+                        <h3 class="section-title">📋 Archivo Seleccionado</h3>
 
         <!-- Premium Files List -->
         <div class="files-list">
@@ -165,13 +178,13 @@ interface DocumentUpload {
                 <span class="file-icon">📄</span>
               </div>
               <div class="file-content">
-                <div class="file-name">{{ upload.file.name }}</div>
+                <div class="file-name">{{ truncateFilename(upload.file.name, 60) }}</div>
                 <div class="file-meta">
                   <span class="file-size">{{ getFileSize(upload.file.size) }}</span>
-                  <span class="file-type-badge" [class]="'type-' + upload.document_type">
-                    {{ upload.document_type }}
+                  <span class="file-type-badge type-DOC">
+                    {{ upload.description || 'DOC' }}
                   </span>
-                  <span class="file-patient">{{ getPatientName(upload.patient_id) }}</span>
+                  <span class="file-patient">{{ upload.user_id }}</span>
                 </div>
               </div>
             </div>
@@ -183,23 +196,29 @@ interface DocumentUpload {
                 <span class="status-text">Pendiente</span>
               </div>
 
-              <div *ngIf="upload.status === 'uploading'" class="status-uploading">
-                <div class="progress-container">
-                  <div class="progress-bar">
-                    <div class="progress-fill" [style.width.%]="upload.progress"></div>
-                  </div>
-                  <span class="progress-text">{{ upload.progress }}%</span>
+                              <div *ngIf="upload.status === 'uploading'" class="status-badge status-processing">
+                  <span class="status-text">Subiendo</span>
+                  <div class="processing-dots">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
                 </div>
               </div>
 
               <div *ngIf="upload.status === 'success'" class="status-badge status-success">
                 <span class="status-icon">✅</span>
                 <span class="status-text">Completado</span>
+                <div *ngIf="upload.warning" class="warning-indicator" [title]="upload.warning">
+                  <span class="warning-icon">⚠️</span>
+                </div>
               </div>
 
               <div *ngIf="upload.status === 'error'" class="status-badge status-error">
                 <span class="status-icon">❌</span>
                 <span class="status-text">Error</span>
+                <div *ngIf="upload.error" class="error-indicator" [title]="upload.error">
+                  <span class="error-icon">❌</span>
+                </div>
               </div>
             </div>
 
@@ -219,32 +238,27 @@ interface DocumentUpload {
         </div>
       </div>
 
-      <!-- Results Summary -->
-      <div class="results-section" *ngIf="uploadResults.length > 0">
-                    <h3 class="results-title">📊 Resultados de Procesamiento</h3>
-
-        <div class="results-summary">
-          <div class="summary-stat">
-            <span class="stat-number">{{ getSuccessCount() }}</span>
-            <span class="stat-label">Exitosos</span>
-          </div>
-          <div class="summary-stat error">
-            <span class="stat-number">{{ getErrorCount() }}</span>
-            <span class="stat-label">Errores</span>
-          </div>
-          <div class="summary-stat">
-            <span class="stat-number">{{ getTotalChunks() }}</span>
-            <span class="stat-label">Chunks Creados</span>
+      <!-- Completion Summary -->
+      <div class="completion-summary" *ngIf="allUploadsCompleted() && !hasErrorsOrWarnings()">
+        <div class="success-content">
+          <div class="success-info">
+            <h3 class="success-title">¡Procesamiento Completado!</h3>
+            <p class="success-subtitle">
+              {{ getSuccessCount() }} {{ getSuccessCount() === 1 ? 'expediente procesado' : 'expedientes procesados' }} exitosamente
+            </p>
           </div>
         </div>
 
-        <!-- Test Search Button -->
-          <button
-            class="test-search-button"
-          *ngIf="getSuccessCount() > 0"
-            (click)="testSearch()">
-            🔍 Probar Búsqueda Inteligente
+        <div class="success-actions">
+          <button class="success-btn primary" (click)="goToChat()">
+            <span class="btn-icon">🔍</span>
+            <span class="btn-text">Probar en Chat Médico</span>
           </button>
+          <button class="success-btn secondary" (click)="startNewUpload()">
+            <span class="btn-icon">📤</span>
+            <span class="btn-text">Subir Más Expedientes</span>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -470,33 +484,46 @@ interface DocumentUpload {
       }
     }
 
-    .upload-button {
+    .premium-process-btn {
       width: 100%;
       max-width: 350px;
-      background: linear-gradient(135deg,
-        var(--buttons-primary-normal) 0%,
-        var(--buttons-primary-hover) 100%
-      );
+      background: linear-gradient(135deg, rgb(var(--color-blue-tec)) 0%, rgba(var(--color-blue-tec), 0.9) 100%);
       color: white;
       border: none;
       border-radius: var(--bmb-radius-s);
-      padding: var(--bmb-spacing-s) var(--bmb-spacing-l);
+      padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.3);
       margin-top: var(--bmb-spacing-s);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--bmb-spacing-s);
 
       &:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(var(--color-blue-tec), 0.4);
+        background: linear-gradient(135deg, rgba(var(--color-blue-tec), 0.9) 0%, rgb(var(--color-blue-tec)) 100%);
       }
 
       &:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none;
+      }
+
+      .btn-icon {
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+      }
+
+      .btn-text {
+        font-weight: 600;
+        letter-spacing: 0.5px;
       }
     }
 
@@ -618,18 +645,33 @@ interface DocumentUpload {
           }
 
           .file-type-badge {
-            background: linear-gradient(135deg,
-              rgba(var(--color-blue-tec), 0.1) 0%,
-              rgba(var(--color-blue-tec), 0.15) 100%
-            );
-            color: rgba(var(--color-blue-tec), 1);
+          background: rgba(var(--color-blue-tec), 0.1);
+          color: rgb(var(--color-blue-tec));
             padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
             border-radius: var(--bmb-radius-s);
             font-size: var(--text-xs);
-            font-weight: var(--font-semibold);
+          font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             border: 1px solid rgba(var(--color-blue-tec), 0.2);
+
+          &.type-DOC {
+            background: rgba(var(--color-blue-tec), 0.15);
+            color: rgb(var(--color-blue-tec));
+            border-color: rgba(var(--color-blue-tec), 0.3);
+          }
+
+          &.type-CONS {
+            background: rgba(76, 175, 80, 0.15);
+            color: #2e7d32;
+            border-color: rgba(76, 175, 80, 0.3);
+          }
+
+          &.type-EMER {
+            background: rgba(255, 152, 0, 0.15);
+            color: #ef6c00;
+            border-color: rgba(255, 152, 0, 0.3);
+          }
           }
 
           .file-patient {
@@ -680,36 +722,7 @@ interface DocumentUpload {
         align-items: center;
         gap: var(--bmb-spacing-xs);
 
-        .progress-container {
-          width: 80px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: var(--bmb-spacing-xs);
 
-          .progress-bar {
-            width: 80px;
-            height: 6px;
-            background: var(--general_contrasts-25);
-            border-radius: var(--bmb-radius-full);
-            overflow: hidden;
-
-            .progress-fill {
-              height: 100%;
-              background: linear-gradient(90deg,
-                rgb(var(--color-blue-tec)) 0%,
-                var(--buttons-primary-hover) 100%
-              );
-              transition: width 0.3s ease;
-            }
-          }
-
-          .progress-text {
-            font-size: 0.75rem;
-            color: rgb(var(--color-blue-tec));
-            font-weight: 600;
-          }
-        }
       }
     }
 
@@ -751,69 +764,7 @@ interface DocumentUpload {
       }
     }
 
-    .results-section {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      text-align: center;
 
-      .results-title {
-        color: var(--general_contrasts-100);
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: var(--bmb-spacing-l);
-      }
-
-      .results-summary {
-      display: flex;
-      justify-content: center;
-      gap: var(--bmb-spacing-xl);
-        margin-bottom: var(--bmb-spacing-l);
-
-        .summary-stat {
-          text-align: center;
-
-          .stat-number {
-            display: block;
-            font-size: 2rem;
-            font-weight: 700;
-          color: var(--semantic-success);
-            margin-bottom: var(--bmb-spacing-xs);
-          }
-
-          .stat-label {
-          font-size: 0.875rem;
-            color: var(--general_contrasts-75);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        &.error .stat-number {
-          color: var(--semantic-error);
-          }
-        }
-      }
-    }
-
-    .test-search-button {
-      background: linear-gradient(135deg,
-        var(--semantic-success) 0%,
-        #45a049 100%
-      );
-          color: white;
-          border: none;
-          border-radius: var(--bmb-radius-s);
-      padding: var(--bmb-spacing-m) var(--bmb-spacing-xl);
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-
-          &:hover {
-            transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
-      }
-    }
 
     /* 📱 RESPONSIVE DESIGN */
     @media (max-width: 950px) {
@@ -904,13 +855,21 @@ interface DocumentUpload {
           }
         }
 
-        .upload-button {
+        .premium-process-btn {
           width: 100% !important;
           max-width: none !important;
           padding: var(--bmb-spacing-s) !important;
           font-size: 0.9rem !important;
           margin-top: var(--bmb-spacing-xs) !important;
           order: 3 !important;
+
+          .btn-icon {
+            font-size: 1rem !important;
+          }
+
+          .btn-text {
+            font-size: 0.9rem !important;
+          }
         }
       }
 
@@ -991,6 +950,21 @@ interface DocumentUpload {
                   .file-type-badge {
                     font-size: 0.8rem !important;
                     padding: var(--bmb-spacing-xs) !important;
+
+              &.type-DOC {
+                background: rgba(var(--color-blue-tec), 0.15) !important;
+                color: rgb(var(--color-blue-tec)) !important;
+              }
+
+              &.type-CONS {
+                background: rgba(76, 175, 80, 0.15) !important;
+                color: #2e7d32 !important;
+              }
+
+              &.type-EMER {
+                background: rgba(255, 152, 0, 0.15) !important;
+                color: #ef6c00 !important;
+              }
                   }
 
                   .file-patient {
@@ -1016,17 +990,7 @@ interface DocumentUpload {
                 align-items: center !important;
                 gap: var(--bmb-spacing-s) !important;
 
-                .progress-container {
-                  width: 60px !important;
-                  .progress-bar {
-                    width: 60px !important;
-                    height: 4px !important;
-                  }
 
-                  .progress-text {
-                    font-size: 0.75rem !important;
-                  }
-                }
               }
             }
 
@@ -1045,57 +1009,12 @@ interface DocumentUpload {
                 .action-text {
                   font-size: 0.9rem !important;
                 }
+                }
               }
             }
           }
         }
       }
-
-      .results-section {
-        margin: 0 auto !important;
-        padding: var(--bmb-spacing-m) !important;
-        background: var(--general_contrasts-15) !important;
-        border-radius: var(--bmb-radius-m) !important;
-        max-width: 100% !important;
-        width: 100% !important;
-
-        .results-title {
-          font-size: 1.2rem !important;
-          margin-bottom: var(--bmb-spacing-m) !important;
-        }
-
-        .results-summary {
-          display: flex !important;
-          flex-direction: column !important;
-          gap: var(--bmb-spacing-m) !important;
-          margin-bottom: var(--bmb-spacing-l) !important;
-
-          .summary-stat {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: var(--bmb-spacing-s) !important;
-            background: var(--general_contrasts-25) !important;
-            border-radius: var(--bmb-radius-s) !important;
-
-            .stat-number {
-              font-size: 1.3rem !important;
-              margin-bottom: 0 !important;
-            }
-
-            .stat-label {
-              font-size: 0.8rem !important;
-            }
-          }
-      }
-
-      .test-search-button {
-          width: 100% !important;
-          padding: var(--bmb-spacing-m) !important;
-          font-size: 1rem !important;
-        }
-      }
-    }
 
     @media (max-width: 1200px) and (min-width: 951px) {
       .upload-section {
@@ -1117,9 +1036,17 @@ interface DocumentUpload {
           }
         }
 
-        .upload-button {
+        .premium-process-btn {
           font-size: 0.9rem !important;
           padding: var(--bmb-spacing-xs) var(--bmb-spacing-m) !important;
+
+          .btn-icon {
+            font-size: 1rem !important;
+          }
+
+          .btn-text {
+            font-size: 0.9rem !important;
+          }
         }
       }
 
@@ -1127,8 +1054,201 @@ interface DocumentUpload {
         max-width: 1000px !important;
       }
 
-      .results-section {
-        max-width: 1000px !important;
+      .completion-summary {
+        padding: var(--bmb-spacing-m) !important;
+        margin-bottom: var(--bmb-spacing-m) !important;
+
+        .success-actions {
+          gap: var(--bmb-spacing-s) !important;
+
+          .success-btn {
+            padding: var(--bmb-spacing-s) var(--bmb-spacing-m) !important;
+            font-size: 0.9rem !important;
+          }
+        }
+      }
+
+      .completion-summary {
+        padding: var(--bmb-spacing-m) !important;
+          margin-bottom: var(--bmb-spacing-m) !important;
+
+        .success-content {
+          margin-bottom: var(--bmb-spacing-m) !important;
+
+          .success-info {
+            .success-title {
+              font-size: 1.2rem !important;
+        }
+
+            .success-subtitle {
+              font-size: 0.9rem !important;
+            }
+          }
+        }
+
+        .success-actions {
+          flex-direction: column !important;
+          gap: var(--bmb-spacing-s) !important;
+
+          .success-btn {
+            width: 100% !important;
+            padding: var(--bmb-spacing-s) var(--bmb-spacing-m) !important;
+            font-size: 0.9rem !important;
+          }
+        }
+      }
+
+
+    }
+
+    /* Processing indicator styling */
+    .processing-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--bmb-spacing-s);
+      color: rgb(var(--color-blue-tec));
+      font-weight: 500;
+      justify-content: center;
+      margin-top: var(--bmb-spacing-s);
+    }
+
+    .processing-text {
+      font-size: 1rem;
+    }
+
+    /* Warning and error indicators */
+    .warning-indicator {
+      display: inline-flex;
+      align-items: center;
+      margin-left: var(--bmb-spacing-xs);
+      cursor: help;
+
+      .warning-icon {
+        font-size: var(--text-sm);
+        color: #ff9800;
+      }
+    }
+
+    .error-indicator {
+      display: inline-flex;
+      align-items: center;
+      margin-left: var(--bmb-spacing-xs);
+      cursor: help;
+
+      .error-icon {
+        font-size: var(--text-sm);
+        color: var(--semantic-error);
+      }
+    }
+
+    /* Completion Summary */
+    .completion-summary {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+      border: 1px solid rgba(var(--color-blue-tec), 0.2);
+      border-radius: var(--bmb-radius-m);
+      padding: var(--bmb-spacing-l);
+      margin-bottom: var(--bmb-spacing-l);
+      text-align: center;
+
+      .success-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--bmb-spacing-m);
+        margin-bottom: var(--bmb-spacing-l);
+
+        .success-info {
+          text-align: center;
+
+          .success-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--general_contrasts-100);
+            margin: 0 0 var(--bmb-spacing-xs) 0;
+          }
+
+          .success-subtitle {
+            color: var(--general_contrasts-75);
+            margin: 0;
+        }
+      }
+    }
+
+      .success-actions {
+        display: flex;
+        gap: var(--bmb-spacing-m);
+        justify-content: center;
+
+        .success-btn {
+          display: flex;
+          align-items: center;
+          gap: var(--bmb-spacing-s);
+          padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
+          border-radius: var(--bmb-radius-s);
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &.primary {
+            background: rgb(var(--color-blue-tec));
+            color: white;
+            border: none;
+
+            &:hover {
+              background: rgba(var(--color-blue-tec), 0.9);
+              transform: translateY(-2px);
+          }
+          }
+
+          &.secondary {
+            background: var(--general_contrasts-15);
+            color: var(--general_contrasts-100);
+            border: 1px solid var(--general_contrasts-container-outline);
+
+            &:hover {
+              background: var(--general_contrasts-25);
+              transform: translateY(-2px);
+          }
+        }
+        }
+      }
+    }
+
+    /* Processing dots animation */
+    .processing-dots {
+      display: flex;
+      gap: 4px;
+      margin-left: var(--bmb-spacing-xs);
+    }
+
+    .processing-dots .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 1.5s ease-in-out infinite;
+      }
+
+    .processing-dots .dot:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .processing-dots .dot:nth-child(2) {
+      animation-delay: 0.2s;
+      }
+
+    .processing-dots .dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes pulse {
+      0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+      40% {
+        opacity: 1;
+        transform: scale(1);
       }
     }
   `]
@@ -1142,10 +1262,11 @@ export class DocumentUploadComponent implements OnInit {
 
   selectedFiles: File[] = [];
   uploads: DocumentUpload[] = [];
-  uploadResults: any[] = [];
 
-  defaultPatientId: string = '';
-  defaultDocumentType: string = 'expediente_medico';
+
+  defaultUserId: string = 'pedro';
+  defaultDescription: string = '';
+  defaultTags: string = '';
 
   isDragOver = false;
   isUploading = false;
@@ -1192,12 +1313,10 @@ export class DocumentUploadComponent implements OnInit {
 
         const upload: DocumentUpload = {
           file,
-          patient_id: this.defaultPatientId,
-          document_type: this.defaultDocumentType,
-          processing_type: 'complete', // Default processing type for document upload
-          title: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
-          status: 'pending',
-          progress: 0
+          user_id: this.defaultUserId,
+          description: this.defaultDescription,
+          tags: this.defaultTags,
+          status: 'pending'
         };
 
         this.uploads.push(upload);
@@ -1229,7 +1348,7 @@ export class DocumentUploadComponent implements OnInit {
   }
 
   async startUpload(): Promise<void> {
-    if (!this.defaultPatientId || this.isUploading) return;
+    if (!this.defaultUserId || this.isUploading) return;
 
     this.isUploading = true;
     console.log(`🚀 Starting upload of ${this.uploads.length} files`);
@@ -1246,49 +1365,45 @@ export class DocumentUploadComponent implements OnInit {
 
   private async uploadSingleFile(upload: DocumentUpload): Promise<void> {
     upload.status = 'uploading';
-    upload.progress = 0;
 
     try {
       console.log(`📤 Uploading: ${upload.file.name}`);
 
       const formData = new FormData();
       formData.append('file', upload.file);
-      formData.append('patient_id', upload.patient_id);
-      formData.append('document_type', upload.document_type);
-      formData.append('title', upload.title);
-
-      // Simulate progress for user feedback
-      const progressInterval = setInterval(() => {
-        if (upload.progress < 90) {
-          upload.progress += Math.random() * 20;
-          this.cdr.detectChanges();
-        }
-      }, 200);
+      formData.append('user_id', upload.user_id);
+      formData.append('description', upload.description);
+      formData.append('tags', upload.tags);
 
       const result = await this.apiService.uploadDocument(formData).toPromise();
 
-      clearInterval(progressInterval);
-      upload.progress = 100;
+      if (!result) {
+        throw new Error('No se recibió respuesta del servidor');
+      }
+
+      // Determine status based on processing result
+      if (result.processing_status === 'error') {
+        upload.status = 'error';
+        upload.error = result.medical_info_error || 'Error en procesamiento';
+      } else {
       upload.status = 'success';
+        // Check for warnings when medical_info_valid is false but processing succeeded
+        if (result.medical_info_valid === false && result.medical_info_error) {
+          upload.warning = result.medical_info_error;
+        }
+      }
+
       upload.result = result;
 
-      this.uploadResults.push({
-        filename: upload.file.name,
-        status: 'success',
-        result: result
-      });
 
-      console.log(`✅ Upload successful: ${upload.file.name}`);
+
+      console.log(`✅ Upload successful: ${upload.file.name}`, result);
 
     } catch (error: any) {
       upload.status = 'error';
       upload.error = error.message || 'Error desconocido';
 
-      this.uploadResults.push({
-        filename: upload.file.name,
-        status: 'error',
-        error: error.message
-      });
+
 
       console.error(`❌ Upload failed: ${upload.file.name}`, error);
     }
@@ -1319,24 +1434,7 @@ export class DocumentUploadComponent implements OnInit {
     return patient ? patient.name : patientId;
   }
 
-  getSuccessCount(): number {
-    return this.uploadResults.filter(r => r.status === 'success').length;
-  }
 
-  getErrorCount(): number {
-    return this.uploadResults.filter(r => r.status === 'error').length;
-  }
-
-  getTotalChunks(): number {
-    return this.uploadResults
-      .filter(r => r.status === 'success')
-      .reduce((total, r) => total + (r.result?.chunks_created || 1), 0);
-  }
-
-  testSearch(): void {
-    console.log('🔍 Redirecting to chat for search test');
-    this.router.navigate(['/chat']);
-  }
 
   goBack(): void {
     this.location.back();
@@ -1344,5 +1442,43 @@ export class DocumentUploadComponent implements OnInit {
 
   trackByFile(index: number, upload: DocumentUpload): string {
     return upload.file.name + upload.file.size;
+  }
+
+    truncateFilename(filename: string, maxLength: number): string {
+    if (filename.length <= maxLength) return filename;
+
+    const extension = filename.split('.').pop() || '';
+    const nameWithoutExtension = filename.substring(0, filename.lastIndexOf('.'));
+    const availableLength = maxLength - extension.length - 3; // 3 for "..."
+
+    if (availableLength <= 0) return filename;
+
+    return nameWithoutExtension.substring(0, availableLength) + '...' + extension;
+  }
+
+  allUploadsCompleted(): boolean {
+    return this.uploads.length > 0 &&
+           this.uploads.every(upload => upload.status === 'success' || upload.status === 'error') &&
+           !this.isUploading;
+  }
+
+  hasErrorsOrWarnings(): boolean {
+    return this.uploads.some(upload => upload.status === 'error' || upload.warning);
+  }
+
+  getSuccessCount(): number {
+    return this.uploads.filter(upload => upload.status === 'success').length;
+  }
+
+  goToChat(): void {
+    console.log('🔍 Redirecting to chat for search test');
+    this.router.navigate(['/chat']);
+  }
+
+  startNewUpload(): void {
+    this.uploads = [];
+    this.selectedFiles = [];
+    this.isUploading = false;
+    console.log('📤 Started new upload session');
   }
 }

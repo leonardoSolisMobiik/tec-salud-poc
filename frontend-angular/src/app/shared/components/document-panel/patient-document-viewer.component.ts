@@ -1,5 +1,6 @@
 import { Component, Input, OnInit, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PatientDocumentsService, PatientDocument } from '../../services/patient-documents.service';
@@ -18,7 +19,7 @@ import { Patient } from '../../../core/models/patient.model';
  * <app-patient-document-viewer
  *   [patient]="activePatient"
  *   [isVisible]="showDocumentViewer">
- * </app-patient-document-viewer>
+ * </app-patient-viewer>
  *
  * // Component automatically loads and displays documents for the patient
  * ```
@@ -77,6 +78,8 @@ import { Patient } from '../../../core/models/patient.model';
 
       <!-- Área principal del documento -->
       <div class="document-content">
+        <!-- Vista normal de documentos -->
+        <div *ngIf="!showPdfViewer">
         <div *ngIf="documents.length === 0" class="no-documents">
           <div class="no-docs-icon">📄</div>
           <h3>Sin documentos disponibles</h3>
@@ -108,23 +111,54 @@ import { Patient } from '../../../core/models/patient.model';
                 <span class="doc-size">PDF Document</span>
               </div>
               <div class="preview-actions">
-                <button class="action-btn primary" (click)="openInNewTab(activeDocument)">
+                  <button class="action-btn primary" (click)="openInNewTab(activeDocument)" title="Ver PDF integrado">
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
                   </svg>
-                  Abrir Expediente
+                    Ver PDF
                 </button>
-                <button class="action-btn secondary" (click)="downloadPdf(activeDocument)">
+                  <button class="action-btn secondary" (click)="downloadPdf(activeDocument)" title="Descargar archivo PDF">
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
                   </svg>
-                  Descargar PDF
+                    Descargar
                 </button>
+                </div>
+              </div>
               </div>
             </div>
           </div>
 
+        <!-- Visor de PDF integrado -->
+        <div *ngIf="showPdfViewer && viewedDocument" class="integrated-pdf-viewer">
+          <!-- Header del visor con botón de regreso -->
+          <div class="pdf-viewer-header">
+            <button class="back-btn" (click)="closePdfViewer()" title="Regresar a la vista de documentos">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+              </svg>
+              Regresar
+            </button>
+            <div class="pdf-info">
+              <span class="pdf-title">{{viewedDocument.displayName}}</span>
+              <span class="pdf-filename">{{viewedDocument.fileName}}</span>
+            </div>
+            <button class="download-btn" (click)="downloadPdf(viewedDocument)" title="Descargar PDF">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+              </svg>
+            </button>
+          </div>
 
+          <!-- Contenido del PDF -->
+          <div class="pdf-content">
+            <iframe
+              [src]="cachedSafeUrl"
+              class="pdf-iframe"
+              title="{{viewedDocument.displayName}}"
+              frameborder="0">
+            </iframe>
+          </div>
         </div>
       </div>
 
@@ -471,6 +505,122 @@ import { Patient } from '../../../core/models/patient.model';
       }
     }
 
+    /* Visor de PDF integrado */
+    .integrated-pdf-viewer {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .pdf-viewer-header {
+      display: flex;
+      align-items: center;
+      padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem);
+      border-bottom: 1px solid var(--general_contrasts-container-outline, #e5e7eb);
+      background: rgba(var(--color-blue-tec, 0, 57, 166), 0.02);
+      gap: var(--bmb-spacing-s, 0.75rem);
+    }
+
+    .back-btn {
+      background: rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
+      border: 1px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.2);
+      color: rgb(var(--color-blue-tec, 0, 57, 166));
+      padding: var(--bmb-spacing-xs, 0.5rem) var(--bmb-spacing-s, 0.75rem);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: var(--bmb-spacing-xs, 0.5rem);
+      border-radius: var(--bmb-radius-s, 0.5rem);
+      font-size: 0.875rem;
+      font-weight: 500;
+
+      &:hover {
+        background: rgba(var(--color-blue-tec, 0, 57, 166), 0.15);
+        border-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.3);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      svg {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .pdf-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pdf-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--general_contrasts-text-primary, #1f2937);
+      text-align: center;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .pdf-filename {
+      font-size: 0.75rem;
+      color: var(--general_contrasts-75, #6b7280);
+      text-align: center;
+      margin: 0;
+      line-height: 1.2;
+      margin-top: 2px;
+    }
+
+    .download-btn {
+      background: rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
+      border: 1px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.2);
+      color: rgb(var(--color-blue-tec, 0, 57, 166));
+      padding: var(--bmb-spacing-xs, 0.5rem);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--bmb-radius-s, 0.5rem);
+
+      &:hover {
+        background: rgba(var(--color-blue-tec, 0, 57, 166), 0.15);
+        border-color: rgba(var(--color-blue-tec, 0, 57, 166), 0.3);
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .pdf-content {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      background: #f8f9fa;
+      padding: var(--bmb-spacing-s, 0.75rem);
+    }
+
+    .pdf-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: var(--bmb-radius-s, 0.5rem);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      background: white;
+    }
 
 
     /* Loading state */
@@ -596,6 +746,15 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
   /** Loading state for document retrieval */
   isLoading: boolean = false;
 
+  /** Whether the integrated PDF viewer is active */
+  showPdfViewer: boolean = false;
+
+  /** Currently viewed document in the PDF viewer */
+  viewedDocument: PatientDocument | null = null;
+
+  /** Cached safe URL for the currently viewed document */
+  cachedSafeUrl: SafeResourceUrl | null = null;
+
   /** Subject for component cleanup */
   private destroy$ = new Subject<void>();
 
@@ -605,7 +764,8 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
    * @param patientDocumentsService - Service for patient document management
    */
   constructor(
-    private patientDocumentsService: PatientDocumentsService
+    private patientDocumentsService: PatientDocumentsService,
+    private sanitizer: DomSanitizer
   ) {}
 
   /**
@@ -636,6 +796,8 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
    */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['patient'] && this.patient) {
+      // Close PDF viewer when patient changes
+      this.closePdfViewer();
       this.loadPatientDocuments();
     }
   }
@@ -660,9 +822,15 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
    */
   private loadPatientDocuments(): void {
     if (!this.patient) {
+      console.log('⚠️ No patient provided, clearing documents');
       this.documents = [];
       return;
     }
+
+    console.log(`🔍 Loading documents for patient:`, this.patient);
+    console.log(`📋 Patient name: ${this.patient.name}`);
+          console.log(`📋 Patient name: ${this.patient.name}`);
+    console.log(`📋 Patient ID: ${this.patient.id}`);
 
     this.isLoading = true;
 
@@ -673,10 +841,23 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
           this.documents = documents;
           this.activeDocumentIndex = 0;
           this.isLoading = false;
-          console.log(`📄 Cargados ${documents.length} documentos para ${this.patient?.name}`);
+
+          console.log(`📄 Loaded ${documents.length} documents for ${this.patient?.name}`);
+
+          if (documents.length > 0) {
+            console.log('📋 Documents loaded:', documents.map(doc => ({
+              id: doc.id,
+              fileName: doc.fileName,
+              displayName: doc.displayName,
+              type: doc.type,
+              patientName: doc.patientName
+            })));
+          } else {
+            console.warn('⚠️ No documents found for this patient');
+          }
         },
         error: (error) => {
-          console.error('❌ Error cargando documentos:', error);
+          console.error('❌ Error loading documents:', error);
           this.documents = [];
           this.isLoading = false;
         }
@@ -777,40 +958,133 @@ export class PatientDocumentViewerComponent implements OnInit, OnDestroy, OnChan
   }
 
   /**
+   * Gets the raw URL for downloading a PDF document
+   *
+   * @param doc - Document to get raw URL for
+   * @returns Raw URL string
+   *
+   * @description Returns the document URL for direct download operations
+   */
+  getRawPdfUrl(doc: PatientDocument): string {
+    return doc.url;
+  }
+
+  /**
+   * Generates a safe URL for iframe display
+   *
+   * @param doc - Document to get safe URL for
+   * @returns Safe resource URL for iframe
+   *
+   * @description Returns a sanitized URL that can be safely used in iframe
+   */
+  private generateSafeUrl(doc: PatientDocument): SafeResourceUrl {
+    const rawUrl = doc.url;
+    console.log(`🔒 Sanitizing URL for iframe:`, rawUrl);
+    console.log(`📄 Document: ${doc.fileName}`);
+
+    // Ensure URL is properly formatted
+    let processedUrl = rawUrl;
+
+    // If it's a blob URL, make sure it's properly encoded
+    if (rawUrl.includes('blob.core.windows.net')) {
+      console.log(`☁️ Processing Azure Blob URL`);
+      // Don't double-encode if already encoded
+      if (!rawUrl.includes('%20')) {
+        processedUrl = encodeURI(rawUrl);
+        console.log(`🔧 Encoded URL:`, processedUrl);
+      }
+    }
+
+    const safeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(processedUrl);
+    console.log(`✅ URL sanitized successfully for: ${doc.fileName}`);
+
+    return safeUrl;
+  }
+
+  /**
+   * Gets a safe URL for iframe display
+   *
+   * @param doc - Document to get safe URL for
+   * @returns Safe resource URL for iframe
+   *
+   * @description Returns the cached safe URL or generates a new one if not cached
+   */
+  getSafeUrl(doc: PatientDocument): SafeResourceUrl {
+    if (this.cachedSafeUrl && this.viewedDocument === doc) {
+      return this.cachedSafeUrl;
+    }
+    return this.generateSafeUrl(doc);
+  }
+
+  /**
    * Downloads a PDF document
    *
    * @param doc - Document to download
    *
-   * @description Creates a download link and triggers download of the document
+   * @description Opens the PDF document in a new browser tab for viewing
    *
    * @example
    * ```typescript
-   * downloadPdf(document); // Starts download with original filename
+   * downloadPdf(document); // Opens PDF in new browser tab
    * ```
    */
   downloadPdf(doc: PatientDocument): void {
-    const url = this.getPdfUrlString(doc);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = doc.fileName;
-    link.click();
+    if (!doc) {
+      console.error('❌ No document provided for download');
+      return;
+    }
+
+    console.log(`📄 Opening PDF in new browser tab: ${doc.fileName}`);
+
+    const url = this.getRawPdfUrl(doc);
+
+    // Open PDF in new browser tab ONLY
+    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+
+    if (!newWindow) {
+      console.error('❌ Failed to open new tab. Popup might be blocked.');
+      console.warn('⚠️ Please allow popups for this site to view PDFs');
+      // NO FALLBACK - Don't navigate in current tab to preserve UI
+    } else {
+      console.log(`✅ PDF opened in new browser tab: ${doc.fileName}`);
+    }
   }
 
   /**
-   * Opens a PDF document in a new browser tab
+   * Opens a PDF document in the integrated viewer
    *
    * @param doc - Document to open
    *
-   * @description Opens the document URL in a new browser tab for viewing
+   * @description Shows the document in the integrated PDF viewer within the panel
    *
    * @example
    * ```typescript
-   * openInNewTab(document); // Opens PDF in new tab
+   * openInNewTab(document); // Shows PDF in integrated viewer
    * ```
    */
   openInNewTab(doc: PatientDocument): void {
-    const url = this.getPdfUrlString(doc);
-    window.open(url, '_blank');
+    if (!doc) {
+      console.error('❌ No document provided for opening');
+      return;
+    }
+
+    console.log(`📄 Opening PDF in integrated viewer: ${doc.fileName}`);
+
+    this.viewedDocument = doc;
+    this.cachedSafeUrl = this.generateSafeUrl(doc);
+    this.showPdfViewer = true;
+  }
+
+  /**
+   * Closes the integrated PDF viewer and returns to normal view
+   *
+   * @description Hides the PDF viewer and returns to the document list view
+   */
+  closePdfViewer(): void {
+    console.log('📄 Closing integrated PDF viewer');
+    this.showPdfViewer = false;
+    this.viewedDocument = null;
+    this.cachedSafeUrl = null;
   }
 
   /**

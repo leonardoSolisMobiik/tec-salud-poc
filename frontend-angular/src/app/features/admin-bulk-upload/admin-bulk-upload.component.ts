@@ -6,6 +6,7 @@ import { Location } from '@angular/common';
 
 import { BambooModule } from '../../shared/bamboo.module';
 import { ApiService } from '../../core/services/api.service';
+import { BatchUploadRequest, BatchUploadResponse, SuccessfulDocument, FailedDocument, ProcessingSummary } from '../../core/models';
 
 /**
  * Interface for batch file processing
@@ -51,6 +52,9 @@ interface BatchFile {
 
   /** Error message if processing failed */
   error?: string;
+
+  /** Warning message (e.g., medical info extraction failed but document processed) */
+  warning?: string;
 
   /** Estimated time remaining in seconds */
   estimatedTimeRemaining?: number;
@@ -191,8 +195,6 @@ interface BatchUpload {
                 <h3 class="drop-title">Arrastra expedientes aquí</h3>
                 <div class="drop-subtitle">
                   <span class="format-badge-premium">PDF</span>
-                  <span class="format-badge-premium">DOCX</span>
-                  <span class="format-badge-premium">TXT</span>
                 </div>
                 <div class="drop-hint">o haz clic para seleccionar archivos</div>
             </div>
@@ -206,7 +208,7 @@ interface BatchUpload {
             #fileInput
             type="file"
             multiple
-            accept=".pdf,.docx,.doc,.txt"
+            accept=".pdf"
             (change)="onFileSelected($event)"
               class="file-input-hidden">
         </div>
@@ -215,48 +217,32 @@ interface BatchUpload {
           <div class="process-controls">
             <div class="file-counter" *ngIf="batchFiles.length > 0">
               <span class="count-number">{{ batchFiles.length }}</span>
-              <span class="count-label">expedientes</span>
+              <span class="count-label">{{ batchFiles.length === 1 ? 'expediente' : 'expedientes' }}</span>
             </div>
+
+
 
         <button
               *ngIf="batchFiles.length > 0 && !isProcessing"
               class="premium-process-btn"
           (click)="startBatchProcessing()">
               <span class="btn-icon">🚀</span>
-              <span class="btn-text">Procesar Lote</span>
+              <span class="btn-text">Procesar Expedientes</span>
         </button>
 
             <div *ngIf="isProcessing" class="processing-indicator">
-              <div class="spinner-icon">⏳</div>
-              <span class="processing-text">Procesando...</span>
+              <span class="processing-text">Procesando</span>
+              <div class="processing-dots">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
         </div>
       </div>
               </div>
-            </div>
-
-      <!-- Global Progress Section -->
-      <div class="global-progress-section" *ngIf="isProcessing || batchUpload?.status === 'completed'">
-        <div class="progress-header">
-          <div class="progress-info">
-            <h3 class="progress-title">Procesamiento de Lote</h3>
-            <div class="progress-stats">
-              <span class="stat">{{ batchUpload?.completed_files || 0 }} de {{ batchUpload?.total_files || 0 }} completados</span>
-              <span class="percentage">{{ getOverallProgress() | number:'1.0-0' }}%</span>
-              </div>
               </div>
             </div>
 
-        <div class="progress-bar-global">
-          <div
-            class="progress-fill-global"
-            [style.width.%]="getOverallProgress()">
-                  </div>
-                  </div>
 
-        <div class="progress-details" *ngIf="hasErrors()">
-          <span class="errors-info">{{ batchUpload?.error_files }} archivo(s) con errores</span>
-              </div>
-            </div>
 
         <!-- Files List -->
         <div class="files-section" *ngIf="batchFiles.length > 0">
@@ -277,11 +263,11 @@ interface BatchUpload {
                 <div class="file-content">
                   <div class="file-name">{{ truncateFilename(file.filename, 60) }}</div>
                   <div class="file-meta">
-                    <span class="patient-name">{{ file.patientInfo?.apellido_paterno }} {{ file.patientInfo?.apellido_materno }}, {{ file.patientInfo?.nombre }}</span>
+                    <span class="file-size">{{ getFileSize(file.file.size) }}</span>
                     <span class="file-type-badge" [class]="'type-' + file.patientInfo?.tipo">
                       {{ file.patientInfo?.tipo || 'UNKNOWN' }}
                     </span>
-                    <span class="file-id">ID: {{ file.patientInfo?.numero }}</span>
+                    <span class="file-patient">{{ file.patientInfo?.apellido_paterno }} {{ file.patientInfo?.apellido_materno }}, {{ file.patientInfo?.nombre }}</span>
                   </div>
                 </div>
               </div>
@@ -293,29 +279,29 @@ interface BatchUpload {
                   <span class="status-text">Pendiente</span>
                 </div>
 
-                <div *ngIf="file.status === 'processing'" class="status-uploading">
-                  <div class="progress-container">
-                    <div class="progress-bar">
-                      <div class="progress-fill" [style.width.%]="file.progress"></div>
-                    </div>
-                    <span class="progress-text">{{ file.progress }}%</span>
-                    <span *ngIf="file.estimatedTimeRemaining" class="time-remaining">
-                      ~{{ file.estimatedTimeRemaining }}s
-                    </span>
+                <div *ngIf="file.status === 'processing'" class="status-badge status-processing">
+                  <span class="status-text">Procesando</span>
+                  <div class="processing-dots">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
                   </div>
                 </div>
 
                 <div *ngIf="file.status === 'completed'" class="status-badge status-success">
                   <span class="status-icon">✅</span>
                   <span class="status-text">Completado</span>
-                  <span *ngIf="file.completedTime" class="completion-time">
-                    {{ formatCompletionTime(file.completedTime) }}
-                  </span>
+                  <div *ngIf="file.warning" class="warning-indicator" [title]="file.warning">
+                    <span class="warning-icon">⚠️</span>
+                  </div>
                 </div>
 
                 <div *ngIf="file.status === 'error'" class="status-badge status-error">
                   <span class="status-icon">❌</span>
                   <span class="status-text">Error</span>
+                  <div *ngIf="file.error" class="error-indicator" [title]="file.error">
+                    <span class="error-icon">❌</span>
+                  </div>
                 </div>
               </div>
 
@@ -339,16 +325,12 @@ interface BatchUpload {
       <div style="height: 10px;"></div>
 
       <!-- Completion Summary -->
-      <div class="completion-summary" *ngIf="batchUpload?.status === 'completed'" style="margin-bottom: 30px !important;">
+      <div class="completion-summary" *ngIf="batchUpload?.status === 'completed' && !hasErrorsOrWarnings()">
         <div class="success-content">
-          <div class="success-icon">🎉</div>
           <div class="success-info">
             <h3 class="success-title">¡Procesamiento Completado!</h3>
             <p class="success-subtitle">
               {{ batchUpload?.completed_files }} expedientes procesados exitosamente
-                          <span *ngIf="hasErrors()">
-              • {{ batchUpload?.error_files }} con errores
-            </span>
             </p>
           </div>
         </div>
@@ -611,20 +593,8 @@ interface BatchUpload {
       display: flex;
       align-items: center;
       gap: var(--bmb-spacing-s);
-      padding: var(--bmb-spacing-m);
-        background: rgba(var(--color-blue-tec), 0.1);
-      border-radius: var(--bmb-radius-m);
       color: rgb(var(--color-blue-tec));
       font-weight: 500;
-
-      .spinner {
-        width: 20px;
-        height: 20px;
-        border: 2px solid rgba(var(--color-blue-tec), 0.3);
-        border-top: 2px solid rgb(var(--color-blue-tec));
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
     }
 
     @keyframes spin {
@@ -748,7 +718,7 @@ interface BatchUpload {
         box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.15);
       }
 
-      &.status-success {
+      &.status-completed {
         border-color: var(--semantic-success);
         background: rgba(76, 175, 80, 0.1);
 
@@ -766,7 +736,7 @@ interface BatchUpload {
         }
       }
 
-      &.status-uploading {
+      &.status-processing {
         border-color: rgb(var(--color-blue-tec));
         background: rgba(var(--color-blue-tec), 0.1);
 
@@ -817,10 +787,9 @@ interface BatchUpload {
             gap: var(--bmb-spacing-xs);
             flex-wrap: wrap;
 
-            .patient-name {
-              font-size: 0.875rem;
-              color: var(--general_contrasts-75);
-              font-weight: var(--font-medium);
+            .file-size {
+            font-size: 0.875rem;
+            color: var(--general_contrasts-75);
             }
 
             .file-type-badge {
@@ -838,10 +807,9 @@ interface BatchUpload {
               border: 1px solid rgba(var(--color-blue-tec), 0.2);
             }
 
-            .file-id {
+            .file-patient {
               font-size: 0.875rem;
               color: var(--general_contrasts-75);
-              font-weight: var(--font-regular);
             }
           }
         }
@@ -884,6 +852,30 @@ interface BatchUpload {
           font-size: var(--text-xs);
           opacity: 0.8;
           margin-top: var(--bmb-spacing-xs);
+        }
+
+        .warning-indicator {
+          display: inline-flex;
+          align-items: center;
+          margin-left: var(--bmb-spacing-xs);
+          cursor: help;
+
+          .warning-icon {
+            font-size: var(--text-sm);
+            color: #ff9800;
+          }
+        }
+
+        .error-indicator {
+          display: inline-flex;
+          align-items: center;
+          margin-left: var(--bmb-spacing-xs);
+          cursor: help;
+
+          .error-icon {
+            font-size: var(--text-sm);
+            color: var(--semantic-error);
+          }
         }
       }
 
@@ -977,19 +969,16 @@ interface BatchUpload {
       border-radius: var(--bmb-radius-m);
       padding: var(--bmb-spacing-l);
         margin-bottom: var(--bmb-spacing-l);
+      text-align: center;
 
       .success-content {
         display: flex;
         align-items: center;
-      gap: var(--bmb-spacing-m);
+        justify-content: center;
       margin-bottom: var(--bmb-spacing-l);
 
-        .success-icon {
-          font-size: 3rem;
-        }
-
         .success-info {
-          flex: 1;
+          text-align: center;
 
           .success-title {
             font-size: 1.5rem;
@@ -1007,6 +996,7 @@ interface BatchUpload {
 
       .completion-actions {
       display: flex;
+      justify-content: center;
       gap: var(--bmb-spacing-m);
 
         .action-btn {
@@ -1279,6 +1269,77 @@ interface BatchUpload {
     }
 
 
+
+    /* Warning indicator styles */
+    .warning-indicator {
+      display: flex;
+      align-items: center;
+      gap: var(--bmb-spacing-xs);
+      margin-top: var(--bmb-spacing-xs);
+      padding: var(--bmb-spacing-xs) var(--bmb-spacing-s);
+      background: rgba(255, 193, 7, 0.1);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      border-radius: var(--bmb-radius-s);
+      font-size: var(--text-xs);
+      color: #856404;
+      cursor: help;
+    }
+
+    .warning-icon {
+      font-size: var(--text-xs);
+    }
+
+    .warning-text {
+      font-weight: var(--font-medium);
+    }
+
+    /* Processing animation styles */
+    .status-processing {
+      color: #1e40af;
+    }
+
+
+
+    .processing-dots {
+      display: flex;
+      gap: 4px;
+      margin-left: var(--bmb-spacing-xs);
+    }
+
+    .processing-dots .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .processing-dots .dot:nth-child(1) {
+      animation-delay: 0s;
+    }
+
+    .processing-dots .dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .processing-dots .dot:nth-child(3) {
+      animation-delay: 0.4s;
+      }
+
+    @keyframes pulse {
+      0%, 80%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+      40% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+
+
+
   `]
 })
 export class AdminBulkUploadComponent implements OnInit {
@@ -1302,6 +1363,8 @@ export class AdminBulkUploadComponent implements OnInit {
 
   /** Flag indicating if batch processing is in progress */
   isProcessing = false;
+
+
 
   /**
    * Component initialization lifecycle hook
@@ -1341,14 +1404,18 @@ export class AdminBulkUploadComponent implements OnInit {
    *
    * @param event - DragEvent containing the dropped files
    *
-   * @description Processes dropped files and adds them to batch
+   * @description Processes dropped file (only one at a time)
    */
   onDrop(event: DragEvent): void {
     event.preventDefault();
     this.isDragOver = false;
 
     const files = Array.from(event.dataTransfer?.files || []) as File[];
-    this.processFiles(files);
+    if (files.length > 0) {
+      // Clear existing files since we only allow one at a time
+      this.batchFiles = [];
+      this.processFiles([files[0]]); // Only take the first file
+    }
   }
 
   /**
@@ -1356,11 +1423,13 @@ export class AdminBulkUploadComponent implements OnInit {
    *
    * @param event - File input change event
    *
-   * @description Processes selected files and adds them to batch
+   * @description Processes selected file (only one at a time)
    */
   onFileSelected(event: any): void {
     const files = Array.from(event.target.files || []) as File[];
+    if (files.length > 0) {
     this.processFiles(files);
+    }
   }
 
   private processFiles(files: File[]): void {
@@ -1385,13 +1454,10 @@ export class AdminBulkUploadComponent implements OnInit {
 
   private isValidFile(file: File): boolean {
     const validTypes = [
-      'application/pdf',
-                       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/msword',
-      'text/plain'
+      'application/pdf'
     ];
 
-    const validExtensions = ['.pdf', '.docx', '.doc', '.txt'];
+    const validExtensions = ['.pdf', '.docx', '.txt'];
     const hasValidExtension = validExtensions.some(ext =>
       file.name.toLowerCase().endsWith(ext)
     );
@@ -1425,11 +1491,12 @@ export class AdminBulkUploadComponent implements OnInit {
     return null;
   }
 
-  async startBatchProcessing(): Promise<void> {
+  startBatchProcessing(): void {
     if (this.batchFiles.length === 0 || this.isProcessing) return;
 
     this.isProcessing = true;
 
+    // Initialize batch upload state
       this.batchUpload = {
         status: 'processing',
         total_files: this.batchFiles.length,
@@ -1440,64 +1507,114 @@ export class AdminBulkUploadComponent implements OnInit {
       startTime: new Date()
       };
 
-    console.log('🚀 Starting async batch processing (MOCK) for', this.batchFiles.length, 'files');
+    console.log('🚀 Starting real batch processing for', this.batchFiles.length, 'files');
 
-    // Process files asynchronously with realistic timing
-      for (let i = 0; i < this.batchFiles.length; i++) {
-      const file = this.batchFiles[i];
-      this.processFileAsync(file, i);
+    // Set all files to processing status
+    this.batchFiles.forEach(file => {
+      file.status = 'processing';
+      file.startTime = new Date();
+      file.error = undefined; // Clear any previous errors
+      file.warning = undefined; // Clear any previous warnings
+    });
+
+    // Prepare batch upload request
+    const batchRequest: BatchUploadRequest = {
+      files: this.batchFiles.map(bf => bf.file),
+      user_id: 'pedro', // TODO: Get from user service
+      batch_description: `Batch upload ${new Date().toISOString()}`,
+      batch_tags: 'bulk-upload,medical-documents'
+    };
+
+        try {
+      // Call the real API
+      this.apiService.uploadDocumentBatch(batchRequest).subscribe({
+        next: (response) => {
+          console.log('✅ Batch upload completed:', response);
+          this.processBatchResponse(response);
+        },
+        error: (error) => {
+          console.error('❌ Batch upload failed:', error);
+          this.handleBatchError(error);
+        }
+      });
+    } catch (error) {
+      console.error('❌ Batch upload failed:', error);
+      this.handleBatchError(error);
     }
   }
 
-  private async processFileAsync(file: BatchFile, index: number): Promise<void> {
-    // Random delay to simulate real processing time (3-15 seconds)
-    const processingTime = 3000 + Math.random() * 12000;
-    const estimatedSeconds = Math.round(processingTime / 1000);
+    /**
+   * Processes the batch upload response and updates file statuses
+   *
+   * @param response - Batch upload response from the API
+   */
+  private processBatchResponse(response: BatchUploadResponse): void {
+    console.log('📊 Processing batch response:', response);
 
-    file.status = 'processing';
-    file.startTime = new Date();
-    file.estimatedTimeRemaining = estimatedSeconds;
-    file.progress = 0;
+    // Update batch upload info
+    if (this.batchUpload) {
+      this.batchUpload.id = response.batch_id;
+      this.batchUpload.completed_files = response.processed_count - response.failed_count;
+      this.batchUpload.error_files = response.failed_count;
+      this.batchUpload.processed_files = response.processed_count;
+      this.batchUpload.status = response.processing_status === 'completed' ? 'completed' : 'failed';
+    }
 
-    // Simulate progress updates
-    const progressInterval = setInterval(() => {
-      if (file.status === 'processing' && file.progress < 100) {
-        file.progress = Math.min(100, file.progress + Math.random() * 15);
+        // Update successful documents
+    response.successful_documents.forEach(doc => {
+      const batchFile = this.batchFiles.find(bf => bf.filename === doc.filename);
+      if (batchFile) {
+        // Document was processed successfully, even if medical info extraction failed
+        batchFile.status = 'completed';
+        batchFile.completedTime = new Date(doc.processing_timestamp);
 
-        // Update time remaining
-        if (file.estimatedTimeRemaining && file.estimatedTimeRemaining > 0) {
-          file.estimatedTimeRemaining = Math.max(0, file.estimatedTimeRemaining - 1);
+        // Add warning if medical info extraction failed (but document was still processed)
+        if (!doc.medical_info_valid && doc.medical_info_error) {
+          console.warn(`⚠️ Medical info extraction failed for ${doc.filename}: ${doc.medical_info_error}`);
+          batchFile.warning = doc.medical_info_error;
         }
       }
-    }, 1000);
+    });
 
-    // Wait for processing to complete
-    await new Promise(resolve => setTimeout(resolve, processingTime));
-
-    clearInterval(progressInterval);
-
-    // 85% success rate simulation
-    const isSuccess = Math.random() > 0.15;
-
-    if (isSuccess) {
-      file.status = 'completed';
-      file.progress = 100;
-      file.completedTime = new Date();
-      this.batchUpload!.completed_files++;
-          } else {
-      file.status = 'error';
-      file.error = 'Error en OCR: formato no reconocido';
-      this.batchUpload!.error_files++;
+    // Update failed documents
+    response.failed_documents.forEach(doc => {
+      const batchFile = this.batchFiles.find(bf => bf.filename === doc.filename);
+      if (batchFile) {
+        batchFile.status = 'error';
+        batchFile.error = doc.error;
+        batchFile.completedTime = new Date();
       }
+    });
 
-    this.batchUpload!.processed_files++;
+    this.isProcessing = false;
+    console.log('🎉 Batch processing completed successfully');
+    console.log(`📈 Processing summary: ${response.processing_summary.processing_duration_seconds}s total, ${response.processing_summary.average_time_per_document}s per document`);
+  }
 
-    // Check if all files are done
-    if (this.batchUpload!.processed_files === this.batchUpload!.total_files) {
-      this.batchUpload!.status = 'completed';
-      this.isProcessing = false;
-      console.log('🎉 Batch processing completed (MOCK)');
+  /**
+   * Handles batch upload errors
+   *
+   * @param error - Error object from the API call
+   */
+  private handleBatchError(error: any): void {
+    console.error('💥 Batch upload error:', error);
+
+    // Update batch upload status
+    if (this.batchUpload) {
+      this.batchUpload.status = 'failed';
+      this.batchUpload.error_files = this.batchFiles.length;
+      this.batchUpload.processed_files = this.batchFiles.length;
     }
+
+    // Set all files to error status
+    this.batchFiles.forEach(file => {
+      file.status = 'error';
+      file.error = error.message || 'Network error during batch upload';
+      file.completedTime = new Date();
+      file.warning = undefined; // Clear any previous warnings
+    });
+
+      this.isProcessing = false;
   }
 
   removeFile(file: BatchFile): void {
@@ -1511,10 +1628,7 @@ export class AdminBulkUploadComponent implements OnInit {
     this.batchFiles = this.batchFiles.filter(file => file.status !== 'pending');
   }
 
-  getOverallProgress(): number {
-    if (!this.batchUpload || this.batchUpload.total_files === 0) return 0;
-    return (this.batchUpload.processed_files / this.batchUpload.total_files) * 100;
-  }
+
 
   formatCompletionTime(completedTime: Date): string {
     const now = new Date();
@@ -1554,7 +1668,19 @@ export class AdminBulkUploadComponent implements OnInit {
     return this.batchFiles.some(file => file.status === 'pending');
   }
 
-  hasErrors(): boolean {
-    return this.batchUpload?.error_files !== undefined && this.batchUpload.error_files > 0;
+  hasErrorsOrWarnings(): boolean {
+    return this.batchFiles.some(file => file.status === 'error' || file.warning);
   }
+
+  /**
+   * Formats file size in human readable format
+   */
+  getFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
 }

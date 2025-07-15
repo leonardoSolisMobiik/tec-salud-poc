@@ -10,9 +10,15 @@
     </h2>
     <button
       (click)="toggleSidebar()"
-      class="toggle-button">
-      <span *ngIf="!(uiStateService.isSidebarCollapsed$ | async)">✕</span>
-      <span *ngIf="(uiStateService.isSidebarCollapsed$ | async)">☰</span>
+      class="toggle-button"
+      [title]="(uiStateService.isSidebarCollapsed$ | async) ? 'Expandir panel de pacientes' : 'Contraer panel de pacientes'"
+      [aria-label]="(uiStateService.isSidebarCollapsed$ | async) ? 'Expandir panel de pacientes' : 'Contraer panel de pacientes'">
+      <svg *ngIf="!(uiStateService.isSidebarCollapsed$ | async)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+      <svg *ngIf="(uiStateService.isSidebarCollapsed$ | async)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
     </button>
   </div>
 
@@ -114,6 +120,66 @@
   <!-- Patients List -->
   <div class="patients-container">
     <div *ngIf="!(uiStateService.isSidebarCollapsed$ | async)">
+
+      <!-- Search Results Section -->
+      <div *ngIf="searchResults.length > 0" class="search-results-section">
+        <h3 class="section-title">
+          🔍 Resultados de Búsqueda ({{searchResults.length}})
+        </h3>
+
+        <!-- Debug info for search results -->
+        <div class="debug-info" style="background: #d4edda; padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 12px;">
+          🔍 Debug: {{searchResults.length}} resultados de búsqueda
+          <div *ngFor="let patient of searchResults.slice(0, 3)">
+            - ID: {{patient.id}}, Name: {{patient.name}}, Score: {{patient.similarity_score}}
+          </div>
+        </div>
+
+        <div class="patients-list">
+          <!-- ✅ BAMBOO CARDS PARA RESULTADOS DE BÚSQUEDA -->
+          <bmb-card
+            *ngFor="let patient of searchResults; trackBy: trackByPatientId"
+            [class]="getPatientCardClasses(patient)"
+            (click)="selectSearchResult(patient)"
+            class="patient-card-wrapper patient-card-bamboo search-result-card"
+            type="normal"
+            style="margin-bottom: 8px !important; border-left: 3px solid #17a2b8 !important;">
+
+            <div class="patient-content">
+              <!-- Avatar -->
+              <div class="patient-avatar">
+                {{ getPatientInitials(patient) }}
+              </div>
+
+              <!-- Patient Info -->
+              <div class="patient-info">
+                <div class="patient-name">{{ patient.name || patient.nombre_paciente || 'Nombre no disponible' }}</div>
+                <div class="patient-id">ID: {{ patient.id || patient.expediente }}</div>
+                <div class="patient-score" *ngIf="patient.similarity_score" style="font-size: 0.75rem; color: #6c757d;">
+                  Coincidencia: {{(patient.similarity_score * 100) | number:'1.0-0'}}%
+                </div>
+              </div>
+
+              <!-- Match Type Badge -->
+              <span class="match-badge"
+                    [style.background]="patient.similarity_score === 1 ? '#28a745' : '#17a2b8'"
+                    style="padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; color: white;">
+                {{ patient.match_type || 'match' }}
+              </span>
+            </div>
+
+          </bmb-card>
+
+          <!-- Empty Search State -->
+          <div *ngIf="searchResults.length === 0 && isSearching" class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <p>Buscando pacientes...</p>
+            <small>Espera un momento</small>
+          </div>
+        </div>
+
+      <!-- Recent Patients Section (shown when no search results) -->
+      <div *ngIf="searchResults.length === 0" class="recent-patients-section">
       <h3 class="section-title">
         ❤️ Pacientes Recientes ({{recentPatients.length}})
       </h3>
@@ -121,6 +187,9 @@
       <!-- Debug info -->
       <div class="debug-info" style="background: #fff3cd; padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 12px;">
         🔍 Debug: {{recentPatients.length}} pacientes cargados
+          <div *ngFor="let patient of recentPatients.slice(0, 2)">
+            - ID: {{patient.id}}, Name: {{patient.name}}, Nombre_paciente: {{(patient as any).nombre_paciente || 'N/A'}}
+          </div>
       </div>
 
       <div class="patients-list">
@@ -140,8 +209,8 @@
 
             <!-- Patient Info -->
             <div class="patient-info">
-              <div class="patient-name">{{ patient.name }}</div>
-              <div class="patient-id">ID: {{ patient.id }}</div>
+                <div class="patient-name">{{ patient.name || patient.nombre_paciente || 'Nombre no disponible' }}</div>
+                <div class="patient-id">ID: {{ patient.id || patient.expediente }}</div>
             </div>
 
             <!-- Status Badge -->
@@ -158,6 +227,7 @@
           <div class="empty-icon">👤</div>
           <p>No hay pacientes recientes</p>
           <small>Busca un paciente para comenzar</small>
+          </div>
         </div>
       </div>
     </div>

@@ -9,23 +9,23 @@ import { BambooModule } from '../../../bamboo.module';
 
 /**
  * Sidebar Component for patient navigation and search
- * 
+ *
  * @description Main navigation sidebar that provides patient search functionality,
  * recent patients list, and responsive collapsible behavior. Integrates with
  * Bamboo Design System components and medical state management.
- * 
+ *
  * @example
  * ```typescript
  * // Used in app-shell layout
  * <app-sidebar></app-sidebar>
- * 
+ *
  * // Automatically provides:
  * // - Patient search with debouncing
  * // - Recent patients list with selection
  * // - Responsive collapse/expand behavior
  * // - Navigation to medical chat on patient selection
  * ```
- * 
+ *
  * @features
  * - Debounced patient search functionality
  * - Recent patients list with avatar initials
@@ -34,17 +34,17 @@ import { BambooModule } from '../../../bamboo.module';
  * - Active patient highlighting
  * - Bamboo Design System integration
  * - Mobile-optimized touch interactions
- * 
+ *
  * @responsive
  * - Mobile: Auto-collapse, overlay behavior
  * - Tablet: Reduced width, persistent
  * - Desktop: Full width, always visible
- * 
+ *
  * @interactions
  * - Search: Debounced typing triggers patient search
  * - Selection: Patient click navigates to chat with context
  * - Toggle: Header button controls sidebar visibility
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -62,26 +62,26 @@ import { BambooModule } from '../../../bamboo.module';
 export class SidebarComponent implements OnInit, OnDestroy {
   /** Subject for component cleanup */
   private destroy$ = new Subject<void>();
-  
+
   /** Subject for debounced search input */
   private searchSubject = new Subject<string>();
 
   /** List of recent patients for quick access */
   recentPatients: Patient[] = [];
-  
+
   /** Array of search results converted to display strings */
-  searchResults: string[] = [];
-  
+  searchResults: Patient[] = [];
+
   /** Flag indicating if search operation is in progress */
   isSearching = false;
 
   /**
    * Creates an instance of SidebarComponent
-   * 
+   *
    * @param uiStateService - UI state service for sidebar behavior (public for template access)
    * @param medicalStateService - Medical state service for patient data
    * @param router - Angular router for navigation
-   * 
+   *
    * @description Initializes the component with debounced search functionality
    * and service dependencies for patient management and navigation.
    */
@@ -101,14 +101,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   /**
    * Component initialization lifecycle hook
-   * 
+   *
    * @description Sets up subscriptions to medical state service observables
    * for recent patients, search state, and search results. Handles reactive
    * updates to component state based on service changes.
    */
   ngOnInit(): void {
     console.log('SidebarComponent initialized');
-    
+
     // Subscribe to recent patients
     this.medicalStateService.recentPatients$
       .pipe(takeUntil(this.destroy$))
@@ -126,18 +126,28 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.isSearching = isSearching;
       });
 
-    // Subscribe to search results  
+    // Subscribe to search results
     this.medicalStateService.searchResults$
       .pipe(takeUntil(this.destroy$))
       .subscribe((patients: Patient[]) => {
+        console.log('🔍 SidebarComponent: Received search results:', patients);
+        console.log('📋 SidebarComponent: Search results count:', patients ? patients.length : 0);
+        console.log('🏥 SidebarComponent: Search results details:', patients.map(p => ({
+          id: p.id,
+          name: p.name,
+          age: p.age,
+          similarity_score: p.similarity_score
+        })));
+
         // Convert patients to string array for search component
-        this.searchResults = patients.map((p: Patient) => `${p.name} (ID: ${p.id})`);
+        this.searchResults = patients;
+        console.log('🔤 SidebarComponent: Converted to strings:', this.searchResults);
       });
   }
 
   /**
    * Component destruction lifecycle hook
-   * 
+   *
    * @description Cleans up subscriptions to prevent memory leaks
    */
   ngOnDestroy(): void {
@@ -147,12 +157,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   /**
    * Handles search input changes with debouncing
-   * 
+   *
    * @param query - Search query string from input
-   * 
+   *
    * @description Feeds search input to debounced subject to prevent
    * excessive API calls while user is typing.
-   * 
+   *
    * @example
    * ```typescript
    * onSearchInputChange('Juan'); // Triggers debounced search after 300ms
@@ -164,10 +174,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   /**
    * Clears current search results and state
-   * 
+   *
    * @description Resets search results and triggers empty search
    * to return to default state showing recent patients.
-   * 
+   *
    * @example
    * ```typescript
    * clearSearch(); // Clears results and shows recent patients
@@ -180,30 +190,36 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Performs patient search via medical state service
-   * 
+   * Performs search operation for patients
+   *
    * @private
    * @param query - Search query string
-   * 
+   *
    * @description Delegates search operation to medical state service
    * which handles API calls and updates observable results.
    */
   private performSearch(query: string): void {
+    console.log('🔍 SidebarComponent.performSearch called with:', query);
+
     if (!query.trim()) {
+      console.log('🧹 Empty query, clearing search results');
       this.searchResults = [];
+      // Also clear the search in the medical state service
+      this.medicalStateService.searchPatients('');
       return;
     }
 
+    console.log('🔍 SidebarComponent: Performing search for:', query);
     // The service handles the async operation and updates searchResults via observable
     this.medicalStateService.searchPatients(query);
   }
 
   /**
    * Toggles sidebar open/closed state
-   * 
+   *
    * @description Delegates to UI state service to toggle sidebar visibility.
    * Used by mobile menu toggle and other UI interactions.
-   * 
+   *
    * @example
    * ```typescript
    * toggleSidebar(); // Sidebar opens/closes based on current state
@@ -215,40 +231,71 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   /**
    * Selects a patient and navigates to medical chat
-   * 
+   *
    * @param patient - Patient to select and activate
-   * 
+   *
    * @description Sets the patient as active in medical state and navigates
    * to the medical chat interface. Shows success/error toast notifications
    * based on operation result.
-   * 
+   *
    * @example
    * ```typescript
    * selectPatient(patient); // Sets active patient and navigates to chat
    * ```
    */
   selectPatient(patient: Patient): void {
-    console.log('🎯 SidebarComponent.selectPatient called for:', patient.name);
-    
+    const patientName = patient.name || (patient as any).nombre_paciente || 'Paciente desconocido';
+    console.log('🎯 SidebarComponent.selectPatient called for:', patientName);
+
     // Use the centralized method that guarantees state preservation
     this.medicalStateService.selectPatientAndNavigate(patient, this.router).then((success) => {
       if (success) {
-        console.log('✅ Patient selection successful from sidebar:', patient.name);
-        this.uiStateService.showSuccessToast(`✅ Paciente ${patient.name} seleccionado correctamente`);
+        console.log('✅ Patient selection successful from sidebar:', patientName);
+        this.uiStateService.showSuccessToast(`✅ Paciente ${patientName} seleccionado correctamente`);
       } else {
-        console.error('❌ Patient selection failed from sidebar:', patient.name);
-        this.uiStateService.showErrorToast(`❌ Error al seleccionar paciente ${patient.name}`);
+        console.error('❌ Patient selection failed from sidebar:', patientName);
+        this.uiStateService.showErrorToast(`❌ Error al seleccionar paciente ${patientName}`);
+      }
+    });
+  }
+
+  /**
+   * Selects a search result and navigates to medical chat
+   *
+   * @param patient - Patient to select and activate
+   *
+   * @description Sets the patient as active in medical state and navigates
+   * to the medical chat interface. Shows success/error toast notifications
+   * based on operation result.
+   *
+   * @example
+   * ```typescript
+   * selectSearchResult(patient); // Sets active patient and navigates to chat
+   * ```
+   */
+  selectSearchResult(patient: Patient): void {
+    const patientName = patient.name || (patient as any).nombre_paciente || 'Paciente desconocido';
+    console.log('🎯 SidebarComponent.selectSearchResult called for:', patientName);
+
+    // Use the centralized method that guarantees state preservation
+    this.medicalStateService.selectPatientAndNavigate(patient, this.router).then((success) => {
+      if (success) {
+        console.log('✅ Patient selection successful from search:', patientName);
+        this.uiStateService.showSuccessToast(`✅ Paciente ${patientName} seleccionado correctamente`);
+      } else {
+        console.error('❌ Patient selection failed from search:', patientName);
+        this.uiStateService.showErrorToast(`❌ Error al seleccionar paciente ${patientName}`);
       }
     });
   }
 
   /**
    * TrackBy function for ngFor performance optimization
-   * 
+   *
    * @param index - Array index (unused)
    * @param patient - Patient object
    * @returns Unique identifier for the patient
-   * 
+   *
    * @description Helps Angular track patient items for efficient DOM updates
    */
   trackByPatientId(index: number, patient: Patient): string {
@@ -256,20 +303,23 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Gets patient initials for avatar display
-   * 
-   * @param patient - Patient to get initials for
-   * @returns Patient initials string (up to 2 characters)
-   * 
-   * @description Extracts first letters from patient name words for avatar display
-   * 
+   * Extracts initials from patient name for avatar display
+   *
+   * @param patient - Patient object
+   * @returns First two initials from patient name
+   *
+   * @description Extracts first letters from patient name words for avatar display.
+   * Uses nombre_paciente field if available, otherwise falls back to name field.
+   *
    * @example
    * ```typescript
-   * getPatientInitials(patient); // "JD" for "John Doe"
+   * getPatientInitials(patient); // "MC" for "MARTINEZ SERRANO, MARIA CRISTINA"
    * ```
    */
   getPatientInitials(patient: Patient): string {
-    return patient.name
+    const patientName = patient.name || (patient as any).nombre_paciente || 'Paciente';
+
+    return patientName
       .split(' ')
       .map((word: string) => word[0])
       .join('')
@@ -279,12 +329,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   /**
    * Checks if a patient is currently active/selected
-   * 
+   *
    * @param patient - Patient to check
    * @returns True if patient is currently active
-   * 
+   *
    * @description Compares patient ID with currently active patient ID
-   * 
+   *
    * @example
    * ```typescript
    * isPatientActive(patient); // true if this patient is selected
@@ -297,13 +347,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   /**
    * Gets CSS classes for patient card styling
-   * 
+   *
    * @param patient - Patient to get classes for
    * @returns Space-separated CSS class string
-   * 
+   *
    * @description Returns appropriate CSS classes including active state
    * for patient card styling in expanded sidebar view.
-   * 
+   *
    * @example
    * ```typescript
    * getPatientCardClasses(patient); // "patient-card active" if selected
@@ -317,13 +367,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   /**
    * Gets CSS classes for collapsed patient avatar styling
-   * 
+   *
    * @param patient - Patient to get classes for
    * @returns Space-separated CSS class string
-   * 
+   *
    * @description Returns appropriate CSS classes including active state
    * for patient avatar styling in collapsed sidebar view.
-   * 
+   *
    * @example
    * ```typescript
    * getCollapsedPatientClasses(patient); // "collapsed-patient-avatar active"

@@ -11,6 +11,7 @@ import { ChatMessage } from './core/models/chat.model';
 import { MedicalStateService } from './core/services/medical-state.service';
 import { ApiService } from './core/services/api.service';
 import { StreamingService } from './core/services/streaming.service';
+import { ChatSessionService } from './core/services/chat-session.service';
 import { MarkdownPipe } from './shared/pipes/markdown.pipe';
 import { QuickPillsComponent } from './features/medical-chat/components/quick-pills/quick-pills.component';
 import { DocumentPanelComponent } from './shared/components/document-panel/document-panel.component';
@@ -85,8 +86,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
               (click)="sidebarCollapsed = !sidebarCollapsed"
               title="Contraer panel lateral">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M11 19l-7-7 7-7"/>
-                <path d="M21 12H3" opacity="0.6"/>
+                <path d="M15 18l-6-6 6-6"/>
               </svg>
             </button>
           </div>
@@ -653,6 +653,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     private medicalStateService: MedicalStateService,
     private apiService: ApiService,
     private streamingService: StreamingService,
+    private chatSessionService: ChatSessionService,
     private cdr: ChangeDetectorRef,
     private ngZone: NgZone,
     private router: Router,
@@ -840,7 +841,11 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     console.log('🔍 Buscando pacientes:', query);
 
     try {
-      const response = await this.apiService.searchPatients(query).toPromise();
+            // TODO: Replace with actual user authentication when implemented
+      // For now, using a default user_id until authentication system is in place
+      const defaultUserId = 'pedro';
+
+      const response = await this.apiService.searchPatients(defaultUserId, query).toPromise();
       this.searchResults = response || [];
       this.isSearching = false;
       this.updatePatientsToShow();
@@ -881,15 +886,15 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       if (success) {
         console.log('✅ Patient selection successful:', patient.name);
 
-        // Record interaction using ApiService directly
-        this.apiService.recordPatientInteraction(patient.id, {
-          interaction_type: 'chat',
-          summary: `Doctor accessed patient record from main interface`,
-          timestamp: new Date().toISOString()
-        }).subscribe({
-          next: () => {}, // Silent success
-          error: (error) => console.error('❌ Error recording interaction:', error)
-        });
+        // TODO: Record interaction when backend endpoint is implemented
+        // this.apiService.recordPatientInteraction(patient.id, {
+        //   interaction_type: 'chat',
+        //   summary: `Doctor accessed patient record from main interface`,
+        //   timestamp: new Date().toISOString()
+        // }).subscribe({
+        //   next: () => {}, // Silent success
+        //   error: (error) => console.error('❌ Error recording interaction:', error)
+        // });
       } else {
         console.error('❌ Patient selection failed for:', patient.name);
       }
@@ -941,12 +946,22 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.isLoading = false;
       this.cdr.detectChanges();
 
-      // Use real streaming service
-      this.streamingService.streamMedicalChat({
-        messages: contextualMessages,
-        patient_id: this.activePatient.id,
-        include_context: true,
-        stream: true
+      // Get active session for the new API
+      const activeSession = this.chatSessionService.getActiveSession();
+      if (!activeSession) {
+        console.error('❌ No active session found');
+        this.isStreaming = false;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        return;
+      }
+
+      // Use new chat API
+      this.apiService.sendChatMessage({
+        session_id: activeSession.session_id,
+        user_id: activeSession.user_id,
+        document_id: activeSession.document_id,
+        question: messageToSend
       }).subscribe({
         next: (chunk) => {
           this.ngZone.run(() => {
@@ -954,7 +969,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
               // Accumulate content in class property (like React's useRef)
               this.streamingContentRef += chunk.content;
               updateUI(); // Update UI immediately
-            } else if (chunk.type === 'done') {
+            } else if (chunk.type === 'end') {
 
               // Handle completion locally
               if (this.streamingContentRef) {
@@ -971,32 +986,22 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
               this.streamingMessage = '';
               this.streamingContentRef = '';
               updateUI();
-            } else if (chunk.type === 'error') {
-              console.error('❌ Streaming error:', chunk.error);
-
-              // Reset local streaming state on error
-              this.isStreaming = false;
-              this.streamingMessage = '';
-              this.streamingContentRef = '';
-              updateUI();
-
-              throw new Error(chunk.error || 'Streaming error');
             }
           });
         },
         error: (error) => {
-          console.error('❌ Stream error:', error);
+          this.ngZone.run(() => {
+            console.error('❌ Streaming error:', error);
 
           // Reset local streaming state on error
           this.isStreaming = false;
           this.streamingMessage = '';
           this.streamingContentRef = '';
           updateUI();
-
-          throw error;
+          });
         },
         complete: () => {
-          // Complete handler - no additional logic needed as 'done' chunk handles everything
+          // Complete handler - no additional logic needed as 'end' chunk handles everything
         }
       });
 

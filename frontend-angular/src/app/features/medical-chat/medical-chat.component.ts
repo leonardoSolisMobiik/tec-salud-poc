@@ -1,19 +1,19 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
-import { ChatMessage, ChatRequest } from '@core/models';
-import { MedicalStateService, StreamingService } from '@core/services';
+import { ChatMessage, ChatRequest, ChatAskRequest } from '@core/models';
+import { MedicalStateService, ChatSessionService, StreamingService, ApiService } from '@core/services';
 import { ChangeDetectorRef } from '@angular/core';
 import { Patient } from '@core/models/patient.model';
 
 /**
  * Medical Chat Component for AI-powered medical consultations
- * 
+ *
  * @description Main chat interface for medical consultations with AI assistant.
  * Handles patient context, message history, streaming responses, and responsive design.
  * Integrates with MedicalStateService for state management and StreamingService for real-time AI responses.
- * 
+ *
  * @features
  * - Patient-contextual conversations
  * - Real-time streaming AI responses
@@ -22,19 +22,19 @@ import { Patient } from '@core/models/patient.model';
  * - Quick action buttons for common medical queries
  * - Auto-scrolling message container
  * - Character limit validation
- * 
+ *
  * @example
  * ```typescript
  * // Used in template:
  * <app-medical-chat></app-medical-chat>
- * 
+ *
  * // Component automatically handles:
  * // 1. Patient selection from MedicalStateService
  * // 2. Message history per patient
  * // 3. Streaming AI responses
  * // 4. Responsive UI adaptations
  * ```
- * 
+ *
  * @since 1.0.0
  */
 @Component({
@@ -74,39 +74,39 @@ import { Patient } from '@core/models/patient.model';
 
         <!-- Messages with Bubble Design -->
         <div class="messages-list" *ngIf="activePatient">
-          <div 
+          <div
             *ngFor="let message of chatMessages; trackBy: trackMessage"
             class="message-wrapper"
             [class.user-wrapper]="message.role === 'user'"
             [class.assistant-wrapper]="message.role === 'assistant'"
           >
             <!-- Avatar -->
-            <div class="message-avatar" 
+            <div class="message-avatar"
                  [class.user-avatar]="message.role === 'user'"
                  [class.assistant-avatar]="message.role === 'assistant'">
               <span *ngIf="message.role === 'user'">👨‍⚕️</span>
               <span *ngIf="message.role === 'assistant'">🤖</span>
             </div>
-            
+
             <!-- Bubble Container -->
             <div class="bubble-container">
               <!-- Speech Bubble -->
               <div class="speech-bubble"
                    [class.user-bubble]="message.role === 'user'"
                    [class.assistant-bubble]="message.role === 'assistant'">
-                
+
                 <!-- Message Content -->
                 <div class="bubble-content">
                   <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
                 </div>
-                
+
                 <!-- Bubble Tail -->
                 <div class="bubble-tail"
                      [class.user-tail]="message.role === 'user'"
                      [class.assistant-tail]="message.role === 'assistant'">
                 </div>
               </div>
-              
+
               <!-- Timestamp -->
               <div class="message-timestamp"
                    [class.user-timestamp]="message.role === 'user'"
@@ -115,14 +115,14 @@ import { Patient } from '@core/models/patient.model';
               </div>
             </div>
           </div>
-              
+
           <!-- Streaming message with bubble design -->
           <div class="message-wrapper assistant-wrapper" *ngIf="isStreaming">
             <!-- Avatar -->
             <div class="message-avatar assistant-avatar">
               <span class="typing-indicator">🤖</span>
             </div>
-            
+
             <!-- Bubble Container -->
             <div class="bubble-container">
               <!-- Speech Bubble -->
@@ -139,11 +139,11 @@ import { Patient } from '@core/models/patient.model';
                     <span class="typing-cursor">|</span>
                   </div>
                 </div>
-                
+
                 <!-- Bubble Tail -->
                 <div class="bubble-tail assistant-tail"></div>
               </div>
-              
+
               <!-- Timestamp -->
               <div class="message-timestamp assistant-timestamp">
                 Escribiendo...
@@ -560,252 +560,252 @@ import { Patient } from '@core/models/patient.model';
     }
 
     /* 📱 RESPONSIVE OPTIMIZADO - TASK-UI-004 */
-    
+
     /* Mobile Styles (<768px) */
     @media (max-width: 767px) {
       .chat-container {
         margin-top: 0 !important;
       }
-      
+
       .message-wrapper {
         gap: 8px !important;
       }
-      
+
       .message-avatar {
         width: 35px !important;
         height: 35px !important;
         font-size: 1.1rem !important;
       }
-      
+
       .bubble-container {
         gap: 3px !important;
       }
-      
+
       .speech-bubble {
         max-width: 85% !important;
         padding: 12px 15px !important;
       }
-      
+
       .bubble-tail {
         border-width: 8px 8px 8px 0 !important;
       }
-      
+
       .user-tail {
         right: -8px !important;
       }
-      
+
       .assistant-tail {
         left: -8px !important;
       }
-      
+
       .message-text {
         font-size: 0.9rem !important;
       }
-      
+
       .message-timestamp {
         font-size: 0.6rem !important;
       }
-      
+
       .send-btn-premium {
         min-width: 120px !important;
         height: var(--touch-target-min, 44px) !important;
         transform: scale(1.1) !important;
       }
-      
+
       .send-btn-premium:hover {
         transform: scale(1.2) !important;
       }
-      
+
       .message-input {
         font-size: 16px !important; /* Prevents zoom on iOS */
         padding: var(--touch-spacing, 12px) !important;
       }
-      
+
       .input-footer {
         padding: var(--touch-spacing, 12px) !important;
       }
-      
+
       .chat-header {
         padding: var(--bmb-spacing-m, 1rem) !important;
       }
-      
+
       .chat-footer {
         padding: var(--bmb-spacing-m, 1rem) !important;
       }
     }
-    
+
     /* Tablet Styles (768px-1024px) - TASK-UI-004 OPTIMIZACIÓN */
     @media (min-width: 768px) and (max-width: 1024px) {
       .chat-container {
         margin-top: 0 !important;
       }
-      
+
       .message-wrapper {
         gap: 10px !important;
       }
-      
+
       .message-avatar {
         width: 45px !important;
         height: 45px !important;
         font-size: 1.3rem !important;
       }
-      
+
       .bubble-container {
         gap: 5px !important;
       }
-      
+
       .speech-bubble {
         max-width: 75% !important;
         padding: 15px 20px !important;
       }
-      
+
       .bubble-tail {
         border-width: 10px 10px 10px 0 !important;
       }
-      
+
       .user-tail {
         right: -10px !important;
       }
-      
+
       .assistant-tail {
         left: -10px !important;
       }
-      
+
       .message-text {
         font-size: 1rem !important;
       }
-      
+
       .message-timestamp {
         font-size: 0.75rem !important;
       }
-      
+
       .send-btn-premium {
         min-width: 150px !important;
         height: 55px !important;
         transform: scale(1.2) !important;
       }
-      
+
       .send-btn-premium:hover {
         transform: scale(1.3) !important;
       }
-      
+
       .messages-list {
         max-width: 900px !important;
         padding: 0 var(--bmb-spacing-m, 1rem) !important;
       }
-      
+
       .input-section {
         max-width: 900px !important;
       }
-      
+
       .chat-header {
         padding: var(--bmb-spacing-l, 1.5rem) !important;
       }
-      
+
       .chat-footer {
         padding: var(--bmb-spacing-l, 1.5rem) !important;
       }
     }
-    
+
     /* Desktop Styles (1025px+) */
     @media (min-width: 1025px) {
       .message-wrapper {
         gap: 10px !important;
       }
-      
+
       .message-avatar {
         width: 45px !important;
         height: 45px !important;
         font-size: 1.3rem !important;
       }
-      
+
       .bubble-container {
         gap: 5px !important;
       }
-      
+
       .speech-bubble {
         max-width: 70% !important;
         padding: 15px 20px !important;
       }
-      
+
       .bubble-tail {
         border-width: 10px 10px 10px 0 !important;
       }
-      
+
       .user-tail {
         right: -10px !important;
       }
-      
+
       .assistant-tail {
         left: -10px !important;
       }
-      
+
       .message-text {
         font-size: 1rem !important;
       }
-      
+
       .message-timestamp {
         font-size: 0.75rem !important;
       }
-      
+
       .send-btn-premium {
         min-width: 160px !important;
         height: 60px !important;
         transform: scale(1.3) !important;
       }
-      
+
       .send-btn-premium:hover {
         transform: scale(1.5) !important;
       }
     }
-    
+
     /* 🖱️ TOUCH DEVICE OPTIMIZATIONS - TASK-UI-004 */
     @media (hover: none) and (pointer: coarse) {
       .message-input {
         -webkit-appearance: none !important;
         border-radius: var(--medical-border-radius) !important;
       }
-      
+
       .send-btn-premium:hover {
         transform: scale(1.1) !important;
       }
-      
+
       .chat-main {
         -webkit-overflow-scrolling: touch !important;
         scroll-behavior: smooth !important;
       }
-      
+
       .message-wrapper {
         touch-action: manipulation !important;
       }
     }
   `]
 })
-export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked {
+export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked, AfterViewInit {
   /** ViewChild reference to the messages container for auto-scrolling */
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
-  
+
   /** Subject for managing component subscriptions cleanup */
   private destroy$ = new Subject<void>();
-  
+
   /** Flag to trigger scrolling to bottom after view updates */
   private shouldScrollToBottom = false;
 
   /** Current message being typed by the user */
   currentMessage = '';
-  
+
   /** Array of chat messages for the current patient */
   chatMessages: ChatMessage[] = [];
-  
+
   /** Whether AI is currently streaming a response */
   isStreaming = false;
-  
+
   /** Current streaming message content */
   streamingMessage = '';
-  
+
   /** Currently active patient for medical context */
   activePatient: any = null;
-  
+
   /** Recently accessed patients for quick selection */
   recentPatients: any[] = [];
 
@@ -821,26 +821,29 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Creates an instance of MedicalChatComponent
-   * 
+   *
    * @param medicalStateService - Service for managing medical state and patient data
+   * @param chatSessionService - Service for managing chat sessions
    * @param streamingService - Service for handling streaming AI responses
    */
   constructor(
     private medicalStateService: MedicalStateService,
+    private chatSessionService: ChatSessionService,
     private streamingService: StreamingService,
+    private apiService: ApiService,
     private cdr: ChangeDetectorRef
   ) {}
 
   /**
    * Component initialization lifecycle hook
-   * 
+   *
    * @description Sets up subscriptions to medical state observables for:
    * - Active patient changes
    * - Recent patients updates
    * - Chat messages changes
    * - Streaming state updates
    * - Real-time streaming message content
-   * 
+   *
    * @example
    * ```typescript
    * // Automatically called by Angular
@@ -853,11 +856,11 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     console.log('🩺 Timestamp:', new Date().toISOString());
     console.log('🩺 URL actual:', window.location.pathname);
     console.log('🩺 ============================================');
-    
+
     // Get initial state immediately
     const initialPatient = this.medicalStateService.activePatientValue;
     console.log('🩺 Initial patient from service:', initialPatient?.name || 'NONE');
-    
+
     // Subscribe to active patient changes with immediate emission
     console.log('🩺 PASO 1: Suscribiéndose a activePatient$...');
     this.medicalStateService.activePatient$
@@ -869,15 +872,21 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
         console.log('💊 New patient:', patient?.name || 'NONE');
         console.log('💊 Timestamp:', new Date().toISOString());
         console.log('💊 ============================================');
-        
+
         // Update local state
         this.activePatient = patient;
-        
+
         if (patient) {
           console.log('✅ CHAT HABILITADO: Chat enabled for patient:', patient.name);
           console.log('✅ Patient ID:', patient.id);
           console.log('✅ this.activePatient actualizado a:', this.activePatient.name);
-          
+
+          // Trigger scroll to bottom when patient changes (after messages load)
+          setTimeout(() => {
+            this.shouldScrollToBottom = true;
+            this.cdr.detectChanges();
+          }, 100);
+
           // Trigger change detection to update UI immediately
           this.cdr.detectChanges();
         } else {
@@ -902,6 +911,8 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
       .subscribe((messages: ChatMessage[]) => {
         console.log('💬 Chat messages updated:', messages.length);
         this.chatMessages = messages;
+        // Trigger scroll to bottom when messages change
+        this.shouldScrollToBottom = true;
         this.cdr.detectChanges();
       });
 
@@ -922,6 +933,8 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
       .subscribe((message: string) => {
         console.log('📡 Streaming message length:', message.length);
         this.streamingMessage = message;
+        // Trigger scroll to bottom during streaming
+        this.shouldScrollToBottom = true;
         this.cdr.detectChanges();
       });
 
@@ -929,11 +942,33 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     console.log('🩺 MedicalChatComponent ngOnInit COMPLETED');
     console.log('🩺 Final activePatient:', this.activePatient?.name || 'NONE');
     console.log('🩺 ============================================');
+
+    // Force scroll to bottom on component initialization (after view is ready)
+    setTimeout(() => {
+      if (this.chatMessages.length > 0) {
+        this.shouldScrollToBottom = true;
+        this.cdr.detectChanges();
+      }
+    }, 200);
+  }
+
+  /**
+   * After view init lifecycle hook
+   *
+   * @description Ensures scroll to bottom when view is first initialized
+   */
+  ngAfterViewInit(): void {
+    // Force scroll to bottom on view initialization if there are messages
+    setTimeout(() => {
+      if (this.chatMessages.length > 0) {
+        this.shouldScrollToBottom = true;
+      }
+    }, 100);
   }
 
   /**
    * After view checked lifecycle hook
-   * 
+   *
    * @description Handles auto-scrolling to bottom when new messages arrive
    * or streaming content updates
    */
@@ -946,7 +981,7 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Component destruction lifecycle hook
-   * 
+   *
    * @description Cleans up subscriptions to prevent memory leaks
    */
   ngOnDestroy(): void {
@@ -956,9 +991,9 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Determines if a message can be sent
-   * 
+   *
    * @returns True if message can be sent, false otherwise
-   * 
+   *
    * @description Validates that:
    * - Message has content (trimmed length > 0)
    * - Not currently streaming
@@ -966,24 +1001,24 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
    * - Message length is within limit (2000 chars)
    */
   get canSendMessage(): boolean {
-    return this.currentMessage.trim().length > 0 && 
-           !this.isStreaming && 
+    return this.currentMessage.trim().length > 0 &&
+           !this.isStreaming &&
            this.activePatient &&
            this.currentMessage.length <= 2000;
   }
 
   /**
    * Handles Enter key press in message input
-   * 
+   *
    * @param event - Keyboard event
-   * 
+   *
    * @description Sends message on Enter, allows new line with Shift+Enter
-   * 
+   *
    * @example
    * ```typescript
    * // In template:
    * <textarea (keydown.enter)="onEnterPressed($event)">
-   * 
+   *
    * // Behavior:
    * // Enter -> Send message
    * // Shift+Enter -> New line
@@ -993,7 +1028,7 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     if (event.shiftKey) {
       return; // Allow new line with Shift+Enter
     }
-    
+
     event.preventDefault();
     if (this.canSendMessage) {
       this.sendMessage();
@@ -1002,9 +1037,9 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Handles input changes for auto-resizing textarea
-   * 
+   *
    * @param event - Input event from textarea
-   * 
+   *
    * @description Automatically adjusts textarea height based on content,
    * with a maximum height of 150px
    */
@@ -1018,12 +1053,12 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Uses a quick action template in the message input
-   * 
+   *
    * @param action - Quick action object with label and text template
-   * 
+   *
    * @description Populates the message input with a pre-defined template
    * including the active patient's name
-   * 
+   *
    * @example
    * ```typescript
    * const action = { label: 'Síntomas', text: 'El paciente presenta los siguientes síntomas: ' };
@@ -1039,19 +1074,19 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Sends a message to the AI assistant
-   * 
+   *
    * @description Main method for sending medical consultation messages:
    * 1. Validates message can be sent
    * 2. Creates user message object
    * 3. Adds message to state
    * 4. Initiates streaming AI response
    * 5. Handles streaming chunks and errors
-   * 
+   *
    * @example
    * ```typescript
    * // Called when user clicks send button or presses Enter
    * this.sendMessage();
-   * 
+   *
    * // Process:
    * // 1. User message added to chat
    * // 2. Streaming AI response begins
@@ -1074,71 +1109,77 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
     // Start streaming response
     this.medicalStateService.startStreaming();
-    
-    // Create chat request with patient context
-    const chatRequest: ChatRequest = {
-      messages: [
-        ...this.chatMessages,
-        userMessage
-      ],
-      patient_id: this.activePatient?.id?.toString(),
-      include_context: true,
-      stream: true
+
+    // Get active session and document information
+    const activeSession = this.chatSessionService.getActiveSession();
+
+    if (!activeSession) {
+      console.error('🚨 No active session found');
+      this.medicalStateService.finishStreaming();
+
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'No hay una sesión activa. Por favor, selecciona un paciente primero.',
+        timestamp: new Date()
+      };
+      this.medicalStateService.addMessage(errorMessage);
+      return;
+    }
+
+    // Create chat ask request for the new API
+    const chatAskRequest: ChatAskRequest = {
+      session_id: activeSession.session_id,
+      user_id: activeSession.user_id,
+      document_id: activeSession.document_id,
+      question: messageContent
     };
 
-    console.log('🩺 Sending medical chat request:', {
-      patient_id: chatRequest.patient_id,
-      message_count: chatRequest.messages.length,
-      last_message: messageContent
+    console.log('🩺 Sending chat ask request:', {
+      session_id: chatAskRequest.session_id,
+      user_id: chatAskRequest.user_id,
+      document_id: chatAskRequest.document_id,
+      question: chatAskRequest.question
     });
 
-    // Stream response from backend
-    this.streamingService.streamMedicalChat(chatRequest).subscribe({
+    // Stream response from new API
+    this.apiService.sendChatMessage(chatAskRequest).subscribe({
       next: (chunk) => {
+        console.log('📦 Received chunk:', chunk);
+
         if (chunk.type === 'content' && chunk.content) {
           // Accumulate streaming content
           const currentStream = this.streamingMessage + chunk.content;
           this.medicalStateService.updateStreamingMessage(currentStream);
         }
-        
-        if (chunk.type === 'done') {
+
+        if (chunk.type === 'end') {
           // Add the complete response as a message
           const aiResponse: ChatMessage = {
             role: 'assistant',
             content: this.streamingMessage,
             timestamp: new Date()
           };
-          
+
           this.medicalStateService.addMessage(aiResponse);
           this.medicalStateService.finishStreaming();
-          
+
           console.log('✅ Medical chat response completed');
         }
-        
-        if (chunk.type === 'error') {
-          console.error('❌ Stream error:', chunk.error);
-          
-          // Add error message
-          const errorResponse: ChatMessage = {
-            role: 'assistant',
-            content: `❌ Error: ${chunk.error || 'Ocurrió un error al procesar tu consulta.'}`,
-            timestamp: new Date()
-          };
-          
-          this.medicalStateService.addMessage(errorResponse);
-          this.medicalStateService.finishStreaming();
+
+        if (chunk.type === 'start') {
+          console.log('🚀 Chat interaction started:', chunk.interaction_id);
         }
       },
       error: (error) => {
         console.error('❌ Medical chat error:', error);
-        
+
         // Add error message
         const errorResponse: ChatMessage = {
           role: 'assistant',
           content: '❌ Lo siento, ocurrió un error al procesar tu consulta. Por favor intenta nuevamente.',
           timestamp: new Date()
         };
-        
+
         this.medicalStateService.addMessage(errorResponse);
         this.medicalStateService.finishStreaming();
       }
@@ -1147,9 +1188,9 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Clears chat history for the current patient
-   * 
+   *
    * @description Removes all chat messages for the active patient from state
-   * 
+   *
    * @example
    * ```typescript
    * this.clearChat(); // Clears current patient's chat history
@@ -1157,9 +1198,9 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
    */
   /**
    * Clears the chat history for the active patient
-   * 
+   *
    * @description Removes all messages from the current patient's chat history
-   * 
+   *
    * @example
    * ```typescript
    * this.clearChat(); // Clears all messages for current patient
@@ -1173,11 +1214,11 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Copies message content to clipboard
-   * 
+   *
    * @param content - Message content to copy
-   * 
+   *
    * @description Uses navigator.clipboard API to copy message text
-   * 
+   *
    * @example
    * ```typescript
    * this.copyMessage('Diagnóstico: Hipertensión arterial');
@@ -1191,9 +1232,9 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Records positive feedback for a message
-   * 
+   *
    * @param message - Message object that was liked
-   * 
+   *
    * @description Placeholder for message rating functionality
    */
   likeMessage(message: ChatMessage): void {
@@ -1202,9 +1243,9 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Repeats the last user message
-   * 
+   *
    * @param message - Message object to repeat (not used, finds last user message)
-   * 
+   *
    * @description Finds the most recent user message and puts it back in the input
    */
   repeatMessage(message: ChatMessage): void {
@@ -1212,7 +1253,7 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
       const lastUserMessage = [...this.chatMessages]
         .reverse()
         .find(msg => msg.role === 'user');
-      
+
       if (lastUserMessage) {
         this.currentMessage = lastUserMessage.content;
       }
@@ -1221,11 +1262,11 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * TrackBy function for message list optimization
-   * 
+   *
    * @param index - Index in the array
    * @param message - Message object
    * @returns Unique identifier for the message
-   * 
+   *
    * @description Improves Angular's change detection performance for message list
    */
   trackMessage(index: number, message: ChatMessage): any {
@@ -1234,12 +1275,12 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
 
   /**
    * Formats timestamp for display
-   * 
+   *
    * @param timestamp - Date object or undefined
    * @returns Formatted time string (HH:MM)
-   * 
+   *
    * @description Converts timestamp to localized time format for Spanish
-   * 
+   *
    * @example
    * ```typescript
    * const time = this.formatTime(new Date());
@@ -1248,18 +1289,18 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
    */
   formatTime(timestamp: Date | undefined): string {
     if (!timestamp) return '';
-    return timestamp.toLocaleTimeString('es-ES', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return timestamp.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit'
     });
   }
 
   /**
    * Formats message content with enhanced markdown and medical formatting
-   * 
+   *
    * @param content - Raw message content
    * @returns HTML-formatted content string
-   * 
+   *
    * @description Applies comprehensive formatting for medical content including:
    * - Headers (##)
    * - Bold and italic text (**text**, *text*)
@@ -1267,7 +1308,7 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
    * - Medical values with units highlighting
    * - Medical sections with styled headers
    * - Line break conversion
-   * 
+   *
    * @example
    * ```typescript
    * const formatted = this.formatMessageContent(`
@@ -1281,48 +1322,63 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
    */
   formatMessageContent(content: string): string {
     if (!content) return '';
-    
+
     // Enhanced markdown formatting for medical content
     return content
       // Headers (##)
       .replace(/^## (.*$)/gm, '<h4 style="margin: 15px 0 8px 0; color: #1976D2; font-weight: 600;">$1</h4>')
-      
+
       // Bold text (**text**)
       .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #333; font-weight: 600;">$1</strong>')
-      
+
       // Italic text (*text*)
       .replace(/\*(.*?)\*/g, '<em style="color: #555;">$1</em>')
-      
+
       // Lists starting with "- " or "• "
       .replace(/^[\s]*[-•]\s+(.+)$/gm, '<div style="margin: 4px 0; padding-left: 20px; position: relative;"><span style="position: absolute; left: 0; color: #2196F3; font-weight: bold;">•</span> $1</div>')
-      
+
       // Medical values with units (e.g., "12,500 (rango normal: 4,000-10,000)")
       .replace(/(\d+[,.]?\d*)\s*(\([^)]+\))/g, '<span style="font-weight: 600; color: #1976D2;">$1</span> <span style="color: #666; font-size: 0.9em;">$2</span>')
-      
+
       // Medical sections (text followed by colon)
       .replace(/^([A-Za-záéíóúÁÉÍÓÚ\s]+):$/gm, '<div style="margin: 12px 0 6px 0; font-weight: 600; color: #1976D2; border-bottom: 1px solid #E3F2FD; padding-bottom: 2px;">$1:</div>')
-      
+
       // Convert line breaks to HTML breaks
       .replace(/\n\n/g, '<br><br>')
       .replace(/\n/g, '<br>')
-      
+
       // Clean up multiple breaks
       .replace(/(<br>\s*){3,}/g, '<br><br>');
   }
 
   /**
    * Scrolls the messages container to the bottom
-   * 
+   *
    * @private
    * @description Automatically scrolls to show the latest message,
    * used when new messages arrive or during streaming
    */
   private scrollToBottom(): void {
     try {
-      this.messagesContainer.nativeElement.scrollTop = 
-        this.messagesContainer.nativeElement.scrollHeight;
+      if (this.messagesContainer?.nativeElement) {
+        const container = this.messagesContainer.nativeElement;
+        container.scrollTop = container.scrollHeight;
+        console.log('📜 Scrolled to bottom - scrollTop:', container.scrollTop, 'scrollHeight:', container.scrollHeight);
+      }
     } catch (err) {
       console.error('Could not scroll to bottom:', err);
     }
+  }
+
+  /**
+   * Forces scroll to bottom with smooth behavior
+   *
+   * @description Public method to force scroll to bottom, useful for navigation scenarios
+   */
+  public forceScrollToBottom(): void {
+    setTimeout(() => {
+      this.shouldScrollToBottom = true;
+      this.cdr.detectChanges();
+    }, 50);
   }
 }
