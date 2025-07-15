@@ -35,8 +35,8 @@ export interface PatientDocument {
   /** Human-readable display name for the document */
   displayName: string;
 
-  /** Document type: CONS (Consulta) or EMER (Emergencia) */
-  type: 'CONS' | 'EMER';
+  /** Document type: CONS (Consulta), EMER (Emergencia), LAB (Laboratorio), RAD (Radiología), CIR (Cirugía), INT (Interconsulta), HOSP (Hospitalización), FARM (Farmacia), IMAGEN (Imagen Médica), REPORTE (Reporte Médico) */
+  type: 'CONS' | 'EMER' | 'LAB' | 'RAD' | 'CIR' | 'INT' | 'HOSP' | 'FARM' | 'IMAGEN' | 'REPORTE';
 
   /** Patient ID this document belongs to */
   patientId: string;
@@ -106,7 +106,7 @@ export interface PatientDocumentGroup {
  *
  * @features
  * - Patient-specific document retrieval
- * - Document type filtering (CONS/EMER)
+ * - Document type filtering (CONS/EMER/LAB/RAD/CIR/INT/HOSP/FARM/IMAGEN/REPORTE)
  * - Patient name normalization and mapping
  * - Document access validation
  * - Grouped document organization
@@ -292,7 +292,7 @@ export class PatientDocumentsService {
   /**
    * Retrieves documents filtered by type
    *
-   * @param type - Document type to filter by ('CONS' for consultation, 'EMER' for emergency)
+   * @param type - Document type to filter by ('CONS' for consultation, 'EMER' for emergency, 'LAB' for laboratory, etc.)
    * @returns Observable containing array of documents of the specified type
    *
    * @example
@@ -302,7 +302,7 @@ export class PatientDocumentsService {
    * });
    * ```
    */
-  getDocumentsByType(type: 'CONS' | 'EMER'): Observable<PatientDocument[]> {
+  getDocumentsByType(type: 'CONS' | 'EMER' | 'LAB' | 'RAD' | 'CIR' | 'INT' | 'HOSP' | 'FARM' | 'IMAGEN' | 'REPORTE'): Observable<PatientDocument[]> {
     const documents = this.documentDatabase.filter(doc => doc.type === type);
     return of(documents);
   }
@@ -408,14 +408,31 @@ export class PatientDocumentsService {
    * Extracts document type from category or filename
    *
    * @param categoryOrFilename - Category or filename to extract type from
-   * @returns Document type (CONS or EMER)
+   * @returns Document type (CONS, EMER, LAB, RAD, CIR, INT, HOSP, FARM, IMAGEN, REPORTE)
    */
-  private extractDocumentType(categoryOrFilename: string): 'CONS' | 'EMER' {
+  private extractDocumentType(categoryOrFilename: string): 'CONS' | 'EMER' | 'LAB' | 'RAD' | 'CIR' | 'INT' | 'HOSP' | 'FARM' | 'IMAGEN' | 'REPORTE' {
     const normalized = categoryOrFilename.toUpperCase();
+
     if (normalized.includes('CONS')) {
       return 'CONS';
     } else if (normalized.includes('EMER')) {
       return 'EMER';
+    } else if (normalized.includes('LAB')) {
+      return 'LAB';
+    } else if (normalized.includes('RAD')) {
+      return 'RAD';
+    } else if (normalized.includes('CIR')) {
+      return 'CIR';
+    } else if (normalized.includes('INT')) {
+      return 'INT';
+    } else if (normalized.includes('HOSP')) {
+      return 'HOSP';
+    } else if (normalized.includes('FARM')) {
+      return 'FARM';
+    } else if (normalized.includes('IMAGEN')) {
+      return 'IMAGEN';
+    } else if (normalized.includes('REPORTE')) {
+      return 'REPORTE';
     } else {
       return 'CONS'; // Default to consultation
     }

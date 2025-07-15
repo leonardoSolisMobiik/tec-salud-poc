@@ -21,8 +21,7 @@ interface ProcessingOption {
 interface DocumentUpload {
   file: File;
   user_id: string;
-  description: string;
-  tags: string;
+  document_type: string;
   status: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
   warning?: string;
@@ -111,8 +110,11 @@ interface DocumentUpload {
             <label class="config-label">👤 Paciente por Defecto</label>
             <select
               class="bamboo-select"
-              [(ngModel)]="defaultUserId">
-              <option value="">Seleccionar paciente...</option>
+              [(ngModel)]="defaultUserId"
+              [disabled]="isLoadingPatients">
+              <option value="" *ngIf="isLoadingPatients">Cargando pacientes...</option>
+              <option value="" *ngIf="!isLoadingPatients && recentPatients.length === 0">Sin pacientes disponibles</option>
+              <option value="" *ngIf="!isLoadingPatients && recentPatients.length > 0">Selecciona una opción...</option>
               <option
                 *ngFor="let patient of recentPatients"
                 [value]="patient.id">
@@ -121,35 +123,52 @@ interface DocumentUpload {
             </select>
           </div>
 
-          <!-- Document Type -->
+          <!-- Document Type Selector -->
           <div class="config-section">
-            <label class="config-label">📋 Descripción</label>
-            <input
-              type="text"
-              class="bamboo-input"
-              [(ngModel)]="defaultDescription"
-              placeholder="Descripción del documento (opcional)">
-          </div>
-
-          <!-- Tags -->
-          <div class="config-section">
-            <label class="config-label">🏷️ Etiquetas</label>
-            <input
-              type="text"
-              class="bamboo-input"
-              [(ngModel)]="defaultTags"
-              placeholder="Etiquetas separadas por comas (opcional)">
+            <label class="config-label">📄 Tipo de Documento</label>
+            <select
+              class="bamboo-select"
+              [(ngModel)]="defaultDocumentType">
+              <option value="">Selecciona una opción...</option>
+              <option
+                *ngFor="let type of documentTypes"
+                [value]="type.value">
+                {{ type.label }} - {{ type.description }}
+              </option>
+            </select>
           </div>
 
           <!-- Upload Button -->
           <button
-          *ngIf="selectedFiles.length > 0 && !isUploading"
+          *ngIf="selectedFiles.length > 0 && !isUploading && !isLoadingPatients && recentPatients.length > 0"
           class="premium-process-btn"
-          [disabled]="!defaultUserId"
+          [disabled]="!defaultUserId || !defaultDocumentType"
             (click)="startUpload()">
             <span class="btn-icon">🚀</span>
             <span class="btn-text">Subir {{ selectedFiles.length }} {{ selectedFiles.length === 1 ? 'Expediente' : 'Expedientes' }}</span>
           </button>
+
+          <!-- Loading patients message -->
+          <div *ngIf="selectedFiles.length > 0 && !isUploading && isLoadingPatients" class="loading-patients-message">
+            <span class="loading-icon">⏳</span>
+            <span class="loading-text">Cargando pacientes...</span>
+          </div>
+
+          <!-- No patients message -->
+          <div *ngIf="selectedFiles.length > 0 && !isUploading && !isLoadingPatients && recentPatients.length === 0" class="no-patients-message">
+            <span class="warning-icon">⚠️</span>
+            <span class="warning-text">No hay pacientes disponibles. Contacta al administrador.</span>
+          </div>
+
+          <!-- Selection validation message -->
+          <div *ngIf="selectedFiles.length > 0 && !isUploading && !isLoadingPatients && recentPatients.length > 0 && (!defaultUserId || !defaultDocumentType)" class="validation-message">
+            <span class="info-icon">ℹ️</span>
+            <span class="info-text">
+              <span *ngIf="!defaultUserId && !defaultDocumentType">Selecciona un paciente y un tipo de documento</span>
+              <span *ngIf="!defaultUserId && defaultDocumentType">Selecciona un paciente</span>
+              <span *ngIf="defaultUserId && !defaultDocumentType">Selecciona un tipo de documento</span>
+            </span>
+          </div>
 
         <div *ngIf="isUploading" class="processing-indicator">
           <span class="processing-text">Subiendo</span>
@@ -181,8 +200,8 @@ interface DocumentUpload {
                 <div class="file-name">{{ truncateFilename(upload.file.name, 60) }}</div>
                 <div class="file-meta">
                   <span class="file-size">{{ getFileSize(upload.file.size) }}</span>
-                  <span class="file-type-badge type-DOC">
-                    {{ upload.description || 'DOC' }}
+                  <span class="file-type-badge" [class]="'type-' + upload.document_type.toLowerCase()">
+                    {{ getDocumentTypeLabel(upload.document_type) }}
                   </span>
                   <span class="file-patient">{{ upload.user_id }}</span>
                 </div>
@@ -480,6 +499,11 @@ interface DocumentUpload {
             border-color: rgb(var(--color-blue-tec));
             box-shadow: 0 0 0 2px rgba(var(--color-blue-tec), 0.2);
           }
+
+          option[value=""] {
+            color: var(--general_contrasts-50);
+            font-style: italic;
+          }
         }
       }
     }
@@ -655,12 +679,6 @@ interface DocumentUpload {
             letter-spacing: 0.5px;
             border: 1px solid rgba(var(--color-blue-tec), 0.2);
 
-          &.type-DOC {
-            background: rgba(var(--color-blue-tec), 0.15);
-            color: rgb(var(--color-blue-tec));
-            border-color: rgba(var(--color-blue-tec), 0.3);
-          }
-
           &.type-CONS {
             background: rgba(76, 175, 80, 0.15);
             color: #2e7d32;
@@ -671,6 +689,54 @@ interface DocumentUpload {
             background: rgba(255, 152, 0, 0.15);
             color: #ef6c00;
             border-color: rgba(255, 152, 0, 0.3);
+          }
+
+          &.type-LAB {
+            background: rgba(33, 150, 243, 0.15);
+            color: #1976d2;
+            border-color: rgba(33, 150, 243, 0.3);
+          }
+
+          &.type-RAD {
+            background: rgba(156, 39, 176, 0.15);
+            color: #7b1fa2;
+            border-color: rgba(156, 39, 176, 0.3);
+          }
+
+          &.type-CIR {
+            background: rgba(244, 67, 54, 0.15);
+            color: #d32f2f;
+            border-color: rgba(244, 67, 54, 0.3);
+          }
+
+          &.type-INT {
+            background: rgba(255, 193, 7, 0.15);
+            color: #f57c00;
+            border-color: rgba(255, 193, 7, 0.3);
+          }
+
+          &.type-HOSP {
+            background: rgba(103, 58, 183, 0.15);
+            color: #512da8;
+            border-color: rgba(103, 58, 183, 0.3);
+          }
+
+          &.type-FARM {
+            background: rgba(0, 150, 136, 0.15);
+            color: #00695c;
+            border-color: rgba(0, 150, 136, 0.3);
+          }
+
+          &.type-IMAGEN {
+            background: rgba(96, 125, 139, 0.15);
+            color: #455a64;
+            border-color: rgba(96, 125, 139, 0.3);
+          }
+
+          &.type-REPORTE {
+            background: rgba(121, 85, 72, 0.15);
+            color: #5d4037;
+            border-color: rgba(121, 85, 72, 0.3);
           }
           }
 
@@ -951,11 +1017,6 @@ interface DocumentUpload {
                     font-size: 0.8rem !important;
                     padding: var(--bmb-spacing-xs) !important;
 
-              &.type-DOC {
-                background: rgba(var(--color-blue-tec), 0.15) !important;
-                color: rgb(var(--color-blue-tec)) !important;
-              }
-
               &.type-CONS {
                 background: rgba(76, 175, 80, 0.15) !important;
                 color: #2e7d32 !important;
@@ -964,6 +1025,46 @@ interface DocumentUpload {
               &.type-EMER {
                 background: rgba(255, 152, 0, 0.15) !important;
                 color: #ef6c00 !important;
+              }
+
+              &.type-LAB {
+                background: rgba(33, 150, 243, 0.15) !important;
+                color: #1976d2 !important;
+              }
+
+              &.type-RAD {
+                background: rgba(156, 39, 176, 0.15) !important;
+                color: #7b1fa2 !important;
+              }
+
+              &.type-CIR {
+                background: rgba(244, 67, 54, 0.15) !important;
+                color: #d32f2f !important;
+              }
+
+              &.type-INT {
+                background: rgba(255, 193, 7, 0.15) !important;
+                color: #f57c00 !important;
+              }
+
+              &.type-HOSP {
+                background: rgba(103, 58, 183, 0.15) !important;
+                color: #512da8 !important;
+              }
+
+              &.type-FARM {
+                background: rgba(0, 150, 136, 0.15) !important;
+                color: #00695c !important;
+              }
+
+              &.type-IMAGEN {
+                background: rgba(96, 125, 139, 0.15) !important;
+                color: #455a64 !important;
+              }
+
+              &.type-REPORTE {
+                background: rgba(121, 85, 72, 0.15) !important;
+                color: #5d4037 !important;
               }
                   }
 
@@ -1214,6 +1315,81 @@ interface DocumentUpload {
       }
     }
 
+    .loading-patients-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--bmb-spacing-xs);
+      padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
+      background: rgba(var(--color-blue-tec), 0.1);
+      border: 1px solid rgba(var(--color-blue-tec), 0.3);
+      border-radius: var(--bmb-radius-s);
+      color: rgb(var(--color-blue-tec));
+      font-size: 0.875rem;
+      font-weight: 500;
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+
+      .loading-icon {
+        font-size: 1.125rem;
+      }
+
+      .loading-text {
+        line-height: 1.4;
+      }
+    }
+
+    .no-patients-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--bmb-spacing-xs);
+      padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
+      background: rgba(255, 152, 0, 0.1);
+      border: 1px solid rgba(255, 152, 0, 0.3);
+      border-radius: var(--bmb-radius-s);
+      color: #ef6c00;
+      font-size: 0.875rem;
+      font-weight: 500;
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+
+      .warning-icon {
+        font-size: 1.125rem;
+      }
+
+      .warning-text {
+        line-height: 1.4;
+      }
+    }
+
+    .validation-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--bmb-spacing-xs);
+      padding: var(--bmb-spacing-m) var(--bmb-spacing-l);
+      background: rgba(33, 150, 243, 0.1);
+      border: 1px solid rgba(33, 150, 243, 0.3);
+      border-radius: var(--bmb-radius-s);
+      color: #1976d2;
+      font-size: 0.875rem;
+      font-weight: 500;
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+
+      .info-icon {
+        font-size: 1.125rem;
+      }
+
+      .info-text {
+        line-height: 1.4;
+      }
+    }
+
     /* Processing dots animation */
     .processing-dots {
       display: flex;
@@ -1263,21 +1439,37 @@ export class DocumentUploadComponent implements OnInit {
   selectedFiles: File[] = [];
   uploads: DocumentUpload[] = [];
 
-
-  defaultUserId: string = 'pedro';
-  defaultDescription: string = '';
-  defaultTags: string = '';
+    defaultUserId: string = '';
+  defaultDocumentType: string = '';
 
   isDragOver = false;
   isUploading = false;
+  isLoadingPatients = true;
 
   recentPatients: Patient[] = [];
 
+  documentTypes = [
+    { value: 'CONS', label: 'Consulta', description: 'Historia Clínica' },
+    { value: 'EMER', label: 'Emergencia', description: 'Atención de Emergencia' },
+    { value: 'LAB', label: 'Laboratorio', description: 'Estudios de Laboratorio' },
+    { value: 'RAD', label: 'Radiología', description: 'Estudios Radiológicos' },
+    { value: 'CIR', label: 'Cirugía', description: 'Procedimientos Quirúrgicos' },
+    { value: 'INT', label: 'Interconsulta', description: 'Consulta con Especialista' },
+    { value: 'HOSP', label: 'Hospitalización', description: 'Expediente de Hospitalización' },
+    { value: 'FARM', label: 'Farmacia', description: 'Recetas y Medicamentos' },
+    { value: 'IMAGEN', label: 'Imagen Médica', description: 'Ultrasonidos, Resonancias, TAC' },
+    { value: 'REPORTE', label: 'Reporte Médico', description: 'Reportes y Dictámenes' }
+  ];
+
   ngOnInit(): void {
-    // Load recent patients
+        // Load recent patients
     this.medicalStateService.recentPatients$.subscribe(patients => {
       this.recentPatients = patients;
+      this.isLoadingPatients = false;
       console.log('📋 Loaded patients for upload:', patients.length);
+
+      // Clear default patient - user must select explicitly
+      this.defaultUserId = '';
     });
   }
 
@@ -1314,8 +1506,7 @@ export class DocumentUploadComponent implements OnInit {
         const upload: DocumentUpload = {
           file,
           user_id: this.defaultUserId,
-          description: this.defaultDescription,
-          tags: this.defaultTags,
+          document_type: this.defaultDocumentType,
           status: 'pending'
         };
 
@@ -1348,7 +1539,7 @@ export class DocumentUploadComponent implements OnInit {
   }
 
   async startUpload(): Promise<void> {
-    if (!this.defaultUserId || this.isUploading) return;
+    if (!this.defaultUserId || !this.defaultDocumentType || this.isUploading) return;
 
     this.isUploading = true;
     console.log(`🚀 Starting upload of ${this.uploads.length} files`);
@@ -1372,8 +1563,7 @@ export class DocumentUploadComponent implements OnInit {
       const formData = new FormData();
       formData.append('file', upload.file);
       formData.append('user_id', upload.user_id);
-      formData.append('description', upload.description);
-      formData.append('tags', upload.tags);
+      formData.append('document_type', upload.document_type);
 
       const result = await this.apiService.uploadDocument(formData).toPromise();
 
@@ -1432,6 +1622,11 @@ export class DocumentUploadComponent implements OnInit {
   getPatientName(patientId: string): string {
     const patient = this.recentPatients.find(p => p.id === patientId);
     return patient ? patient.name : patientId;
+  }
+
+  getDocumentTypeLabel(documentType: string): string {
+    const type = this.documentTypes.find(t => t.value === documentType);
+    return type ? type.label : documentType;
   }
 
 
