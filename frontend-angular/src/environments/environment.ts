@@ -30,7 +30,7 @@ export const environment = {
   production: false,
 
   /** Local development API server URL */
-  apiUrl: 'http://localhost:8000',
+  apiUrl: 'http://localhost:3000',
 
   /** Extended timeout for development (30 seconds) */
   apiTimeout: 30000,

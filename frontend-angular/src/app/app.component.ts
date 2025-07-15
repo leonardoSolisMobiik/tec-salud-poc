@@ -150,8 +150,15 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
             <div class="patients-list" *ngIf="!recentPatientsCollapsed || searchQuery">
               <!-- Loading -->
               <div *ngIf="isSearching" class="loading-state">
-                <div class="loading-spinner"></div>
-                <p>Buscando pacientes...</p>
+                <div class="loading-container">
+                  <div class="loading-spinner">
+                    <div class="spinner"></div>
+                  </div>
+                  <div class="loading-text">
+                    <h3>🔄 Buscando pacientes...</h3>
+                    <p>Consultando base de datos</p>
+                  </div>
+                </div>
               </div>
 
               <!-- Error -->

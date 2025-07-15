@@ -3,40 +3,21 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-
-/**
- * Interface for Quick Pill data structure
- *
- * @interface QuickPillData
- * @description Defines the structure for quick pill items with unique ID,
- * text content, visual icon, category classification, and priority level.
- */
-interface QuickPillData {
-  /** Unique identifier for the pill */
-  id: string;
-
-  /** Text content or question template */
-  text: string;
-
-  /** Icon emoji for visual representation */
-  icon: string;
-
-  /** Category classification (symptoms, diagnosis, etc.) */
-  category: string;
-
-  /** Priority level (high, medium, low) */
-  priority: string;
-}
+import { takeUntil, finalize } from 'rxjs/operators';
+import { PillsService } from '@core/services';
+import { Pill, CreatePillRequest } from '@core/models';
 
 /**
  * Interface for pill form data
  *
  * @interface PillFormData
  * @description Structure for form input data when creating or editing pills.
- * Similar to QuickPillData but without ID (generated automatically).
+ * Extends CreatePillRequest with optional fields for editing.
  */
 interface PillFormData {
+  /** Initial starter text or template */
+  starter: string;
+
   /** Text content or question template */
   text: string;
 
@@ -46,8 +27,8 @@ interface PillFormData {
   /** Category classification */
   category: string;
 
-  /** Priority level */
-  priority: string;
+  /** Priority level (1 = highest priority) */
+  priority: number;
 }
 
 /**
@@ -131,14 +112,27 @@ interface PillFormData {
         <div class="pills-section">
           <div class="section-header">
             <h3 class="section-title">💊 Pastillas Disponibles</h3>
-            <button class="add-btn secondary" (click)="openCreateModal()">
-              <span class="btn-icon">➕</span>
-              <span class="btn-text">Nueva Pastilla</span>
+            <button class="add-btn secondary" [disabled]="isLoading" (click)="openCreateModal()">
+              <span class="btn-icon">{{ isLoading ? '⏳' : '➕' }}</span>
+              <span class="btn-text">{{ isLoading ? 'Cargando...' : 'Nueva Pastilla' }}</span>
             </button>
           </div>
 
+          <!-- Loading State -->
+          <div class="loading-state" *ngIf="isLoading">
+            <div class="loading-container">
+              <div class="loading-spinner">
+                <div class="spinner"></div>
+              </div>
+              <div class="loading-text">
+                <h3>🔄 Cargando pastillas...</h3>
+                <p>Obteniendo datos del servidor</p>
+              </div>
+            </div>
+          </div>
+
           <!-- Premium Pills List -->
-          <div class="pills-list" *ngIf="pills.length > 0">
+          <div class="pills-list" *ngIf="!isLoading && pills.length > 0">
             <div
               *ngFor="let pill of pills; trackBy: trackByPill"
               class="pill-item"
@@ -150,6 +144,7 @@ interface PillFormData {
                   <span class="pill-icon">{{ pill.icon }}</span>
                 </div>
                 <div class="pill-content">
+                  <div class="pill-starter">{{ pill.starter }}</div>
                   <div class="pill-text">{{ pill.text }}</div>
                   <div class="pill-meta">
                     <span class="category-badge" [class]="'category-' + pill.category">
@@ -183,8 +178,19 @@ interface PillFormData {
             </div>
           </div>
 
+          <!-- Error State -->
+          <div class="error-state" *ngIf="!isLoading && errorMessage">
+            <div class="error-icon">⚠️</div>
+            <h3 class="error-title">Error al cargar pastillas</h3>
+            <p class="error-subtitle">{{ errorMessage }}</p>
+            <button class="error-action-btn" (click)="loadPillsFromAPI()">
+              <span class="btn-icon">🔄</span>
+              <span class="btn-text">Reintentar</span>
+            </button>
+          </div>
+
           <!-- Empty State -->
-          <div class="empty-state" *ngIf="pills.length === 0">
+          <div class="empty-state" *ngIf="!isLoading && !errorMessage && pills.length === 0">
             <div class="empty-icon">💊</div>
             <h3 class="empty-title">No hay pastillas configuradas</h3>
             <p class="empty-subtitle">Crea tu primera pastilla para empezar a configurar preguntas rápidas</p>
@@ -205,7 +211,20 @@ interface PillFormData {
           </div>
 
           <div class="modal-body">
-            <form class="modal-form" (ngSubmit)="savePill()" #pillForm="ngForm">
+            <form class="modal-form" (ngSubmit)="savePill(); $event.preventDefault();" #pillForm="ngForm">
+              <div class="form-group">
+                <label class="form-label" for="pillStarter">Texto inicial: *</label>
+                <input
+                  type="text"
+                  id="pillStarter"
+                  name="pillStarter"
+                  [(ngModel)]="formData.starter"
+                  required
+                  maxlength="50"
+                  placeholder="Ej: Diagnóstico, Síntomas, Medicamentos"
+                  class="form-input">
+              </div>
+
               <div class="form-group">
                 <label class="form-label" for="pillText">Texto de la pregunta: *</label>
                 <input
@@ -268,9 +287,9 @@ interface PillFormData {
                     [(ngModel)]="formData.priority"
                     required
                     class="form-select">
-                    <option value="high">Alta</option>
-                    <option value="medium">Media</option>
-                    <option value="low">Baja</option>
+                    <option [value]="1">Alta (1)</option>
+                    <option [value]="2">Media (2)</option>
+                    <option [value]="3">Baja (3)</option>
                   </select>
                 </div>
               </div>
@@ -282,7 +301,7 @@ interface PillFormData {
               <span>❌</span>
               <span>Cancelar</span>
             </button>
-            <button type="submit" class="btn btn-primary" [disabled]="!pillForm.valid" (click)="savePill()">
+            <button type="button" class="btn btn-primary" [disabled]="!pillForm.valid" (click)="savePill()">
               <span>💾</span>
               <span>Guardar</span>
             </button>
@@ -330,7 +349,30 @@ interface PillFormData {
     .admin-content {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 var(--bmb-spacing-l);
+      padding: var(--bmb-spacing-m) var(--bmb-spacing-l) calc(var(--bmb-spacing-xxl) * 2) var(--bmb-spacing-l);
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+      box-sizing: border-box;
+
+      /* Custom scrollbar styling */
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: var(--general_contrasts-container-outline);
+        border-radius: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: rgba(var(--color-blue-tec), 0.3);
+        border-radius: 4px;
+        transition: all 0.3s ease;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: rgba(var(--color-blue-tec), 0.5);
+      }
     }
 
     .pills-section {
@@ -414,6 +456,18 @@ interface PillFormData {
           }
         }
 
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          transform: none !important;
+          box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.1) !important;
+
+          &:hover {
+            transform: none !important;
+            background: var(--general_contrasts-surface) !important;
+          }
+        }
+
         .btn-icon {
           font-size: var(--text-base);
         }
@@ -424,7 +478,7 @@ interface PillFormData {
       }
     }
 
-    /* 📋 PREMIUM PILLS LIST */
+        /* 📋 PREMIUM PILLS LIST */
     .pills-list {
       display: flex;
       flex-direction: column;
@@ -479,6 +533,16 @@ interface PillFormData {
       .pill-content {
         flex: 1;
         min-width: 0;
+
+        .pill-starter {
+          font-size: var(--text-sm);
+          font-weight: var(--font-bold);
+          color: rgb(var(--color-blue-tec));
+          margin-bottom: var(--bmb-spacing-xxs);
+          text-transform: capitalize;
+          opacity: 0.9;
+          letter-spacing: 0.25px;
+        }
 
         .pill-text {
           font-size: var(--text-lg);
@@ -602,6 +666,120 @@ interface PillFormData {
             border-color: rgba(244, 67, 54, 0.4);
             transform: translateY(-1px);
           }
+        }
+      }
+    }
+
+    /* 🔄 LOADING STATE */
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: var(--bmb-spacing-xxl) var(--bmb-spacing-l);
+      min-height: 300px;
+
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--bmb-spacing-l);
+      }
+
+      .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(var(--color-blue-tec), 0.1);
+          border-left: 4px solid rgba(var(--color-blue-tec), 1);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      }
+
+      .loading-text {
+        text-align: center;
+
+        h3 {
+          font-size: var(--text-xl);
+          font-weight: var(--font-bold);
+          color: var(--general_contrasts-text-primary);
+          margin: 0 0 var(--bmb-spacing-s) 0;
+          font-family: var(--font-display);
+        }
+
+        p {
+          font-size: var(--text-lg);
+          color: var(--general_contrasts-text-secondary);
+          margin: 0;
+          line-height: var(--leading-relaxed);
+        }
+      }
+    }
+
+    /* ⚠️ ERROR STATE */
+    .error-state {
+      text-align: center;
+      padding: var(--bmb-spacing-xxl) var(--bmb-spacing-l);
+
+      .error-icon {
+        font-size: 4rem;
+        margin-bottom: var(--bmb-spacing-l);
+        opacity: 0.8;
+      }
+
+      .error-title {
+        font-size: var(--text-xl);
+        font-weight: var(--font-bold);
+        color: var(--status-error);
+        margin: 0 0 var(--bmb-spacing-s) 0;
+        font-family: var(--font-display);
+      }
+
+      .error-subtitle {
+        font-size: var(--text-lg);
+        color: var(--general_contrasts-text-secondary);
+        margin: 0 0 var(--bmb-spacing-l) 0;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: var(--leading-relaxed);
+      }
+
+      .error-action-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--bmb-spacing-s);
+        padding: var(--bmb-spacing-m) var(--bmb-spacing-xl);
+        background: linear-gradient(135deg,
+          var(--status-error) 0%,
+          rgba(var(--status-error), 0.9) 100%
+        );
+        color: white;
+        border: none;
+        border-radius: var(--bmb-radius-m);
+        font-size: var(--text-lg);
+        font-weight: var(--font-semibold);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin: 0 auto;
+        box-shadow: 0 4px 12px rgba(var(--status-error), 0.3);
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(var(--status-error), 0.4);
+        }
+
+        .btn-icon {
+          font-size: var(--text-lg);
         }
       }
     }
@@ -787,8 +965,14 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
   /** Subject for managing component subscriptions cleanup */
   private destroy$ = new Subject<void>();
 
+  /** Loading state */
+  isLoading = false;
+
+  /** Error message */
+  errorMessage: string | null = null;
+
   /** Array of quick pill data items */
-  pills: QuickPillData[] = [];
+  pills: Pill[] = [];
 
   /** Form modal visibility state */
   showFormModal = false;
@@ -800,17 +984,18 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
   isEditMode = false;
 
   /** Reference to pill being deleted */
-  pillToDelete: QuickPillData | null = null;
+  pillToDelete: Pill | null = null;
 
   /** ID of pill being edited */
   editingPillId: string | null = null;
 
   /** Form data for creating/editing pills */
   formData: PillFormData = {
+    starter: '',
     text: '',
     icon: '',
     category: '',
-    priority: ''
+    priority: 1  // Default to medium priority
   };
 
   /** Available medical icons for pill selection */
@@ -821,7 +1006,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    *
    * @description Initializes the component with default form state
    */
-  constructor() {}
+  constructor(private pillsService: PillsService) {}
 
   /**
    * Component initialization lifecycle hook
@@ -829,7 +1014,8 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    * @description Loads existing pills from localStorage on component initialization
    */
   ngOnInit(): void {
-    this.loadPills();
+    this.loadPillsFromAPI();
+    this.setupSubscriptions();
   }
 
   /**
@@ -843,21 +1029,64 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads pills from mock data
+   * Loads pills from API
+   *
+   * @description Fetches pills from the backend API and updates local state
+   */
+  loadPillsFromAPI(): void {
+    // Clear previous error state
+    this.errorMessage = null;
+    this.pillsService.loadPills(100, 0)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (loadedPills) => {
+          this.pills = loadedPills;
+          console.log('✅ Pills cargados exitosamente:', this.pills);
+        },
+        error: (error) => {
+          console.error('❌ Error cargando pills:', error);
+          this.errorMessage = 'Error al cargar las pastillas';
+        }
+      });
+  }
+
+  /**
+   * Sets up component subscriptions
+   *
+   * @private
+   * @description Establishes reactive subscriptions for loading and error states
+   */
+  private setupSubscriptions(): void {
+    // Subscribe to loading state
+    this.pillsService.loading$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(loading => {
+        this.isLoading = loading;
+      });
+
+    // Subscribe to error state
+    this.pillsService.error$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(error => {
+        this.errorMessage = error;
+      });
+  }
+
+  /**
+   * Loads mock data as fallback
    *
    * @private
    * @description Initializes the pills array with default medical templates
-   * for demonstration purposes. In production, this would load from a service or API.
+   * when API is not available.
    */
-  private loadPills(): void {
-    // Mock data - reutiliza las pastillas del servicio existente
+  private loadMockData(): void {
     this.pills = [
-      { id: 'q1', text: 'Realizar diagnóstico inicial', icon: '🩺', category: 'diagnosis', priority: 'high' },
-      { id: 'q2', text: 'Revisar medicamentos', icon: '💊', category: 'medication', priority: 'medium' },
-      { id: 'q3', text: 'Analizar síntomas', icon: '📋', category: 'symptoms', priority: 'high' },
-      { id: 'q4', text: 'Recomendar especialista', icon: '🏥', category: 'treatment', priority: 'medium' },
-      { id: 'q5', text: 'Evalúa la urgencia de este caso', icon: '🚨', category: 'emergency', priority: 'high' },
-      { id: 'q6', text: 'Qué exámenes clínicos recomiendas', icon: '🔬', category: 'tests', priority: 'medium' }
+      { id: 'q1', starter: 'Diagnóstico', text: 'Realizar diagnóstico inicial', icon: '🩺', category: 'diagnosis', priority: 1 },
+      { id: 'q2', starter: 'Medicamentos', text: 'Revisar medicamentos', icon: '💊', category: 'medication', priority: 2 },
+      { id: 'q3', starter: 'Síntomas', text: 'Analizar síntomas', icon: '📋', category: 'symptoms', priority: 1 },
+      { id: 'q4', starter: 'Especialista', text: 'Recomendar especialista', icon: '🏥', category: 'treatment', priority: 2 },
+      { id: 'q5', starter: 'Urgencia', text: 'Evalúa la urgencia de este caso', icon: '🚨', category: 'emergency', priority: 1 },
+      { id: 'q6', starter: 'Exámenes', text: 'Qué exámenes clínicos recomiendas', icon: '🔬', category: 'tests', priority: 2 }
     ];
   }
 
@@ -878,6 +1107,8 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     this.showFormModal = true;
   }
 
+
+
   /**
    * Opens the edit pill modal
    *
@@ -891,15 +1122,21 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    * this.openEditModal(existingPill); // Opens modal for editing
    * ```
    */
-  openEditModal(pill: QuickPillData): void {
+  openEditModal(pill: Pill): void {
     this.isEditMode = true;
-    this.editingPillId = pill.id;
+    this.editingPillId = pill.id || (pill as any).pill_id || null;
     this.formData = {
+      starter: pill.starter,
       text: pill.text,
       icon: pill.icon,
       category: pill.category,
-      priority: pill.priority
+      priority: Number(pill.priority) // Ensure it's a number
     };
+
+    console.log('✏️ Opening edit modal for pill:', pill);
+    console.log('✏️ Form data loaded:', this.formData);
+    console.log('✏️ Priority type after load:', typeof this.formData.priority);
+
     this.showFormModal = true;
   }
 
@@ -916,7 +1153,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    * this.openDeleteModal(pillToDelete); // Opens delete confirmation
    * ```
    */
-  openDeleteModal(pill: QuickPillData): void {
+  openDeleteModal(pill: Pill): void {
     this.pillToDelete = pill;
     this.showDeleteModal = true;
   }
@@ -949,10 +1186,11 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    */
   private resetForm(): void {
     this.formData = {
+      starter: '',
       text: '',
       icon: '',
       category: '',
-      priority: ''
+      priority: 1
     };
     this.editingPillId = null;
   }
@@ -985,32 +1223,106 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    * ```
    */
   savePill(): void {
+    console.log('🔥 savePill() method called!');
+    console.log('🔥 Current formData:', this.formData);
+    console.log('🔥 isEditMode:', this.isEditMode);
+    console.log('🔥 editingPillId:', this.editingPillId);
+
+    // Clear previous errors
+    this.errorMessage = null;
+
+    // Validate form data
+    if (!this.formData.starter.trim() || !this.formData.text.trim()) {
+      console.log('❌ Validation failed: Missing required fields');
+      this.errorMessage = 'Por favor completa todos los campos requeridos';
+      return;
+    }
+
+    // Convert priority to number if it's a string
+    this.formData.priority = Number(this.formData.priority);
+
+    // Validate priority is a valid number
+    if (isNaN(this.formData.priority) || this.formData.priority < 0) {
+      console.log('❌ Validation failed: Invalid priority');
+      this.errorMessage = 'La prioridad debe ser un número válido';
+      return;
+    }
+
+    console.log('✅ Validation passed');
+    console.log('💊 FormData before processing:', this.formData);
+    console.log('💊 Priority type:', typeof this.formData.priority, 'Value:', this.formData.priority);
+
     if (this.isEditMode && this.editingPillId) {
-      // Update existing pill (mock)
-      const index = this.pills.findIndex(p => p.id === this.editingPillId);
-      if (index !== -1) {
-        this.pills[index] = {
-          ...this.pills[index],
-          text: this.formData.text,
-          icon: this.formData.icon,
-          category: this.formData.category,
-          priority: this.formData.priority
-        };
-      }
+      // Update existing pill via API
+      const updateData = {
+        id: this.editingPillId,
+        starter: this.formData.starter.trim(),
+        text: this.formData.text.trim(),
+        icon: this.formData.icon,
+        category: this.formData.category,
+        priority: this.formData.priority,
+        is_active: true
+      };
+
+      console.log('✏️ Updating pill with data:', updateData);
+
+      this.pillsService.updatePill(updateData)
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            console.log('🔄 finalize() called for update operation');
+            this.closeFormModal();
+          })
+        )
+        .subscribe({
+          next: (updatedPill) => {
+            console.log('✅ Pill updated successfully:', updatedPill);
+            // Reload pills from API to show the updated pill
+            this.loadPillsFromAPI();
+            // Pills state is automatically updated by service
+          },
+          error: (error) => {
+            console.error('❌ Error updating pill:', error);
+            this.errorMessage = `Error al actualizar: ${error.message}`;
+          }
+        });
     } else {
-      // Create new pill (mock)
-      const newPill: QuickPillData = {
-        id: 'q' + (this.pills.length + 1),
-        text: this.formData.text,
+      // Create new pill via API
+      const createData: CreatePillRequest = {
+        starter: this.formData.starter.trim(),
+        text: this.formData.text.trim(),
         icon: this.formData.icon,
         category: this.formData.category,
         priority: this.formData.priority
       };
-      this.pills.push(newPill);
+
+      this.pillsService.createPill(createData)
+        .pipe(
+          takeUntil(this.destroy$),
+          finalize(() => {
+            console.log('🔄 finalize() called for create operation');
+            this.closeFormModal();
+          })
+        )
+        .subscribe({
+          next: (newPill) => {
+            console.log('✅ Pill created successfully:', newPill);
+            // Reload pills from API to show the new pill
+            this.loadPillsFromAPI();
+            // Close modal
+            this.closeFormModal();
+          },
+          error: (error) => {
+            console.error('❌ Error creating pill:', error);
+            this.errorMessage = `Error al crear: ${error.message}`;
+          }
+        });
     }
 
-    this.closeFormModal();
+    console.log('🔚 savePill() method finished executing');
   }
+
+
 
   /**
    * Confirms and executes pill deletion
@@ -1023,11 +1335,43 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    * ```
    */
   confirmDelete(): void {
-    if (this.pillToDelete) {
-      // Delete pill (mock)
-      this.pills = this.pills.filter(p => p.id !== this.pillToDelete!.id);
-      this.closeDeleteModal();
+    console.log('🔥 confirmDelete() called');
+    console.log('📋 pillToDelete:', this.pillToDelete);
+
+    if (!this.pillToDelete) {
+      console.error('❌ No pill to delete');
+      return;
     }
+
+    // Check for both id and pill_id fields (API inconsistency)
+    const pillId = this.pillToDelete.id || (this.pillToDelete as any).pill_id;
+    if (!pillId) {
+      console.error('❌ Pill has no ID or pill_id:', this.pillToDelete);
+      return;
+    }
+
+    console.log('🚀 Starting deletion of pill:', pillId);
+
+    this.pillsService.deletePill(pillId)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          console.log('🏁 Delete operation finished, closing modal');
+          this.closeDeleteModal();
+        })
+      )
+      .subscribe({
+        next: (message) => {
+          console.log('✅ Pill deleted successfully:', message);
+          // Reload pills from API to reflect the deletion
+          this.loadPillsFromAPI();
+          // Pills state is automatically updated by service
+        },
+        error: (error) => {
+          console.error('❌ Error deleting pill:', error);
+          this.errorMessage = `Error al eliminar: ${error.message}`;
+        }
+      });
   }
 
   /**
@@ -1070,13 +1414,13 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    * this.getPriorityLabel('high'); // Returns "Alta"
    * ```
    */
-  getPriorityLabel(priority: string): string {
-    const labels: { [key: string]: string } = {
-      'high': 'Alta',
-      'medium': 'Media',
-      'low': 'Baja'
+  getPriorityLabel(priority: number): string {
+    const labels: { [key: number]: string } = {
+      1: 'Alta',
+      2: 'Media',
+      3: 'Baja'
     };
-    return labels[priority] || priority;
+    return labels[priority] || 'Media';
   }
 
   /**
@@ -1088,8 +1432,9 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    *
    * @description Helps Angular track pills for efficient DOM updates
    */
-  trackByPill(index: number, pill: QuickPillData): string {
-    return pill.id;
+  trackByPill(index: number, pill: Pill): string {
+    const pillId = pill.id || (pill as any).pill_id;
+    return pillId || `pill-${index}`;
   }
 
   /**

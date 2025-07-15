@@ -164,8 +164,15 @@ import { Patient } from '../../../core/models/patient.model';
 
       <!-- Loading state -->
       <div *ngIf="isLoading" class="loading-state">
-        <div class="loading-spinner"></div>
-        <p>Cargando expedientes...</p>
+        <div class="loading-container">
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+          </div>
+          <div class="loading-text">
+            <h3>🔄 Cargando expedientes...</h3>
+            <p>Obteniendo documentos del paciente</p>
+          </div>
+        </div>
       </div>
     </div>
   `,
@@ -623,28 +630,54 @@ import { Patient } from '../../../core/models/patient.model';
     }
 
 
-    /* Loading state */
+    /* 🔄 LOADING STATE */
     .loading-state {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      padding: var(--bmb-spacing-xl, 2rem);
+      align-items: center;
+      padding: var(--bmb-spacing-xxl, 2.5rem) var(--bmb-spacing-l, 1.5rem);
+      min-height: 200px;
 
-      .loading-spinner {
-        width: 32px;
-        height: 32px;
-        border: 3px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
-        border-top: 3px solid var(--color-blue-tec, #0066cc);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-bottom: var(--bmb-spacing-m, 1rem);
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--bmb-spacing-l, 1.5rem);
       }
 
-      p {
-        color: var(--general_contrasts-75, #6b7280);
-        margin: 0;
+      .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
+          border-left: 4px solid rgba(var(--color-blue-tec, 0, 57, 166), 1);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+      }
+
+      .loading-text {
+        text-align: center;
+
+        h3 {
+          font-size: var(--text-xl, 1.25rem);
+          font-weight: var(--font-bold, 700);
+          color: var(--general_contrasts-text-primary, #111827);
+          margin: 0 0 var(--bmb-spacing-s, 0.5rem) 0;
+          font-family: var(--font-display, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+        }
+
+        p {
+          font-size: var(--text-lg, 1.125rem);
+          color: var(--general_contrasts-text-secondary, #6b7280);
+          margin: 0;
+          line-height: var(--leading-relaxed, 1.625);
+        }
       }
     }
 

@@ -1861,28 +1861,54 @@ body .app-container .main-panel .main-header .header-actions .nav-dropdown-conta
   padding: var(--bmb-spacing-m, 1rem) !important;
 }
 
-/* 📋 LOADING STATES - USANDO TOKENS BAMBOO */
+/* 🔄 LOADING STATES - HOMOLOGADO */
 .loading-state {
   display: flex !important;
-  flex-direction: column !important;
+  justify-content: center !important;
   align-items: center !important;
-  padding: var(--bmb-spacing-l, 1.5rem) !important;
-  gap: var(--bmb-spacing-s, 0.75rem) !important;
+  padding: var(--bmb-spacing-xxl, 2.5rem) var(--bmb-spacing-l, 1.5rem) !important;
+  min-height: 150px !important;
 
-  .loading-spinner {
-    width: 32px !important;
-    height: 32px !important;
-    border: 3px solid var(--general_contrasts-container-outline, #e5e7eb) !important;
-    border-top: 3px solid var(--color-blue-tec, #0066cc) !important;
-    border-radius: 50% !important;
-    animation: bamboo-spin 1s linear infinite !important;
+  .loading-container {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: var(--bmb-spacing-l, 1.5rem) !important;
   }
 
-  p {
-    color: var(--general_contrasts-75, #6b7280) !important;
-    font-size: 0.875rem !important;
-    margin: 0 !important;
-    font-family: var(--font-display, 'Poppins', sans-serif) !important;
+  .loading-spinner {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+
+    .spinner {
+      width: 48px !important;
+      height: 48px !important;
+      border: 4px solid rgba(var(--color-blue-tec), 0.1) !important;
+      border-left: 4px solid rgba(var(--color-blue-tec), 1) !important;
+      border-radius: 50% !important;
+      animation: bamboo-spin 1s linear infinite !important;
+    }
+  }
+
+  .loading-text {
+    text-align: center !important;
+
+    h3 {
+      font-size: var(--text-xl, 1.25rem) !important;
+      font-weight: var(--font-bold, 700) !important;
+      color: var(--general_contrasts-text-primary, #111827) !important;
+      margin: 0 0 var(--bmb-spacing-s, 0.5rem) 0 !important;
+      font-family: var(--font-display, 'Poppins', sans-serif) !important;
+    }
+
+    p {
+      font-size: var(--text-lg, 1.125rem) !important;
+      color: var(--general_contrasts-text-secondary, #6b7280) !important;
+      margin: 0 !important;
+      line-height: var(--leading-relaxed, 1.625) !important;
+      font-family: var(--font-display, 'Poppins', sans-serif) !important;
+    }
   }
 }
 

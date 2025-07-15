@@ -274,8 +274,15 @@ interface SearchResult {
 
         <!-- Loading State -->
         <div *ngIf="isLoading" class="loading-state">
-          <div class="loading-icon">⏳</div>
-          <p>Cargando documentos...</p>
+          <div class="loading-container">
+            <div class="loading-spinner">
+              <div class="spinner"></div>
+            </div>
+            <div class="loading-text">
+              <h3>🔄 Cargando documentos...</h3>
+              <p>Obteniendo lista de expedientes</p>
+            </div>
+          </div>
         </div>
 
         <!-- Empty State -->
@@ -578,11 +585,67 @@ interface SearchResult {
       }
     }
 
-    .loading-state, .empty-state {
+    /* 🔄 LOADING STATE */
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: var(--bmb-spacing-xxl) var(--bmb-spacing-l);
+      min-height: 200px;
+
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--bmb-spacing-l);
+      }
+
+      .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .spinner {
+          width: 48px;
+          height: 48px;
+          border: 4px solid rgba(var(--color-blue-tec), 0.1);
+          border-left: 4px solid rgba(var(--color-blue-tec), 1);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      }
+
+      .loading-text {
+        text-align: center;
+
+        h3 {
+          font-size: var(--text-xl);
+          font-weight: var(--font-bold);
+          color: var(--general_contrasts-text-primary);
+          margin: 0 0 var(--bmb-spacing-s) 0;
+          font-family: var(--font-display);
+        }
+
+        p {
+          font-size: var(--text-lg);
+          color: var(--general_contrasts-text-secondary);
+          margin: 0;
+          line-height: var(--leading-relaxed);
+        }
+      }
+    }
+
+    /* 🚫 EMPTY STATE */
+    .empty-state {
       text-align: center;
       padding: var(--bmb-spacing-xxl);
 
-      .loading-icon, .empty-icon {
+      .empty-icon {
         font-size: 4rem;
         margin-bottom: var(--bmb-spacing-m);
         opacity: 0.6;

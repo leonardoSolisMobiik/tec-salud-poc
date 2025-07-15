@@ -33,6 +33,9 @@
 /** API communication service for backend integration */
 export * from './api.service';
 
+/** Pills management service for quick questions functionality */
+export * from './pills.service';
+
 /** Chat session management service for patient-document contexts */
 export * from './chat-session.service';
 
