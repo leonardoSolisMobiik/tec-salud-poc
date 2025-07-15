@@ -10,24 +10,104 @@ import { MedicalStateService } from '../../core/services/medical-state.service';
 import { Patient } from '../../core/models/patient.model';
 import { DocumentUploadResponse } from '../../core/models/api.model';
 
+/**
+ * Interface for processing type options configuration
+ *
+ * @interface ProcessingOption
+ * @description Defines the structure for document processing configuration options
+ * including display information and benefits for each processing type.
+ */
 interface ProcessingOption {
+  /** Unique identifier for the processing option */
   value: string;
+  /** Human-readable label for UI display */
   label: string;
+  /** Detailed description of the processing type */
   description: string;
+  /** Icon representation for visual identification */
   icon: string;
+  /** List of benefits or capabilities provided by this option */
   benefits: string[];
 }
 
+/**
+ * Interface for document upload tracking
+ *
+ * @interface DocumentUpload
+ * @description Structure for tracking individual document upload progress,
+ * status, and results during the batch upload process.
+ */
 interface DocumentUpload {
+  /** The file object being uploaded */
   file: File;
+  /** Patient ID for document association */
   user_id: string;
+  /** Medical document type classification */
   document_type: string;
+  /** Current upload status */
   status: 'pending' | 'uploading' | 'success' | 'error';
+  /** Error message if upload fails */
   error?: string;
+  /** Warning message for processing issues */
   warning?: string;
+  /** Upload result data from API response */
   result?: any;
 }
 
+/**
+ * Document Upload Component for TecSalud Medical Assistant
+ *
+ * @description Comprehensive document upload interface for medical files including
+ * drag-and-drop functionality, batch processing, patient assignment, document type
+ * classification, and processing type selection (vectorization, storage, hybrid).
+ *
+ * @example
+ * ```typescript
+ * // Accessed via routing
+ * // Route: '/documents'
+ *
+ * // Features include:
+ * // - Drag & drop multiple PDF files
+ * // - Patient assignment with search
+ * // - Document type classification
+ * // - Processing type selection
+ * // - Real-time upload progress
+ * // - Batch upload with individual tracking
+ * ```
+ *
+ * @features
+ * - **Drag & Drop Upload**: Intuitive file dropping with visual feedback
+ * - **Batch Processing**: Multiple files with individual progress tracking
+ * - **Patient Assignment**: Search and assign documents to specific patients
+ * - **Document Classification**: CONS, EMER, LAB, RAD, CIR, INT, HOSP types
+ * - **Processing Options**: Vectorization, storage, or hybrid processing
+ * - **Real-time Progress**: Individual file upload status and progress bars
+ * - **Error Handling**: Comprehensive error reporting and recovery
+ * - **File Validation**: Type, size, and format validation
+ *
+ * @processingTypes
+ * - **Semantic Search**: AI vectorization for intelligent content search
+ * - **Complete Storage**: Full document storage for comprehensive access
+ * - **Hybrid Processing**: Combined vectorization and storage (recommended)
+ *
+ * @documentTypes
+ * - CONS: Consulta (Medical Consultation)
+ * - EMER: Emergencia (Emergency)
+ * - LAB: Laboratorio (Laboratory Results)
+ * - RAD: Radiología (Radiology)
+ * - CIR: Cirugía (Surgery)
+ * - INT: Interconsulta (Consultation)
+ * - HOSP: Hospitalización (Hospitalization)
+ *
+ * @userInterface
+ * - Responsive design with mobile support
+ * - Professional medical styling
+ * - Progress indicators and status updates
+ * - Interactive patient search and selection
+ * - Processing type selector with recommendations
+ *
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-document-upload',
   standalone: true,

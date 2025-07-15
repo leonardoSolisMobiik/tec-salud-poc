@@ -229,12 +229,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
             <p class="main-subtitle">Asistente Virtual TecSalud</p>
           </div>
           <div class="header-actions">
-            <div *ngIf="activePatient" class="patient-context-horizontal">
-              <div class="patient-avatar-small">{{getPatientInitials(activePatient!)}}</div>
-              <span class="patient-name">{{activePatient!.name}}</span>
-              <span class="patient-separator">•</span>
-              <span class="patient-context">Contexto activo</span>
-              </div>
+
 
             <!-- ⚙️ NAVIGATION DROPDOWN - USANDO CLASES CSS CON TOKENS BAMBOO -->
             <div class="nav-dropdown-container">
@@ -338,6 +333,22 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Patient Context Bar (Nueva fila separada, sin superposición) -->
+        <div *ngIf="activePatient" class="patient-context-bar">
+          <div class="patient-context-content">
+            <div class="patient-avatar-context">{{getPatientInitials(activePatient!)}}</div>
+            <div class="patient-info">
+              <span class="patient-name-context">{{activePatient!.name}}</span>
+              <span class="patient-status">• Contexto activo</span>
+            </div>
+            <button class="clear-context-btn" (click)="clearPatientContext()" title="Limpiar contexto">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -1070,15 +1081,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   // Utility methods
-  getPatientInitials(patient: Patient): string {
-    return patient.name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase();
-  }
-
   trackPatient(index: number, patient: Patient): string {
     return patient.id;
   }
@@ -1129,6 +1131,31 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   getCurrentTime(): string {
     return new Date().toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'});
+  }
+
+  /**
+   * Gets patient initials for avatar display
+   * @param patient - Patient object
+   * @returns String with patient initials (e.g., "PJ" for Pedro Javier)
+   */
+  getPatientInitials(patient: Patient): string {
+    if (!patient || !patient.name) return '??';
+
+    const names = patient.name.trim().split(' ');
+    if (names.length >= 2) {
+      return (names[0][0] + names[1][0]).toUpperCase();
+    }
+    return names[0].substring(0, 2).toUpperCase();
+  }
+
+  /**
+   * Clears the current patient context
+   * @description Removes the active patient and shows a success message
+   */
+  clearPatientContext(): void {
+    this.medicalStateService.setActivePatient(null);
+    // Optional: Show success message
+    console.log('✅ Contexto del paciente limpiado');
   }
 
   /**

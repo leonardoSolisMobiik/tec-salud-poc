@@ -63,23 +63,9 @@
           [isLoading]="isLoadingMetrics">
         </app-metric-card>
 
-        <!-- Tokens Utilizados -->
-        <app-metric-card
-          title="Tokens Utilizados"
-          [value]="formatMetricValue(metrics.tokensUsed)"
-          icon="🎯"
-          subtitle="Últimas 24h"
-          [isLoading]="isLoadingMetrics">
-        </app-metric-card>
 
-        <!-- Documentos Procesados -->
-        <app-metric-card
-          title="Documentos Procesados"
-          [value]="formatMetricValue(metrics.documentsProcessed.total)"
-          icon="📄"
-          subtitle="Por tipo y análisis"
-          [isLoading]="isLoadingMetrics">
-        </app-metric-card>
+
+
       </div>
     </section>
 
@@ -110,28 +96,7 @@
       </div>
     </section>
 
-    <!-- Document Types Breakdown -->
-    <section class="document-breakdown" *ngIf="!isLoadingMetrics && metrics.documentsProcessed.total > 0">
-      <div class="breakdown-header">
-        <h3 class="breakdown-title">Documentos por Tipo</h3>
-        <span class="breakdown-total">
-          Total: {{ metrics.documentsProcessed.total }}
-        </span>
-      </div>
 
-      <div class="breakdown-grid">
-        <div class="breakdown-item" *ngFor="let type of getDocumentTypes()">
-          <div class="breakdown-label">{{ type.name }}</div>
-          <div class="breakdown-bar">
-            <div class="breakdown-fill"
-                 [style.width.%]="type.percentage"
-                 [style.background-color]="type.color">
-            </div>
-          </div>
-          <div class="breakdown-value">{{ type.count }}</div>
-        </div>
-      </div>
-    </section>
 
     <!-- Quick Stats Footer -->
     <footer class="dashboard-footer">

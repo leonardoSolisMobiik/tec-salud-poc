@@ -9,29 +9,114 @@ import { ApiService } from '../../core/services/api.service';
 import { MedicalStateService } from '../../core/services/medical-state.service';
 import { Patient } from '../../core/models/patient.model';
 
+/**
+ * Interface for document item display and management
+ *
+ * @interface DocumentItem
+ * @description Structure for individual document entries in the document list,
+ * including metadata, patient association, and file information.
+ */
 interface DocumentItem {
+  /** Unique identifier for the document */
   document_id: string;
+  /** Document title or filename */
   title: string;
+  /** Medical document type classification */
   document_type: string;
+  /** Associated patient identifier */
   patient_id: string;
+  /** Document creation or upload date */
   date: string;
+  /** File size in bytes */
   file_size: number;
+  /** Content preview or summary */
   preview: string;
+  /** Number of content chunks (for vectorized documents) */
   chunks?: number;
+  /** Associated patient name for display */
   patient_name?: string;
 }
 
+/**
+ * Interface for search result items from semantic search
+ *
+ * @interface SearchResult
+ * @description Structure for search results returned from the semantic search API,
+ * including relevance scoring and content previews.
+ */
 interface SearchResult {
+  /** Document identifier for the search result */
   document_id: string;
+  /** Document title or name */
   title: string;
+  /** Relevant content excerpt matching search query */
   content_preview: string;
+  /** AI-calculated relevance score (0-1) */
   relevance_score: number;
+  /** Document type classification */
   document_type: string;
+  /** Associated patient identifier */
   patient_id: string;
+  /** Document date */
   date: string;
+  /** Additional document metadata */
   metadata: any;
 }
 
+/**
+ * Document List Component for TecSalud Medical Assistant
+ *
+ * @description Comprehensive document management interface providing document browsing,
+ * semantic search capabilities, patient filtering, and document viewing. Features
+ * both traditional list view and AI-powered search functionality.
+ *
+ * @example
+ * ```typescript
+ * // Accessed via routing
+ * // Route: '/documents/list'
+ *
+ * // Features include:
+ * // - Browse all uploaded documents
+ * // - Search documents with semantic AI
+ * // - Filter by patient or document type
+ * // - View document details and content
+ * // - Pagination for large document sets
+ * ```
+ *
+ * @features
+ * - **Document Browsing**: Paginated list of all medical documents
+ * - **Semantic Search**: AI-powered content search with relevance scoring
+ * - **Patient Filtering**: Filter documents by specific patients
+ * - **Type Classification**: Group and filter by document types
+ * - **Content Preview**: Quick document content summaries
+ * - **Sorting Options**: Sort by date, relevance, or patient
+ * - **Responsive Design**: Optimized for desktop and mobile viewing
+ * - **Real-time Search**: Live search results as user types
+ *
+ * @searchCapabilities
+ * - **Semantic Understanding**: Search by meaning, not just keywords
+ * - **Medical Context**: Specialized for medical terminology
+ * - **Relevance Scoring**: AI-calculated relevance rankings
+ * - **Content Matching**: Search within document content
+ * - **Patient Context**: Search within specific patient documents
+ * - **Multi-language**: Support for Spanish medical terms
+ *
+ * @viewModes
+ * - **List View**: Traditional document list with metadata
+ * - **Search Results**: Relevance-ranked search results
+ * - **Patient View**: Documents filtered by selected patient
+ * - **Type View**: Documents grouped by medical type
+ *
+ * @userInterface
+ * - Search bar with semantic search capabilities
+ * - Filter controls for patients and document types
+ * - Document cards with preview and metadata
+ * - Pagination controls for large result sets
+ * - Loading states and progress indicators
+ * - Professional medical styling
+ *
+ * @since 1.0.0
+ */
 @Component({
   selector: 'app-document-list',
   standalone: true,

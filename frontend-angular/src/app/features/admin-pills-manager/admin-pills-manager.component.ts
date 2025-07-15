@@ -122,13 +122,6 @@ interface PillFormData {
                 Administra las pastillas de preguntas rápidas para el chat médico
               </div>
             </div>
-
-            <div class="header-actions">
-              <button class="add-btn" (click)="openCreateModal()">
-                <span class="btn-icon">➕</span>
-                <span class="btn-text">Nueva Pastilla</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>
@@ -136,7 +129,13 @@ interface PillFormData {
       <!-- Premium Pills List -->
       <div class="admin-content">
         <div class="pills-section">
-          <h3 class="section-title">💊 Pastillas Disponibles</h3>
+          <div class="section-header">
+            <h3 class="section-title">💊 Pastillas Disponibles</h3>
+            <button class="add-btn secondary" (click)="openCreateModal()">
+              <span class="btn-icon">➕</span>
+              <span class="btn-text">Nueva Pastilla</span>
+            </button>
+          </div>
 
           <!-- Premium Pills List -->
           <div class="pills-list" *ngIf="pills.length > 0">
@@ -346,12 +345,26 @@ interface PillFormData {
         box-shadow: var(--medical-shadow-hover);
       }
 
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--bmb-spacing-l);
+        gap: var(--bmb-spacing-m);
+        flex-wrap: wrap;
+
+        @media (max-width: 768px) {
+          flex-direction: column;
+          align-items: stretch;
+          gap: var(--bmb-spacing-s);
+        }
+      }
+
       .section-title {
         color: var(--general_contrasts-text-primary);
         font-size: var(--text-2xl);
         font-weight: var(--font-bold);
-        margin: 0 0 var(--bmb-spacing-l) 0;
-        text-align: center;
+        margin: 0;
         font-family: var(--font-display);
         background: linear-gradient(135deg,
           rgb(var(--color-blue-tec)) 0%,
@@ -360,6 +373,54 @@ interface PillFormData {
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
+      }
+
+      .add-btn {
+        display: flex;
+        align-items: center;
+        gap: var(--bmb-spacing-xs);
+        padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+        background: linear-gradient(135deg,
+          rgb(var(--color-blue-tec)) 0%,
+          rgb(var(--color-mariner-100)) 100%
+        );
+        color: white;
+        border: none;
+        border-radius: var(--bmb-radius-m);
+        font-weight: var(--font-medium);
+        font-size: var(--text-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.2);
+        white-space: nowrap;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(var(--color-blue-tec), 0.3);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+
+        &.secondary {
+          background: var(--general_contrasts-surface);
+          color: rgb(var(--color-blue-tec));
+          border: 1px solid rgb(var(--color-blue-tec));
+          box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.1);
+
+          &:hover {
+            background: rgba(var(--color-blue-tec), 0.05);
+          }
+        }
+
+        .btn-icon {
+          font-size: var(--text-base);
+        }
+
+        .btn-text {
+          font-size: var(--text-sm);
+        }
       }
     }
 

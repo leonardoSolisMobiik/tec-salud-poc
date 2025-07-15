@@ -157,18 +157,24 @@ import { Patient } from '@core/models';
   `,
   styles: [`
     .app-header {
-      height: 64px;
+      min-height: 64px;
+      height: auto; /* Allow dynamic height for patient context */
       background: var(--medical-surface);
       border-bottom: 1px solid var(--medical-divider);
       display: flex;
       align-items: center;
-      padding: 0 1.5rem;
+      padding: 0.75rem 1.5rem; /* Increased vertical padding */
       gap: 1.5rem;
       transition: all 0.3s ease;
+      position: sticky;
+      top: 0;
+      z-index: 100; /* Ensure header stays on top */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
 
       &.patient-active {
         background: var(--medical-context-active);
         border-bottom-color: var(--medical-blue);
+        padding: 1rem 1.5rem; /* More padding when patient is active */
       }
     }
 
@@ -189,34 +195,49 @@ import { Patient } from '@core/models';
       display: flex;
       align-items: center;
       gap: 1rem;
+      max-width: 60%; /* Prevent overflow */
+      overflow: hidden;
     }
 
     .patient-badge {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1.25rem; /* Increased padding */
       background: var(--medical-surface);
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      border-radius: 12px; /* More rounded corners */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Enhanced shadow */
+      border: 2px solid var(--medical-blue);
+      min-width: 0; /* Allow text truncation */
+      flex: 1;
 
       .patient-icon {
         font-size: 1.5rem;
+        flex-shrink: 0; /* Don't shrink icon */
       }
     }
 
     .patient-details {
       display: flex;
       flex-direction: column;
+      min-width: 0; /* Allow text truncation */
+      flex: 1;
 
       .patient-name {
         font-weight: 600;
         color: var(--medical-blue);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Add ellipsis for long names */
+        max-width: 100%;
       }
 
       .patient-meta {
         font-size: 0.875rem;
         color: var(--medical-text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
 

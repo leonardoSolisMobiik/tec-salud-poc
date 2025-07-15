@@ -1,12 +1,15 @@
 {
   "name": "frontend-angular",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "TecSalud Medical Assistant - Angular frontend application for intelligent medical document management and chat functionality",
+  "author": "TecSalud Development Team",
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "dev": "ng serve --port 4200 --open --hmr --configuration development",
     "start": "ng serve --port 4200 --open",
     "build": "ng build",
-    "build:prod": "ng build --configuration production --aot --optimization --build-optimizer"
+    "build:prod": "ng build --configuration production --aot --optimization"
   },
   "private": true,
   "dependencies": {

@@ -10,11 +10,6 @@ import { ChatMessage, PatientInteraction } from '@core/models';
 export interface DashboardMetrics {
   consultationsToday: number;
   averageResponseTime: number;
-  tokensUsed: number;
-  documentsProcessed: {
-    total: number;
-    byType: { [key: string]: number };
-  };
 }
 
 /**
@@ -31,7 +26,6 @@ export interface DashboardMetrics {
  * this.dashboardMetrics.getDashboardMetrics().subscribe(metrics => {
  *   console.log('Consultations today:', metrics.consultationsToday);
  *   console.log('Average response time:', metrics.averageResponseTime);
- *   console.log('Tokens used:', metrics.tokensUsed);
  * });
  * ```
  *
@@ -66,23 +60,17 @@ export class DashboardMetricsService {
   getDashboardMetrics(): Observable<DashboardMetrics> {
     return combineLatest([
       this.getConsultationsToday(),
-      this.getAverageResponseTime(),
-      this.getTokensUsed(),
-      this.getDocumentsProcessed()
+      this.getAverageResponseTime()
     ]).pipe(
-      map(([consultations, avgTime, tokens, documents]) => ({
+      map(([consultations, avgTime]) => ({
         consultationsToday: consultations,
-        averageResponseTime: avgTime,
-        tokensUsed: tokens,
-        documentsProcessed: documents
+        averageResponseTime: avgTime
       })),
       catchError(error => {
         console.error('Error getting dashboard metrics:', error);
         return of({
           consultationsToday: 0,
-          averageResponseTime: 0,
-          tokensUsed: 0,
-          documentsProcessed: { total: 0, byType: {} }
+          averageResponseTime: 0
         });
       })
     );
@@ -185,86 +173,9 @@ export class DashboardMetricsService {
     });
   }
 
-  /**
-   * Gets the total tokens used in the last 24 hours
-   *
-   * @returns Observable with total tokens used
-   *
-   * @description Sums up token usage from chat message metadata
-   */
-  private getTokensUsed(): Observable<number> {
-    return new Observable(observer => {
-      try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
 
-        const currentState = this.medicalState.currentState;
-        let totalTokens = 0;
 
-        // Count tokens from all chat histories
-        currentState.chatHistory.forEach((messages: ChatMessage[]) => {
-          messages.forEach(msg => {
-            if (msg.metadata?.tokens && msg.timestamp) {
-              const messageDate = new Date(msg.timestamp);
-              if (messageDate >= today) {
-                totalTokens += msg.metadata.tokens;
-              }
-            }
-          });
-        });
 
-        // Add current chat messages tokens
-        currentState.currentChatMessages.forEach(msg => {
-          if (msg.metadata?.tokens && msg.timestamp) {
-            const messageDate = new Date(msg.timestamp);
-            if (messageDate >= today) {
-              totalTokens += msg.metadata.tokens;
-            }
-          }
-        });
-
-        observer.next(totalTokens);
-        observer.complete();
-      } catch (error) {
-        console.error('Error calculating tokens used:', error);
-        observer.next(0);
-        observer.complete();
-      }
-    });
-  }
-
-  /**
-   * Gets documents processed statistics
-   *
-   * @returns Observable with document processing statistics
-   *
-   * @description Returns mock data for document processing by type
-   * In a real implementation, this would connect to document processing APIs
-   */
-  private getDocumentsProcessed(): Observable<{ total: number; byType: { [key: string]: number } }> {
-    return new Observable(observer => {
-      try {
-        // Mock data for document processing
-        // In a real implementation, this would come from document processing APIs
-        const documentsData = {
-          total: 47,
-          byType: {
-            'Expedientes': 23,
-            'Análisis Laboratorio': 12,
-            'Radiologías': 8,
-            'Recetas': 4
-          }
-        };
-
-        observer.next(documentsData);
-        observer.complete();
-      } catch (error) {
-        console.error('Error getting documents processed:', error);
-        observer.next({ total: 0, byType: {} });
-        observer.complete();
-      }
-    });
-  }
 
   /**
    * Gets recent consultation trends

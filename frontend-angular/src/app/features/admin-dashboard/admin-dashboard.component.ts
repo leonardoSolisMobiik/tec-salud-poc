@@ -14,11 +14,6 @@ import { AnalyticsChartComponent } from './components/analytics-chart/analytics-
 interface DashboardMetrics {
   consultationsToday: number;
   averageResponseTime: number;
-  tokensUsed: number;
-  documentsProcessed: {
-    total: number;
-    byType: { [key: string]: number };
-  };
 }
 
 /**
@@ -32,22 +27,22 @@ interface ChartData {
 /**
  * Admin Dashboard component for TecSalud Medical Assistant
  *
- * @description Dashboard administrativo que muestra métricas operacionales clave
- * del sistema médico incluyendo consultas, tiempo de respuesta, tokens utilizados,
- * documentos procesados y análisis de interacciones por categoría.
+ * @description Administrative dashboard displaying key operational metrics
+ * of the medical system including consultations, response times, token usage,
+ * processed documents, and interaction analysis by category.
  *
  * @example
  * ```typescript
- * // Accedido automáticamente via routing
+ * // Accessed automatically via routing
  * // Route: '/admin-dashboard'
  * ```
  *
  * @features
- * - Métricas en tiempo real del sistema
- * - Gráficos interactivos de actividad
- * - Análisis de uso de pastillas médicas
- * - Distribución de documentos por tipo
- * - Interfaz responsive y moderna
+ * - Real-time system metrics monitoring
+ * - Interactive activity charts and visualizations
+ * - Medical pill usage analysis and distribution
+ * - Document processing statistics by type
+ * - Responsive modern interface design
  *
  * @metrics
  * - 💬 Consultas del día
@@ -75,12 +70,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   /** Dashboard metrics data */
   metrics: DashboardMetrics = {
     consultationsToday: 0,
-    averageResponseTime: 0,
-    tokensUsed: 0,
-    documentsProcessed: {
-      total: 0,
-      byType: {}
-    }
+    averageResponseTime: 0
   };
 
   /** Chart data for visualizations */
@@ -333,31 +323,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     return `${milliseconds}ms`;
   }
 
-  /**
-   * Gets document types with percentages for breakdown display
-   *
-   * @returns Array of document types with colors and percentages
-   */
-  getDocumentTypes(): { name: string; count: number; percentage: number; color: string }[] {
-    const types = this.metrics.documentsProcessed.byType;
-    const total = this.metrics.documentsProcessed.total;
 
-    const colors = [
-      '#0EA5E9', // Blue
-      '#10B981', // Green
-      '#F59E0B', // Amber
-      '#EF4444', // Red
-      '#8B5CF6', // Purple
-      '#6B7280'  // Gray
-    ];
-
-    return Object.entries(types).map(([name, count], index) => ({
-      name,
-      count,
-      percentage: total > 0 ? (count / total) * 100 : 0,
-      color: colors[index % colors.length]
-    }));
-  }
 
   /**
    * Gets current time for display

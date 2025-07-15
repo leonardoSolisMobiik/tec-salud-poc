@@ -1,37 +1,57 @@
-/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+/**
+ * TypeScript Configuration for TecSalud Frontend Angular Application
+ *
+ * This configuration file defines TypeScript compiler options and Angular-specific settings
+ * for the TecSalud medical document management application.
+ *
+ * @see https://www.typescriptlang.org/docs/handbook/tsconfig-json.html
+ * @see https://angular.dev/reference/configs/angular-compiler-options
+ */
 {
   "compileOnSave": false,
   "compilerOptions": {
+    /* Base configuration */
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
-    "strict": true,
-    "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true,
-    "isolatedModules": true,
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "moduleResolution": "bundler",
-    "importHelpers": true,
-    "target": "ES2022",
-    "module": "ES2022",
-    "sourceMap": true,
-    "declaration": false,
-    "lib": ["ES2022", "dom"],
+
+    /* Type checking */
+    "strict": true,                                    // Enable all strict type checking options
+    "noImplicitOverride": true,                       // Ensure overriding members are marked with override modifier
+    "noPropertyAccessFromIndexSignature": true,      // Enforce using indexed access for keys declared using indexed type
+    "noImplicitReturns": true,                       // Report error when not all code paths return a value
+    "noFallthroughCasesInSwitch": true,              // Report errors for fallthrough cases in switch statements
+    "forceConsistentCasingInFileNames": true,        // Ensure consistent casing in file names across different OSes
+
+    /* Module resolution */
+    "skipLibCheck": true,                            // Skip type checking of declaration files
+    "isolatedModules": true,                         // Ensure each file can be safely transpiled without relying on other imports
+    "esModuleInterop": true,                         // Enable interoperability between CommonJS and ES Modules
+    "experimentalDecorators": true,                  // Enable experimental support for decorators (required for Angular)
+    "moduleResolution": "bundler",                   // Use bundler-style module resolution
+    "importHelpers": true,                           // Import emit helpers from 'tslib'
+
+    /* JavaScript support */
+    "target": "ES2022",                              // Set JavaScript language version for emitted code
+    "module": "ES2022",                              // Specify module code generation
+    "lib": ["ES2022", "dom"],                        // Specify library files to include in compilation
+
+    /* Emit */
+    "sourceMap": true,                               // Create source map files for debugging
+    "declaration": false,                            // Don't generate .d.ts files
+
+    /* Path mapping for cleaner imports */
     "paths": {
-      "@core/*": ["src/app/core/*"],
-      "@shared/*": ["src/app/shared/*"],
-      "@features/*": ["src/app/features/*"],
-      "@environments/*": ["src/environments/*"]
+      "@core/*": ["src/app/core/*"],                 // Core services, interceptors, and utilities
+      "@shared/*": ["src/app/shared/*"],             // Shared components, pipes, and modules
+      "@features/*": ["src/app/features/*"],         // Feature modules and components
+      "@environments/*": ["src/environments/*"]      // Environment configuration files
     }
   },
+  /* Angular compiler options */
   "angularCompilerOptions": {
-    "enableI18nLegacyMessageIdFormat": false,
-    "strictInjectionParameters": true,
-    "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "enableI18nLegacyMessageIdFormat": false,        // Use new i18n message ID format for better maintainability
+    "strictInjectionParameters": true,              // Enable strict checking of injection parameters
+    "strictInputAccessModifiers": true,             // Enable strict checking of input access modifiers
+    "strictTemplates": true                         // Enable strict template type checking for better error detection
   }
 }

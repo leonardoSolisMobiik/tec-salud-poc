@@ -6,6 +6,7 @@ import { ChatMessage, ChatRequest, ChatAskRequest } from '@core/models';
 import { MedicalStateService, ChatSessionService, StreamingService, ApiService } from '@core/services';
 import { ChangeDetectorRef } from '@angular/core';
 import { Patient } from '@core/models/patient.model';
+import { Router, NavigationEnd } from '@angular/router';
 
 /**
  * Medical Chat Component for AI-powered medical consultations
@@ -150,6 +151,9 @@ import { Patient } from '@core/models/patient.model';
               </div>
             </div>
           </div>
+
+          <!-- STICKY SCROLL ANCHOR - This element will stick to bottom -->
+          <div #scrollAnchor class="scroll-anchor" *ngIf="chatMessages.length > 0 || isStreaming"></div>
         </div>
 
       <!-- Footer -->
@@ -779,17 +783,55 @@ import { Patient } from '@core/models/patient.model';
         touch-action: manipulation !important;
       }
     }
+
+    /* SCROLL ANCHOR FOR BOTTOM POSITIONING */
+    .scroll-anchor {
+      height: 1px !important;
+      min-height: 1px !important;
+      width: 100% !important;
+      position: sticky !important;
+      bottom: 0 !important;
+      background: transparent !important;
+      pointer-events: none !important;
+      z-index: 1000 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      flex-shrink: 0 !important;
+    }
+
+    /* Force scroll container to respect sticky positioning */
+    .messages-list {
+      overflow-anchor: none !important;
+      scroll-behavior: auto !important;
+    }
+
+    .chat-main {
+      overflow-anchor: none !important;
+      scroll-behavior: auto !important;
+    }
   `]
 })
 export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked, AfterViewInit {
   /** ViewChild reference to the messages container for auto-scrolling */
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
+  /** ViewChild reference to the scroll anchor element for bottom positioning */
+  @ViewChild('scrollAnchor') scrollAnchor!: ElementRef;
+
   /** Subject for managing component subscriptions cleanup */
   private destroy$ = new Subject<void>();
 
   /** Flag to trigger scrolling to bottom after view updates */
   private shouldScrollToBottom = false;
+
+  /** IntersectionObserver for detecting when chat container is visible */
+  private scrollObserver?: IntersectionObserver;
+
+  /** MutationObserver for detecting DOM changes in messages */
+  private mutationObserver?: MutationObserver;
+
+  /** Flag to track if component is active/visible */
+  private isComponentActive = false;
 
   /** Current message being typed by the user */
   currentMessage = '';
@@ -831,7 +873,8 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     private chatSessionService: ChatSessionService,
     private streamingService: StreamingService,
     private apiService: ApiService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   /**
@@ -861,6 +904,28 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     const initialPatient = this.medicalStateService.activePatientValue;
     console.log('🩺 Initial patient from service:', initialPatient?.name || 'NONE');
 
+    // Subscribe to router navigation events for robust scroll handling
+    this.router.events
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        if (event instanceof NavigationEnd) {
+          if (event.url.includes('medical-chat')) {
+            console.log('🔄 Navigation to medical chat detected, activating component');
+            this.isComponentActive = true;
+
+            // Restore scroll position if we have stored state
+            this.restoreScrollPosition();
+
+            // Force multiple scroll attempts
+            this.forceScrollToBottomWithRetry();
+          } else {
+            console.log('🔄 Navigation away from medical chat detected, saving scroll state');
+            this.isComponentActive = false;
+            this.saveScrollPosition();
+          }
+        }
+      });
+
     // Subscribe to active patient changes with immediate emission
     console.log('🩺 PASO 1: Suscribiéndose a activePatient$...');
     this.medicalStateService.activePatient$
@@ -881,11 +946,8 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
           console.log('✅ Patient ID:', patient.id);
           console.log('✅ this.activePatient actualizado a:', this.activePatient.name);
 
-          // Trigger scroll to bottom when patient changes (after messages load)
-          setTimeout(() => {
-            this.shouldScrollToBottom = true;
-            this.cdr.detectChanges();
-          }, 100);
+          // Force scroll to bottom when patient changes
+          this.forceScrollToBottomWithRetry();
 
           // Trigger change detection to update UI immediately
           this.cdr.detectChanges();
@@ -911,8 +973,8 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
       .subscribe((messages: ChatMessage[]) => {
         console.log('💬 Chat messages updated:', messages.length);
         this.chatMessages = messages;
-        // Trigger scroll to bottom when messages change
-        this.shouldScrollToBottom = true;
+        // Force scroll to bottom when messages change
+        this.forceScrollToBottomWithRetry();
         this.cdr.detectChanges();
       });
 
@@ -933,8 +995,8 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
       .subscribe((message: string) => {
         console.log('📡 Streaming message length:', message.length);
         this.streamingMessage = message;
-        // Trigger scroll to bottom during streaming
-        this.shouldScrollToBottom = true;
+        // Force scroll to bottom during streaming
+        this.forceScrollToBottomWithRetry();
         this.cdr.detectChanges();
       });
 
@@ -942,28 +1004,26 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
     console.log('🩺 MedicalChatComponent ngOnInit COMPLETED');
     console.log('🩺 Final activePatient:', this.activePatient?.name || 'NONE');
     console.log('🩺 ============================================');
-
-    // Force scroll to bottom on component initialization (after view is ready)
-    setTimeout(() => {
-      if (this.chatMessages.length > 0) {
-        this.shouldScrollToBottom = true;
-        this.cdr.detectChanges();
-      }
-    }, 200);
   }
 
   /**
    * After view init lifecycle hook
    *
    * @description Ensures scroll to bottom when view is first initialized
+   * Sets up IntersectionObserver and forces immediate scroll
    */
-  ngAfterViewInit(): void {
-    // Force scroll to bottom on view initialization if there are messages
-    setTimeout(() => {
-      if (this.chatMessages.length > 0) {
-        this.shouldScrollToBottom = true;
-      }
-    }, 100);
+    ngAfterViewInit(): void {
+    console.log('📄 ngAfterViewInit - Setting up observers and forcing scroll');
+
+    // Set up observers for robust scroll handling
+    this.setupScrollObserver();
+    this.setupMutationObserver();
+
+    // Mark component as active since view is initialized
+    this.isComponentActive = true;
+
+    // Force immediate scroll with retry mechanism
+    this.forceScrollToBottomWithRetry();
   }
 
   /**
@@ -973,8 +1033,9 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
    * or streaming content updates
    */
   ngAfterViewChecked(): void {
-    if (this.shouldScrollToBottom) {
-      this.scrollToBottom();
+    if (this.shouldScrollToBottom && this.isComponentActive) {
+      console.log('🔄 ngAfterViewChecked triggering scroll');
+      this.immediateScrollToBottom();
       this.shouldScrollToBottom = false;
     }
   }
@@ -982,9 +1043,24 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
   /**
    * Component destruction lifecycle hook
    *
-   * @description Cleans up subscriptions to prevent memory leaks
+   * @description Cleans up subscriptions and observers to prevent memory leaks
    */
-  ngOnDestroy(): void {
+    ngOnDestroy(): void {
+    console.log('🧹 ngOnDestroy - Cleaning up observers and saving scroll state');
+
+    // Save scroll position before destroying
+    this.saveScrollPosition();
+
+    // Clean up observers
+    if (this.scrollObserver) {
+      this.scrollObserver.disconnect();
+    }
+
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+    }
+
+    this.isComponentActive = false;
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -1356,14 +1432,30 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
    *
    * @private
    * @description Automatically scrolls to show the latest message,
-   * used when new messages arrive or during streaming
+   * used when new messages arrive or during streaming. Enhanced with
+   * multiple fallbacks to ensure reliable scrolling on navigation returns
    */
   private scrollToBottom(): void {
     try {
       if (this.messagesContainer?.nativeElement) {
         const container = this.messagesContainer.nativeElement;
+
+        // Method 1: Direct scroll to bottom
         container.scrollTop = container.scrollHeight;
+
+        // Method 2: Force scroll with requestAnimationFrame for better reliability
+        requestAnimationFrame(() => {
+          container.scrollTop = container.scrollHeight;
+
+          // Method 3: Additional scroll after DOM updates to ensure it sticks
+          setTimeout(() => {
+            container.scrollTop = container.scrollHeight;
+          }, 10);
+        });
+
         console.log('📜 Scrolled to bottom - scrollTop:', container.scrollTop, 'scrollHeight:', container.scrollHeight);
+      } else {
+        console.warn('⚠️ Messages container not available for scrolling');
       }
     } catch (err) {
       console.error('Could not scroll to bottom:', err);
@@ -1373,12 +1465,229 @@ export class MedicalChatComponent implements OnInit, OnDestroy, AfterViewChecked
   /**
    * Forces scroll to bottom with smooth behavior
    *
-   * @description Public method to force scroll to bottom, useful for navigation scenarios
+   * @description Public method to force scroll to bottom, useful for navigation scenarios.
+   * Enhanced with multiple attempts to ensure scroll works when returning from navigation
    */
   public forceScrollToBottom(): void {
-    setTimeout(() => {
-      this.shouldScrollToBottom = true;
-      this.cdr.detectChanges();
-    }, 50);
+    // Use the retry mechanism for maximum reliability
+    this.forceScrollToBottomWithRetry();
+  }
+
+    /**
+   * Immediately scrolls to bottom without relying on change detection flags
+   *
+   * @private
+   * @description Direct scroll method using scroll anchor for more reliable positioning
+   * Falls back to traditional scrolling if anchor is not available
+   */
+  private immediateScrollToBottom(): void {
+    try {
+      // Method 1: Use scroll anchor (most reliable)
+      if (this.scrollAnchor?.nativeElement) {
+        const anchor = this.scrollAnchor.nativeElement;
+        anchor.scrollIntoView({
+          behavior: 'auto',
+          block: 'end',
+          inline: 'nearest'
+        });
+        console.log('⚓ ANCHOR SCROLL - Using scroll anchor to bottom');
+        return;
+      }
+
+      // Method 2: Fallback to traditional container scroll
+      if (this.messagesContainer?.nativeElement) {
+        const container = this.messagesContainer.nativeElement;
+
+        // Force immediate scroll using multiple techniques
+        container.scrollTop = container.scrollHeight;
+        container.scrollTo(0, container.scrollHeight);
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'auto'
+        });
+
+        console.log('📜 FALLBACK SCROLL - scrollTop:', container.scrollTop, 'scrollHeight:', container.scrollHeight);
+      } else {
+        console.warn('⚠️ No scroll methods available');
+      }
+    } catch (err) {
+      console.error('❌ Could not perform scroll:', err);
+    }
+  }
+
+  /**
+   * Sets up IntersectionObserver to detect when chat container becomes visible
+   *
+   * @private
+   * @description Uses IntersectionObserver API to trigger scroll when container
+   * becomes visible, useful for navigation scenarios
+   */
+  private setupScrollObserver(): void {
+    if (!this.messagesContainer?.nativeElement || !('IntersectionObserver' in window)) {
+      return;
+    }
+
+    this.scrollObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && entry.intersectionRatio > 0.1 && this.isComponentActive) {
+          console.log('👁️ Chat container is visible, forcing scroll to bottom');
+          this.forceScrollToBottomWithRetry();
+        }
+      });
+    }, {
+      threshold: [0.1, 0.5, 1.0] // Multiple thresholds for better detection
+    });
+
+    this.scrollObserver.observe(this.messagesContainer.nativeElement);
+  }
+
+  /**
+   * Sets up MutationObserver to detect DOM changes in the messages container
+   *
+   * @private
+   * @description Monitors DOM changes to automatically scroll when new messages are added
+   */
+  private setupMutationObserver(): void {
+    if (!this.messagesContainer?.nativeElement || !('MutationObserver' in window)) {
+      return;
+    }
+
+    this.mutationObserver = new MutationObserver((mutations) => {
+      let shouldScroll = false;
+
+      mutations.forEach(mutation => {
+        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+          console.log('🔄 DOM mutation detected - new messages added');
+          shouldScroll = true;
+        }
+      });
+
+      if (shouldScroll && this.isComponentActive) {
+        console.log('🔄 Triggering scroll due to DOM mutation');
+        this.immediateScrollToBottom();
+      }
+    });
+
+    // Observe the messages list container
+    const messagesListContainer = this.messagesContainer.nativeElement.querySelector('.messages-list');
+    if (messagesListContainer) {
+      this.mutationObserver.observe(messagesListContainer, {
+        childList: true,
+        subtree: true
+      });
+    } else {
+      // Fallback to observing the entire container
+      this.mutationObserver.observe(this.messagesContainer.nativeElement, {
+        childList: true,
+        subtree: true
+      });
+    }
+  }
+
+  /**
+   * Saves the current scroll position to localStorage
+   *
+   * @private
+   * @description Stores scroll state for restoration when navigating back
+   */
+  private saveScrollPosition(): void {
+    try {
+      if (this.messagesContainer?.nativeElement && this.activePatient) {
+        const container = this.messagesContainer.nativeElement;
+        const scrollData = {
+          patientId: this.activePatient.id,
+          scrollTop: container.scrollTop,
+          scrollHeight: container.scrollHeight,
+          shouldBeAtBottom: container.scrollTop >= (container.scrollHeight - container.clientHeight - 50)
+        };
+
+        localStorage.setItem('medicalChatScrollState', JSON.stringify(scrollData));
+        console.log('💾 Scroll position saved:', scrollData);
+      }
+    } catch (err) {
+      console.error('❌ Failed to save scroll position:', err);
+    }
+  }
+
+  /**
+   * Restores the scroll position from localStorage
+   *
+   * @private
+   * @description Restores previous scroll state, prioritizing bottom position
+   */
+  private restoreScrollPosition(): void {
+    try {
+      const scrollStateJson = localStorage.getItem('medicalChatScrollState');
+      if (!scrollStateJson || !this.activePatient) {
+        console.log('📍 No scroll state to restore or no active patient');
+        return;
+      }
+
+      const scrollData = JSON.parse(scrollStateJson);
+
+      if (scrollData.patientId === this.activePatient.id) {
+        console.log('📍 Restoring scroll position:', scrollData);
+
+        // If user was at bottom, always restore to bottom
+        if (scrollData.shouldBeAtBottom) {
+          console.log('📍 User was at bottom, forcing scroll to bottom');
+          this.forceScrollToBottomWithRetry();
+        }
+        // Clear the saved state after restoration
+        localStorage.removeItem('medicalChatScrollState');
+      }
+    } catch (err) {
+      console.error('❌ Failed to restore scroll position:', err);
+    }
+  }
+
+    /**
+   * Forces scroll to bottom with multiple retry attempts
+   *
+   * @private
+   * @description More aggressive scroll approach with multiple fallbacks
+   */
+  private forceScrollToBottomWithRetry(): void {
+    if (!this.isComponentActive) {
+      return;
+    }
+
+    console.log('🚀 Starting ultra-aggressive scroll to bottom with anchor technique');
+
+    // Immediate attempt
+    this.immediateScrollToBottom();
+
+    // Use requestIdleCallback for non-blocking scroll attempts
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => {
+        if (this.isComponentActive) {
+          this.immediateScrollToBottom();
+        }
+      });
+    }
+
+    // Scheduled attempts with shorter, more frequent delays
+    const delays = [0, 5, 15, 30, 60, 120, 250];
+
+    delays.forEach(delay => {
+      setTimeout(() => {
+        if (this.isComponentActive) {
+          this.immediateScrollToBottom();
+        }
+      }, delay);
+    });
+
+    // Final attempts with requestAnimationFrame for perfect timing
+    requestAnimationFrame(() => {
+      if (this.isComponentActive) {
+        this.immediateScrollToBottom();
+        // Double attempt inside RAF
+        setTimeout(() => {
+          if (this.isComponentActive) {
+            this.immediateScrollToBottom();
+          }
+        }, 50);
+      }
+    });
   }
 }
