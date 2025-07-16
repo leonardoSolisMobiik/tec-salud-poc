@@ -1,3 +1,4 @@
+<div class="global-container">
 <div class="admin-dashboard">
   <div class="dashboard-content">
     <!-- Header Section -->
@@ -22,7 +23,7 @@
           </div>
 
           <div class="header-actions">
-            <button class="refresh-button" (click)="refreshDashboard()" [disabled]="isLoadingMetrics || isLoadingCharts">
+            <button class="refresh-button" (click)="refreshDashboard()" [disabled]="isLoadingMetrics">
               <span class="refresh-icon">🔄</span>
               Actualizar
             </button>
@@ -36,9 +37,6 @@
       <div class="error-content">
         <span class="error-icon">⚠️</span>
         <span class="error-message">{{ errorMessage }}</span>
-        <button class="error-retry" (click)="refreshDashboard()">
-          Reintentar
-        </button>
       </div>
     </div>
 
@@ -63,38 +61,64 @@
           [isLoading]="isLoadingMetrics">
         </app-metric-card>
 
+        <!-- Total Documentos -->
+        <app-metric-card
+          title="Documentos Totales"
+          [value]="formatMetricValue(metrics.totalDocuments || 0)"
+          icon="📄"
+          subtitle="Expedientes procesados"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
 
+        <!-- Usuarios Activos -->
+        <app-metric-card
+          title="Usuarios Activos"
+          [value]="formatMetricValue(metrics.activeUsers || 0)"
+          icon="👥"
+          subtitle="Pacientes registrados"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
 
+        <!-- Sesiones Totales -->
+        <app-metric-card
+          title="Sesiones Totales"
+          [value]="formatMetricValue(metrics.totalSessions || 0)"
+          icon="🔄"
+          subtitle="Sesiones de chat"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
+
+        <!-- Almacenamiento Usado -->
+        <app-metric-card
+          title="Almacenamiento"
+          [value]="formatStorageValue(metrics.storageUsed || 0)"
+          icon="💾"
+          subtitle="Espacio utilizado"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
+
+        <!-- Interacciones Totales -->
+        <app-metric-card
+          title="Interacciones"
+          [value]="formatMetricValue(metrics.totalInteractions || 0)"
+          icon="🗨️"
+          subtitle="Total interacciones"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
+
+        <!-- Pills Activas -->
+        <app-metric-card
+          title="Pills Activas"
+          [value]="formatMetricValue(metrics.activePills || 0)"
+          icon="💊"
+          subtitle="Pills configuradas"
+          [isLoading]="isLoadingMetrics">
+        </app-metric-card>
 
       </div>
     </section>
 
-    <!-- Charts Section -->
-    <section class="charts-section">
-      <div class="charts-grid">
-        <!-- Interactions Timeline -->
-        <div class="chart-container">
-          <app-analytics-chart
-            title="Interacciones por Hora"
-            type="line"
-            [data]="interactionsChartData"
-            [isLoading]="isLoadingCharts"
-            [showLegend]="false">
-          </app-analytics-chart>
-        </div>
 
-        <!-- Pills Distribution -->
-        <div class="chart-container">
-          <app-analytics-chart
-            title="Distribución de Categorías"
-            type="doughnut"
-            [data]="pillsChartData"
-            [isLoading]="isLoadingCharts"
-            [showLegend]="true">
-          </app-analytics-chart>
-        </div>
-      </div>
-    </section>
 
 
 
@@ -111,5 +135,6 @@
         </div>
       </div>
     </footer>
+  </div>
   </div>
 </div>

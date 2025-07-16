@@ -104,7 +104,7 @@ export class PillsService {
     this.setLoading(true);
     this.clearError();
 
-    return this.http.get<PillsListResponse>(`${this.apiUrl}/api/v1/pills/?limit=${limit}&skip=${skip}`, {
+    return this.http.get<PillsListResponse>(`${this.apiUrl}/pills/?limit=${limit}&skip=${skip}`, {
       headers: this.headers
     }).pipe(
       retry(environment.retryAttempts || 1),
@@ -162,7 +162,7 @@ export class PillsService {
     this.log('🚀 Creating pill with payload:', requestPayload);
     console.log('📤 Raw request data:', JSON.stringify(requestPayload, null, 2));
 
-    return this.http.post<any>(`${this.apiUrl}/api/v1/pills/`, requestPayload, {
+    return this.http.post<any>(`${this.apiUrl}/pills/`, requestPayload, {
       headers: this.headers
     }).pipe(
       retry(environment.retryAttempts || 1),
@@ -235,7 +235,7 @@ export class PillsService {
     this.log('🚀 Updating pill with payload:', requestPayload);
     console.log('📤 Update request data:', JSON.stringify(requestPayload, null, 2));
 
-    return this.http.put<any>(`${this.apiUrl}/api/v1/pills/${id}`, requestPayload, {
+    return this.http.put<any>(`${this.apiUrl}/pills/${id}`, requestPayload, {
       headers: this.headers
     }).pipe(
       retry(environment.retryAttempts || 1),
@@ -296,7 +296,7 @@ export class PillsService {
     this.setLoading(true);
     this.clearError();
 
-    return this.http.delete<PillResponse>(`${this.apiUrl}/api/v1/pills/${pillId}`, {
+    return this.http.delete<PillResponse>(`${this.apiUrl}/pills/${pillId}`, {
       headers: this.headers
     }).pipe(
       retry(environment.retryAttempts || 1),
@@ -343,7 +343,7 @@ export class PillsService {
   getPillById(pillId: string): Observable<Pill> {
     this.clearError();
 
-    return this.http.get<PillResponse>(`${this.apiUrl}/api/v1/pills/${pillId}`, {
+    return this.http.get<PillResponse>(`${this.apiUrl}/pills/${pillId}`, {
       headers: this.headers
     }).pipe(
       retry(environment.retryAttempts || 1),

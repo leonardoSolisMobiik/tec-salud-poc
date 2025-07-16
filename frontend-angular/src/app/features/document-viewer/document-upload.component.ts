@@ -363,10 +363,10 @@ interface DocumentUpload {
     </div>
   `,
   styles: [`
-    /* 🏗️ CONTENEDOR GLOBAL CON ESPACIO SUFICIENTE */
+    /** 🏗️ GLOBAL CONTAINER WITH SUFFICIENT SPACE */
     .global-container {
       min-height: 100vh;
-      padding-bottom: 125px; /* Espacio extra para controles inferiores */
+      padding-bottom: 125px; /* Extra space for bottom controls */
       overflow-y: auto;
     }
 

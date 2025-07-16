@@ -10,7 +10,7 @@
  * // Used automatically in production builds via Angular CLI
  * import { environment } from '@environments/environment';
  *
- * const apiUrl = environment.apiUrl; // 'https://api.tecsalud.com'
+ * const apiUrl = environment.apiUrl; // 'https://api.tecsalud.com/api/v1'
  * const timeout = environment.apiTimeout; // 10000ms
  *
  * // Debug logging disabled in production
@@ -37,7 +37,7 @@ export const environment = {
   production: true,
 
   /** Production API server URL (HTTPS required for medical data) */
-  apiUrl: 'https://ca-tsalud-dev-backend-001.nicebush-5fef3953.centralus.azurecontainerapps.io',
+  apiUrl: 'https://ca-tsalud-dev-backend-001.nicebush-5fef3953.centralus.azurecontainerapps.io/api/v1',
 
   /** Optimized timeout for production performance (10 seconds) */
   apiTimeout: 10000,

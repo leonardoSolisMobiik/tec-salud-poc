@@ -193,7 +193,7 @@ export interface ChatRequest {
  * Interface representing a chat ask request to the new streaming API
  *
  * @interface ChatAskRequest
- * @description Defines the structure for requests sent to the /api/v1/chat/ask endpoint
+ * @description Defines the structure for requests sent to the /chat/ask endpoint
  * which handles session-based chat with document context
  *
  * @example
@@ -224,7 +224,7 @@ export interface ChatAskRequest {
  * Interface representing streaming response chunks from the chat API
  *
  * @interface ChatStreamChunk
- * @description Defines the structure for streaming response chunks from /api/v1/chat/ask
+ * @description Defines the structure for streaming response chunks from /chat/ask
  * which provides real-time AI responses with different chunk types
  *
  * @example

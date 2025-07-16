@@ -9,7 +9,7 @@
  * import { environment } from '@environments/environment';
  *
  * // Used throughout the application
- * const apiUrl = environment.apiUrl; // 'http://localhost:8000'
+ * const apiUrl = environment.apiUrl; // 'http://localhost:3000/api/v1'
  * const timeout = environment.apiTimeout; // 30000ms
  *
  * if (environment.debug.showApiLogs) {
@@ -30,7 +30,7 @@ export const environment = {
   production: false,
 
   /** Local development API server URL */
-  apiUrl: 'http://localhost:3000',
+  apiUrl: 'http://localhost:3000/api/v1',
 
   /** Extended timeout for development (30 seconds) */
   apiTimeout: 30000,

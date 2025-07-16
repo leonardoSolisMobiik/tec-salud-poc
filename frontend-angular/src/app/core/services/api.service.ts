@@ -76,7 +76,7 @@ export class ApiService {
   // ========== Patient Management ==========
 
   /**
-   * @deprecated This method uses the old /api/v1/patients/ endpoint which is no longer available.
+   * @deprecated This method uses the old /patients/ endpoint which is no longer available.
    * Use searchPatients() or searchPatientsWithParams() instead.
    *
    * Retrieves paginated list of patients
@@ -153,7 +153,7 @@ export class ApiService {
       include_score: includeScore.toString()
     });
 
-    const url = `${this.apiUrl}/api/v1/search/patients?${params.toString()}`;
+    const url = `${this.apiUrl}/search/patients?${params.toString()}`;
     this.log('Making search request to:', url);
 
     return this.http.get<DocumentSearchResponse>(url, { headers: this.headers }).pipe(
@@ -201,7 +201,7 @@ export class ApiService {
       include_score: (searchParams.include_score !== undefined ? searchParams.include_score : true).toString()
     });
 
-    const url = `${this.apiUrl}/api/v1/search/patients?${params.toString()}`;
+    const url = `${this.apiUrl}/search/patients?${params.toString()}`;
     this.log('Making search request to:', url);
 
     return this.http.get<DocumentSearchResponse>(url, { headers: this.headers }).pipe(
@@ -235,7 +235,7 @@ export class ApiService {
    */
   getPatientById(patientId: string): Observable<Patient> {
     return this.http.get<Patient>(
-      `${this.apiUrl}/api/v1/patients/${patientId}`,
+      `${this.apiUrl}/patients/${patientId}`,
       { headers: this.headers }
     ).pipe(
       retry(1),
@@ -262,7 +262,7 @@ export class ApiService {
    * ```
    */
   recordPatientInteraction(patientId: string, interaction: PatientInteraction): Observable<{message: string}> {
-    // TODO: Implement when backend endpoint /api/v1/patients/{id}/interaction is available
+    // TODO: Implement when backend endpoint /patients/{id}/interaction is available
     // const params = new URLSearchParams({
     //   interaction_type: interaction.interaction_type || 'view',
     //   summary: interaction.summary || `Doctor accessed patient record`,
@@ -270,7 +270,7 @@ export class ApiService {
     // });
 
     // return this.http.post<{message: string}>(
-    //   `${this.apiUrl}/api/v1/patients/${patientId}/interaction?${params.toString()}`,
+          //   `${this.apiUrl}/patients/${patientId}/interaction?${params.toString()}`,
     //   {}, // Empty body since backend expects query params
     //   { headers: this.headers }
     // ).pipe(
@@ -304,7 +304,7 @@ export class ApiService {
    */
   sendMedicalChat(request: ChatRequest): Observable<ChatResponse> {
     return this.http.post<ChatResponse>(
-      `${this.apiUrl}/api/v1/chat/medical`,
+              `${this.apiUrl}/chat/medical`,
       request,
       { headers: this.headers }
     ).pipe(
@@ -353,7 +353,7 @@ export class ApiService {
    */
   analyzeCaseHistory(patientId: string, query: string): Observable<ChatResponse> {
     return this.http.post<ChatResponse>(
-      `${this.apiUrl}/api/v1/chat/analyze-case`,
+              `${this.apiUrl}/chat/analyze-case`,
       { patient_id: patientId, query },
       { headers: this.headers }
     ).pipe(
@@ -384,7 +384,7 @@ export class ApiService {
    */
   createChatSession(sessionRequest: ChatSessionRequest): Observable<ChatSessionResponse> {
     return this.http.post<ChatSessionResponse>(
-      `${this.apiUrl}/api/v1/chat/sessions`,
+      `${this.apiUrl}/chat/sessions`,
       sessionRequest,
       { headers: this.headers }
     ).pipe(
@@ -408,7 +408,7 @@ export class ApiService {
    */
   getChatSession(sessionId: string): Observable<ChatSessionResponse> {
     return this.http.get<ChatSessionResponse>(
-      `${this.apiUrl}/api/v1/chat/sessions/${sessionId}`,
+      `${this.apiUrl}/chat/sessions/${sessionId}`,
       { headers: this.headers }
     ).pipe(
       retry(1),
@@ -453,7 +453,7 @@ export class ApiService {
       };
 
       // Make POST request to the streaming endpoint
-      fetch(`${this.apiUrl}/api/v1/chat/ask`, {
+      fetch(`${this.apiUrl}/chat/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -534,7 +534,7 @@ export class ApiService {
    */
   getChatSessions(userId: string): Observable<ChatSessionResponse[]> {
     return this.http.get<ChatSessionResponse[]>(
-      `${this.apiUrl}/api/v1/chat/sessions?user_id=${userId}`,
+      `${this.apiUrl}/chat/sessions?user_id=${userId}`,
       { headers: this.headers }
     ).pipe(
       retry(1),
@@ -565,7 +565,7 @@ export class ApiService {
    */
   uploadDocument(formData: FormData): Observable<DocumentUploadResponse> {
     return this.http.post<DocumentUploadResponse>(
-      `${this.apiUrl}/api/v1/documents/upload`,
+      `${this.apiUrl}/documents/upload`,
       formData
     ).pipe(
       catchError(this.handleError)
@@ -622,7 +622,7 @@ export class ApiService {
     }
 
     return this.http.post<BatchUploadResponse>(
-      `${this.apiUrl}/api/v1/documents/upload/batch`,
+      `${this.apiUrl}/documents/upload/batch`,
       formData
     ).pipe(
       timeout(300000), // 5 minutes timeout for batch operations
@@ -656,7 +656,7 @@ export class ApiService {
     if (patientId) params.set('patient_id', patientId);
     if (documentType) params.set('document_type', documentType);
 
-    const url = `${this.apiUrl}/api/v1/documents/${params.toString() ? '?' + params.toString() : ''}`;
+    const url = `${this.apiUrl}/documents/${params.toString() ? '?' + params.toString() : ''}`;
 
     return this.http.get<any>(url, { headers: this.headers }).pipe(
       retry(1),
@@ -679,7 +679,7 @@ export class ApiService {
    */
   getDocumentById(documentId: string): Observable<any> {
     return this.http.get<any>(
-      `${this.apiUrl}/api/v1/documents/${documentId}`,
+      `${this.apiUrl}/documents/${documentId}`,
       { headers: this.headers }
     ).pipe(
       retry(1),
@@ -705,7 +705,7 @@ export class ApiService {
    */
   searchDocuments(query: string, patientId?: string, documentType?: string): Observable<any> {
     return this.http.post<any>(
-      `${this.apiUrl}/api/v1/documents/search`,
+      `${this.apiUrl}/documents/search`,
       { query, patient_id: patientId, document_type: documentType },
       { headers: this.headers }
     ).pipe(
@@ -730,7 +730,7 @@ export class ApiService {
    */
   deleteDocument(documentId: string): Observable<any> {
     return this.http.delete<any>(
-      `${this.apiUrl}/api/v1/documents/${documentId}`,
+      `${this.apiUrl}/documents/${documentId}`,
       { headers: this.headers }
     ).pipe(
       catchError(this.handleError)
@@ -769,7 +769,7 @@ export class ApiService {
     });
 
     const encodedName = encodeURIComponent(patientName);
-    const url = `${this.apiUrl}/api/v1/search/patients/${encodedName}/documents?${searchParams.toString()}`;
+    const url = `${this.apiUrl}/search/patients/${encodedName}/documents?${searchParams.toString()}`;
 
     return this.http.get<DocumentSearchResponse>(url, { headers: this.headers }).pipe(
       catchError(this.handleError)
@@ -788,7 +788,7 @@ export class ApiService {
    *
    * @example
    * ```typescript
-   * apiService.get('/api/v1/custom-endpoint').subscribe(data => {
+   * apiService.get('/custom-endpoint').subscribe(data => {
    *   console.log('Custom data:', data);
    * });
    * ```
@@ -815,7 +815,7 @@ export class ApiService {
    * @example
    * ```typescript
    * const payload = { name: 'New Item', type: 'example' };
-   * apiService.post('/api/v1/items', payload).subscribe(result => {
+   * apiService.post('/items', payload).subscribe(result => {
    *   console.log('Created:', result);
    * });
    * ```
@@ -842,7 +842,7 @@ export class ApiService {
    * @example
    * ```typescript
    * const updates = { name: 'Updated Name' };
-   * apiService.put('/api/v1/items/123', updates).subscribe(result => {
+   * apiService.put('/items/123', updates).subscribe(result => {
    *   console.log('Updated:', result);
    * });
    * ```
@@ -865,7 +865,7 @@ export class ApiService {
    *
    * @example
    * ```typescript
-   * apiService.delete('/api/v1/items/123').subscribe(result => {
+   * apiService.delete('/items/123').subscribe(result => {
    *   console.log('Deleted successfully');
    * });
    * ```
@@ -896,7 +896,7 @@ export class ApiService {
    */
   checkHealth(): Observable<HealthCheckResponse> {
     return this.http.get<HealthCheckResponse>(
-      `${this.apiUrl}/api/v1/health`,
+      `${this.apiUrl}/health`,
       { headers: this.headers }
     ).pipe(
       retry(1),
@@ -920,7 +920,7 @@ export class ApiService {
    */
   checkAzureOpenAIHealth(): Observable<AzureOpenAIHealthResponse> {
     return this.http.get<AzureOpenAIHealthResponse>(
-      `${this.apiUrl}/api/v1/health/azure-openai`,
+      `${this.apiUrl}/health/azure-openai`,
       { headers: this.headers }
     ).pipe(
       retry(1),
@@ -1110,5 +1110,39 @@ export class ApiService {
 
     this.log('Converted documents to patients:', patients);
     return patients;
+  }
+
+  /**
+   * Get platform overview statistics
+   *
+   * @description Retrieves comprehensive platform statistics including document counts,
+   * processing metrics, user activity, and system performance data.
+   *
+   * @returns Observable with platform statistics
+   * @since 1.0.0
+   *
+   * @example
+   * ```typescript
+   * this.apiService.getPlatformStatistics().subscribe(stats => {
+   *   console.log('Total documents:', stats.total_documents);
+   *   console.log('Active users:', stats.active_users);
+   * });
+   * ```
+   */
+  getPlatformStatistics(): Observable<any> {
+    const url = `${this.apiUrl}/statistics/platform/overview`;
+
+    console.log('📊 Fetching platform statistics from:', url);
+
+    return this.http.get<any>(url, { headers: this.headers })
+      .pipe(
+        retry(2),
+        timeout(10000),
+        catchError(this.handleError),
+        map(response => {
+          console.log('✅ Platform statistics retrieved:', response);
+          return response;
+        })
+      );
   }
 }

@@ -12,7 +12,7 @@
       (click)="toggleSidebar()"
       class="toggle-button"
       [title]="(uiStateService.isSidebarCollapsed$ | async) ? 'Expandir panel de pacientes' : 'Contraer panel de pacientes'"
-      [aria-label]="(uiStateService.isSidebarCollapsed$ | async) ? 'Expandir panel de pacientes' : 'Contraer panel de pacientes'">
+      [attr.aria-label]="(uiStateService.isSidebarCollapsed$ | async) ? 'Expandir panel de pacientes' : 'Contraer panel de pacientes'">
       <svg *ngIf="!(uiStateService.isSidebarCollapsed$ | async)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M15 18l-6-6 6-6"/>
       </svg>
@@ -43,79 +43,35 @@
     </button>
   </div>
 
-  <!-- 🔥 PRUEBA SUPER VISIBLE DE NAVEGACIÓN - SIN CONDICIONES -->
-  <div style="background: red !important; color: white !important; padding: 20px !important; font-size: 20px !important; font-weight: bold !important; text-align: center !important; margin: 10px !important; border: 5px solid yellow !important;">
-    🚨 MENÚ DE NAVEGACIÓN AQUÍ 🚨
-  </div>
-
-  <!-- NAVEGACIÓN CON MISMA ESTRATEGIA EXITOSA QUE PATIENT CARDS -->
-  <div class="nav-container-simple" style="padding: 15px !important; margin: 10px !important; background: #f0f0f0 !important; border: 2px solid #ccc !important; border-radius: 8px !important; display: block !important; visibility: visible !important;">
-
-    <!-- Usando bmb-card igual que patient cards -->
-    <bmb-card
-      class="nav-card-wrapper"
-      type="normal"
-      style="margin-bottom: 10px !important; background: lime !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
-      <a
-        routerLink="/chat"
-        routerLinkActive="active"
-        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: black !important; font-weight: bold !important;">
-        <span style="font-size: 1.5rem !important;">🩺</span>
-        <span>Copiloto Médico</span>
+  <!-- Navigation Section -->
+  <div class="nav-container" *ngIf="!(uiStateService.isSidebarCollapsed$ | async)">
+    <bmb-card class="nav-card-wrapper" type="normal">
+      <a routerLink="/chat" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">🩺</span>
+        <span class="nav-text">Copiloto Médico</span>
       </a>
     </bmb-card>
 
-    <bmb-card
-      class="nav-card-wrapper"
-      type="normal"
-      style="margin-bottom: 10px !important; background: cyan !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
-      <a
-        routerLink="/documents"
-        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: black !important; font-weight: bold !important;">
-        <span style="font-size: 1.5rem !important;">📤</span>
-        <span>Subir Expedientes</span>
+    <bmb-card class="nav-card-wrapper" type="normal">
+      <a routerLink="/documents" class="nav-link">
+        <span class="nav-icon">📤</span>
+        <span class="nav-text">Subir Expedientes</span>
       </a>
     </bmb-card>
 
-    <bmb-card
-      class="nav-card-wrapper"
-      type="normal"
-      style="margin-bottom: 10px !important; background: magenta !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
-      <a
-        routerLink="/documents"
-        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: white !important; font-weight: bold !important;">
-        <span style="font-size: 1.5rem !important;">📚</span>
-        <span>Ver Documentos</span>
+    <bmb-card class="nav-card-wrapper" type="normal">
+      <a routerLink="/documents" class="nav-link">
+        <span class="nav-icon">📚</span>
+        <span class="nav-text">Ver Documentos</span>
       </a>
     </bmb-card>
 
-        <bmb-card
-      class="nav-card-wrapper"
-      type="normal"
-      style="margin-bottom: 10px !important; background: #0EA5E9 !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
-      <a
-        routerLink="/dashboard"
-        routerLinkActive="active"
-        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: white !important; font-weight: bold !important;">
-        <span style="font-size: 1.5rem !important;">📊</span>
-        <span>Dashboard</span>
+    <bmb-card class="nav-card-wrapper" type="normal">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Dashboard</span>
       </a>
     </bmb-card>
-
-    <!-- COMMENTED OUT: Patient Management functionality -->
-    <!-- <bmb-card
-      class="nav-card-wrapper"
-      type="normal"
-      style="margin-bottom: 10px !important; background: orange !important; padding: 10px !important; display: block !important; border: 2px solid black !important;">
-      <a
-        routerLink="/patients"
-        routerLinkActive="active"
-        style="display: flex !important; align-items: center !important; gap: 10px !important; text-decoration: none !important; color: black !important; font-weight: bold !important;">
-        <span style="font-size: 1.5rem !important;">👥</span>
-        <span>Gestión Pacientes</span>
-      </a>
-    </bmb-card> -->
-
   </div>
 
   <!-- Patients List -->
@@ -128,23 +84,13 @@
           🔍 Resultados de Búsqueda ({{searchResults.length}})
         </h3>
 
-        <!-- Debug info for search results -->
-        <div class="debug-info" style="background: #d4edda; padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 12px;">
-          🔍 Debug: {{searchResults.length}} resultados de búsqueda
-          <div *ngFor="let patient of searchResults.slice(0, 3)">
-            - ID: {{patient.id}}, Name: {{patient.name}}, Score: {{patient.similarity_score}}
-          </div>
-        </div>
-
         <div class="patients-list">
-          <!-- ✅ BAMBOO CARDS PARA RESULTADOS DE BÚSQUEDA -->
           <bmb-card
             *ngFor="let patient of searchResults; trackBy: trackByPatientId"
             [class]="getPatientCardClasses(patient)"
             (click)="selectSearchResult(patient)"
             class="patient-card-wrapper patient-card-bamboo search-result-card"
-            type="normal"
-            style="margin-bottom: 8px !important; border-left: 3px solid #17a2b8 !important;">
+            type="normal">
 
             <div class="patient-content">
               <!-- Avatar -->
@@ -155,15 +101,12 @@
               <!-- Patient Info -->
               <div class="patient-info">
                 <div class="patient-name">{{ patient.name || patient.nombre_paciente || 'Nombre no disponible' }}</div>
-              <div class="patient-meta">{{ patient.age || 'N/A' }} años • {{ patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'N/A' }}</div>
-                <div class="patient-score" *ngIf="patient.similarity_score" style="font-size: 0.75rem; color: #6c757d;">
+                <div class="patient-meta">{{ patient.age || 'N/A' }} años • {{ patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'N/A' }}</div>
+                <div class="patient-score" *ngIf="patient.similarity_score">
                   Coincidencia: {{(patient.similarity_score * 100) | number:'1.0-0'}}%
                 </div>
               </div>
-
-
             </div>
-
           </bmb-card>
 
           <!-- Empty Search State -->
@@ -173,53 +116,41 @@
             <small>Espera un momento</small>
           </div>
         </div>
+      </div>
 
       <!-- Recent Patients Section (shown when no search results) -->
       <div *ngIf="searchResults.length === 0" class="recent-patients-section">
-      <h3 class="section-title">
-        ❤️ Pacientes Recientes ({{recentPatients.length}})
-      </h3>
+        <h3 class="section-title">
+          ❤️ Pacientes Recientes ({{recentPatients.length}})
+        </h3>
 
-      <!-- Debug info -->
-      <div class="debug-info" style="background: #fff3cd; padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 12px;">
-        🔍 Debug: {{recentPatients.length}} pacientes cargados
-          <div *ngFor="let patient of recentPatients.slice(0, 2)">
-            - ID: {{patient.id}}, Name: {{patient.name}}, Nombre_paciente: {{(patient as any).nombre_paciente || 'N/A'}}
-          </div>
-      </div>
+        <div class="patients-list">
+          <bmb-card
+            *ngFor="let patient of recentPatients; trackBy: trackByPatientId"
+            [class]="getPatientCardClasses(patient)"
+            (click)="selectPatient(patient)"
+            class="patient-card-wrapper patient-card-bamboo"
+            type="normal">
 
-      <div class="patients-list">
-        <!-- ✅ BAMBOO CARDS RESTAURADAS - Versión actualizada 1.5.5 -->
-        <bmb-card
-          *ngFor="let patient of recentPatients; trackBy: trackByPatientId"
-          [class]="getPatientCardClasses(patient)"
-          (click)="selectPatient(patient)"
-          class="patient-card-wrapper patient-card-bamboo"
-          type="normal">
+            <div class="patient-content">
+              <!-- Avatar -->
+              <div class="patient-avatar">
+                {{ getPatientInitials(patient) }}
+              </div>
 
-          <div class="patient-content">
-            <!-- Avatar -->
-            <div class="patient-avatar">
-              {{ getPatientInitials(patient) }}
-            </div>
-
-            <!-- Patient Info -->
-            <div class="patient-info">
+              <!-- Patient Info -->
+              <div class="patient-info">
                 <div class="patient-name">{{ patient.name || patient.nombre_paciente || 'Nombre no disponible' }}</div>
                 <div class="patient-meta">{{ patient.age || 'N/A' }} años • {{ patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'N/A' }}</div>
+              </div>
             </div>
+          </bmb-card>
 
-
-                      </div>
-
-        </bmb-card>
-
-        <!-- Empty State -->
-        <div *ngIf="recentPatients.length === 0" class="empty-state">
-          <!-- Usando emoji temporalmente en lugar de bmb-icon -->
-          <div class="empty-icon">👤</div>
-          <p>No hay pacientes recientes</p>
-          <small>Busca un paciente para comenzar</small>
+          <!-- Empty State -->
+          <div *ngIf="recentPatients.length === 0" class="empty-state">
+            <div class="empty-icon">👤</div>
+            <p>No hay pacientes recientes</p>
+            <small>Busca un paciente para comenzar</small>
           </div>
         </div>
       </div>

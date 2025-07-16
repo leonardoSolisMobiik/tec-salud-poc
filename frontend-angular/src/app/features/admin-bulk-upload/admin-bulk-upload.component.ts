@@ -357,16 +357,16 @@ interface BatchUpload {
     </div>
   `,
   styles: [`
-    /* 🎨 COMPONENTE ESPECÍFICO - BULK UPLOAD */
+    /** 🎨 BULK UPLOAD COMPONENT SPECIFIC STYLES */
 
-    /* 🏗️ CONTENEDOR GLOBAL CON ESPACIO SUFICIENTE */
+    /** 🏗️ GLOBAL CONTAINER WITH SUFFICIENT SPACE */
     .global-container {
       min-height: 100vh;
-      padding-bottom: 125px; /* Espacio extra para controles inferiores */
+      padding-bottom: 55px; /* Extra space for bottom controls */
       overflow-y: auto;
     }
 
-    /* 🎨 PREMIUM UPLOAD INTERFACE */
+    /** 🎨 PREMIUM UPLOAD INTERFACE */
     .premium-upload-interface {
       margin-bottom: var(--bmb-spacing-l);
       width: 100%;
@@ -393,7 +393,7 @@ interface BatchUpload {
         }
     }
 
-    /* 🎯 PREMIUM DROP ZONE */
+    /** 🎯 PREMIUM DROP ZONE */
     .premium-drop-zone {
       position: relative;
       background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -537,7 +537,7 @@ interface BatchUpload {
       display: none;
     }
 
-    /* 🎯 PROCESS CONTROLS */
+    /** 🎯 PROCESS CONTROLS */
     .process-controls {
       display: flex;
         flex-direction: column;
@@ -685,7 +685,7 @@ interface BatchUpload {
 
     /* 📋 FILES LIST - CONSISTENTE CON DOCUMENT-UPLOAD */
     .files-section {
-      margin-bottom: 100px; /* Espacio extra para evitar que se corte */
+        margin-bottom: 45px; /* Espacio extra para evitar que se corte */
 
       .section-title {
         color: var(--general_contrasts-100);

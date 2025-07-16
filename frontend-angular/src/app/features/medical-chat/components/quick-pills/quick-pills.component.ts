@@ -582,7 +582,7 @@ export class QuickPillsComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   onPillClick(question: QuickQuestion): void {
-    // Reutiliza la misma lógica de insertQuickAction del chat-input.component.ts
+    // Reuses the same logic as insertQuickAction from chat-input.component.ts
     this.questionSelected.emit(question.text);
   }
 

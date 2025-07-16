@@ -1,12 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Location } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { DashboardMetricsService } from './services/dashboard-metrics.service';
-import { AnalyticsService } from './services/analytics.service';
 import { UiStateService } from '@core/services';
+import { ApiService } from '@core/services/api.service';
 import { MetricCardComponent } from './components/metric-card/metric-card.component';
-import { AnalyticsChartComponent } from './components/analytics-chart/analytics-chart.component';
 
 /**
  * Interface for dashboard metrics data
@@ -14,15 +13,16 @@ import { AnalyticsChartComponent } from './components/analytics-chart/analytics-
 interface DashboardMetrics {
   consultationsToday: number;
   averageResponseTime: number;
+  totalDocuments?: number;
+  activeUsers?: number;
+  totalSessions?: number;
+  totalInteractions?: number;
+  activePills?: number;
+  storageUsed?: number;
+  avgDocumentSize?: number;
 }
 
-/**
- * Interface for chart data
- */
-interface ChartData {
-  interactionsByHour: { hour: string; count: number }[];
-  pillsDistribution: { category: string; count: number; color: string }[];
-}
+
 
 /**
  * Admin Dashboard component for TecSalud Medical Assistant
@@ -59,9 +59,17 @@ interface ChartData {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, MetricCardComponent, AnalyticsChartComponent],
+  imports: [CommonModule, MetricCardComponent],
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.scss']
+  styleUrls: ['./admin-dashboard.component.scss'],
+  styles: [`
+    /** 🏗️ GLOBAL CONTAINER WITH SUFFICIENT SPACE */
+    .global-container {
+      min-height: 100vh;
+      padding-bottom: 63px; /* Extra space for bottom controls */
+      overflow-y: auto;
+    }
+  `]
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
   /** Subject for component destruction */
@@ -73,26 +81,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     averageResponseTime: 0
   };
 
-  /** Chart data for visualizations */
-  chartData: ChartData = {
-    interactionsByHour: [],
-    pillsDistribution: []
-  };
-
-  /** Chart data objects for template binding */
-  interactionsChartData: any = {
-    labels: [],
-    datasets: []
-  };
-
-  pillsChartData: any = {
-    labels: [],
-    datasets: []
-  };
-
   /** Loading states */
   isLoadingMetrics = true;
-  isLoadingCharts = true;
 
   /** Error states */
   hasError = false;
@@ -102,14 +92,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
    * Creates an instance of AdminDashboardComponent
    *
    * @param dashboardMetrics - Service for dashboard metrics
-   * @param analytics - Service for analytics processing
    * @param uiState - Service for UI state management
+   * @param apiService - Service for API communications
    * @param location - Angular Location service for navigation
    */
   constructor(
     private dashboardMetrics: DashboardMetricsService,
-    private analytics: AnalyticsService,
     private uiState: UiStateService,
+    private apiService: ApiService,
     private location: Location
   ) {}
 
@@ -134,119 +124,85 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Loads all dashboard data including metrics and charts
+   * Loads all dashboard data
    *
-   * @description Fetches metrics and chart data simultaneously for optimal performance
+   * @description Fetches platform metrics for dashboard display
    */
   private loadDashboardData(): void {
     this.loadMetrics();
-    this.loadChartData();
   }
 
   /**
-   * Loads dashboard metrics from the service
+   * Loads dashboard metrics from multiple sources
    *
-   * @description Retrieves consultations, response times, tokens, and documents data
+   * @description Retrieves metrics from both legacy service and new platform statistics API
    */
   private loadMetrics(): void {
     this.isLoadingMetrics = true;
     this.hasError = false;
 
+    // Load data from both sources in parallel
+    forkJoin({
+      dashboardMetrics: this.dashboardMetrics.getDashboardMetrics(),
+      platformStats: this.apiService.getPlatformStatistics()
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (result) => {
+        // Merge data from both sources using correct API structure
+        this.metrics = {
+          ...result.dashboardMetrics,
+          totalDocuments: result.platformStats.totals?.documents || 0,
+          activeUsers: result.platformStats.totals?.unique_users || 0,
+          totalSessions: result.platformStats.totals?.sessions || 0,
+          totalInteractions: result.platformStats.totals?.interactions || 0,
+          activePills: result.platformStats.totals?.active_pills || 0,
+          storageUsed: result.platformStats.storage?.total_size_mb || 0,
+          avgDocumentSize: result.platformStats.storage?.avg_size_mb || 0
+        };
+
+        console.log('📊 Combined dashboard metrics:', this.metrics);
+        this.isLoadingMetrics = false;
+      },
+      error: (error) => {
+        console.error('Error loading dashboard metrics:', error);
+        this.handleError('Error al cargar las métricas del dashboard');
+        this.isLoadingMetrics = false;
+
+        // Fallback to legacy metrics only
+        this.loadLegacyMetricsOnly();
+      }
+    });
+  }
+
+  /**
+   * Fallback method to load only legacy metrics
+   *
+   * @description Used when platform statistics API is unavailable
+   */
+  private loadLegacyMetricsOnly(): void {
     this.dashboardMetrics.getDashboardMetrics()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (metrics) => {
           this.metrics = metrics;
           this.isLoadingMetrics = false;
+          console.log('⚠️ Using legacy metrics only:', this.metrics);
         },
         error: (error) => {
-          console.error('Error loading dashboard metrics:', error);
-          this.handleError('Error al cargar las métricas del dashboard');
+          console.error('Error loading legacy metrics:', error);
           this.isLoadingMetrics = false;
         }
       });
   }
 
-    /**
-   * Loads chart data for visualizations
-   *
-   * @description Retrieves interaction timeline and pills distribution data
-   */
-  private loadChartData(): void {
-    this.isLoadingCharts = true;
 
-    this.analytics.getInteractionsByHour()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (hourlyData) => {
-          this.chartData.interactionsByHour = hourlyData;
-          this.updateInteractionsChartData();
-          this.loadPillsDistribution();
-        },
-        error: (error) => {
-          console.error('Error loading hourly interactions:', error);
-          this.handleError('Error al cargar datos de interacciones');
-          this.isLoadingCharts = false;
-        }
-      });
-  }
 
-    /**
-   * Loads pills distribution data for pie chart
-   *
-   * @description Retrieves pills usage by category with associated colors
-   */
-  private loadPillsDistribution(): void {
-    this.analytics.getPillsDistribution()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (pillsData) => {
-          this.chartData.pillsDistribution = pillsData;
-          this.updatePillsChartData();
-          this.isLoadingCharts = false;
-        },
-        error: (error) => {
-          console.error('Error loading pills distribution:', error);
-          this.handleError('Error al cargar distribución de pastillas');
-          this.isLoadingCharts = false;
-        }
-      });
-  }
 
-  /**
-   * Updates interactions chart data for template binding
-   *
-   * @description Converts raw data to chart.js format for interactions timeline
-   */
-  private updateInteractionsChartData(): void {
-    this.interactionsChartData = {
-      labels: this.chartData.interactionsByHour.map(item => item.hour),
-      datasets: [{
-        label: 'Consultas',
-        data: this.chartData.interactionsByHour.map(item => item.count),
-        borderColor: '#0EA5E9',
-        backgroundColor: 'rgba(14, 165, 233, 0.1)',
-        borderWidth: 2,
-        tension: 0.4
-      }]
-    };
-  }
 
-  /**
-   * Updates pills chart data for template binding
-   *
-   * @description Converts raw data to chart.js format for pills distribution
-   */
-  private updatePillsChartData(): void {
-    this.pillsChartData = {
-      labels: this.chartData.pillsDistribution.map(item => item.category),
-      datasets: [{
-        data: this.chartData.pillsDistribution.map(item => item.count),
-        backgroundColor: this.chartData.pillsDistribution.map(item => item.color),
-        borderWidth: 0
-      }]
-    };
-  }
+
+
+
 
   /**
    * Starts periodic updates for dashboard data
@@ -256,7 +212,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private startPeriodicUpdates(): void {
     // Update metrics every 5 minutes
     setInterval(() => {
-      if (!this.isLoadingMetrics && !this.isLoadingCharts) {
+      if (!this.isLoadingMetrics) {
         this.loadDashboardData();
       }
     }, 5 * 60 * 1000); // 5 minutes
@@ -306,6 +262,21 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       return `${(value / 1000).toFixed(1)}k${unit || ''}`;
     }
     return `${value}${unit || ''}`;
+  }
+
+  /**
+   * Formats storage values in MB to appropriate units
+   *
+   * @param valueMB - Storage value in megabytes
+   * @returns Formatted string with appropriate unit (MB, GB, TB)
+   */
+  formatStorageValue(valueMB: number): string {
+    if (valueMB >= 1024 * 1024) {
+      return `${(valueMB / (1024 * 1024)).toFixed(1)} TB`;
+    } else if (valueMB >= 1024) {
+      return `${(valueMB / 1024).toFixed(1)} GB`;
+    }
+    return `${valueMB.toFixed(1)} MB`;
   }
 
     /**

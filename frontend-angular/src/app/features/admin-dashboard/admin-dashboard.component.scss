@@ -1,9 +1,6 @@
 // ADMIN DASHBOARD STYLES
 
 .admin-dashboard {
-  height: 100vh;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
   background: var(--general_contrasts-5);
   font-family: var(--font-body);
 
@@ -11,7 +8,6 @@
     padding: var(--bmb-spacing-l);
     max-width: 1400px;
     margin: 0 auto;
-    min-height: calc(100vh - var(--bmb-spacing-l) * 2);
   }
 }
 

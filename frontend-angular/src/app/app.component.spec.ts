@@ -6,22 +6,22 @@ import { AppComponent } from './app.component';
 
 /**
  * Mock component for AppShell to avoid complex dependencies in tests
- * 
+ *
  * @description Provides a simple mock implementation of the app shell
  * component to isolate the AppComponent during unit testing
  */
 @Component({
   selector: 'app-shell',
   standalone: true,
-  template: '<div>Mock App Shell</div>'
+  template: '<div data-testid="mock-app-shell">Mock App Shell</div>'
 })
 class MockAppShellComponent {}
 
 /**
  * Test suite for AppComponent
- * 
+ *
  * @description Unit tests for the main application component including
- * component creation, title verification, and shell rendering
+ * component creation, title verification, and shell rendering using Jest
  */
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -49,13 +49,39 @@ describe('AppComponent', () => {
   it('should have the correct title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('TecSalud Medical Assistant');
+    expect(app.title).toBe('TecSalud Medical Assistant');
   });
 
-  it('should render app shell', () => {
+  it('should render the app shell', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('div')?.textContent).toContain('Mock App Shell');
+    const appShell = compiled.querySelector('[data-testid="mock-app-shell"]');
+    expect(appShell).toBeTruthy();
+    expect(appShell?.textContent).toContain('Mock App Shell');
+  });
+
+  it('should have proper component structure', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    // Verify component properties
+    expect(app.title).toBeDefined();
+    expect(typeof app.title).toBe('string');
+  });
+
+  it('should handle component lifecycle', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+
+    // Component should be created without errors
+    expect(() => {
+      fixture.detectChanges();
+    }).not.toThrow();
+
+    // Component should be destroyable
+    expect(() => {
+      fixture.destroy();
+    }).not.toThrow();
   });
 });

@@ -453,8 +453,8 @@ export class PatientDocumentsService {
 
     // Priority 2: Construct URL using document ID for backend endpoint
     if (apiDoc.document_id) {
-      const backendUrl = 'http://localhost:8000'; // TODO: Use environment config
-      const documentUrl = `${backendUrl}/api/v1/documents/${apiDoc.document_id}`;
+              const backendUrl = 'http://localhost:3000/api/v1'; // TODO: Use environment config
+              const documentUrl = `${backendUrl}/documents/${apiDoc.document_id}`;
       console.log(`📄 Using backend document endpoint: ${apiDoc.filename} -> ${documentUrl}`);
       return documentUrl;
     }

@@ -670,8 +670,8 @@ export class MedicalStateService {
     // a proper "recent patients" or "all patients" endpoint
 
     // TODO: Implement when backend provides:
-    // - GET /api/v1/patients/recent
-    // - GET /api/v1/patients/all
+    // - GET /patients/recent
+    // - GET /patients/all
     // - Or similar endpoint that doesn't require search parameters
   }
 
