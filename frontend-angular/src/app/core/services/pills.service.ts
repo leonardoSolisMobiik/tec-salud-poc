@@ -28,7 +28,7 @@ import {
  *   text: 'Realizar diagnóstico inicial completo',
  *   icon: '🩺',
  *   category: 'diagnosis',
- *   priority: 1
+ *   priority: 'alta'
  * };
  *
  * this.pillsService.createPill(newPill).subscribe(pill => {
@@ -131,13 +131,13 @@ export class PillsService {
    *
    * @example
    * ```typescript
-   * const newPill: CreatePillRequest = {
-   *   starter: 'Síntomas',
-   *   text: 'Analizar síntomas del paciente',
-   *   icon: '📋',
-   *   category: 'symptoms',
-   *   priority: 1
-   * };
+    * const newPill: CreatePillRequest = {
+ *   starter: 'Síntomas',
+ *   text: 'Analizar síntomas del paciente',
+ *   icon: '📋',
+ *   category: 'symptoms',
+ *   priority: 'alta'
+ * };
    *
    * this.pillsService.createPill(newPill).subscribe({
    *   next: (pill) => console.log('Created pill:', pill),
@@ -155,7 +155,7 @@ export class PillsService {
       text: String(pillData.text).trim(),
       icon: String(pillData.icon),
       category: String(pillData.category),
-      priority: Number(pillData.priority), // Explicitly convert to number
+      priority: String(pillData.priority), // Keep as string
       is_active: pillData.is_active !== undefined ? pillData.is_active : true
     };
 
@@ -204,11 +204,11 @@ export class PillsService {
    *
    * @example
    * ```typescript
-   * const updatedPill: UpdatePillRequest = {
-   *   id: 'pill-123',
-   *   text: 'Updated question text',
-   *   priority: 2
-   * };
+    * const updatedPill: UpdatePillRequest = {
+ *   id: 'pill-123',
+ *   text: 'Updated question text',
+ *   priority: 'media'
+ * };
    *
    * this.pillsService.updatePill(updatedPill).subscribe({
    *   next: (pill) => console.log('Updated pill:', pill),
@@ -228,7 +228,7 @@ export class PillsService {
       text: String(updateData.text || '').trim(),
       icon: String(updateData.icon || ''),
       category: String(updateData.category || ''),
-      priority: Number(updateData.priority || 1),
+      priority: String(updateData.priority || 'media'),
       is_active: updateData.is_active !== undefined ? updateData.is_active : true
     };
 

@@ -1,7 +1,7 @@
 <aside
   class="medical-sidebar"
   [class.collapsed]="(uiStateService.isSidebarCollapsed$ | async)"
-  [style.width]="(uiStateService.isSidebarCollapsed$ | async) ? '80px' : '300px'">
+  [style.width]="(uiStateService.isSidebarCollapsed$ | async) ? '80px' : '450px'">
 
   <!-- Header -->
   <div class="sidebar-header">
@@ -37,7 +37,8 @@
   <div class="collapsed-search" *ngIf="(uiStateService.isSidebarCollapsed$ | async)">
     <button
       (click)="toggleSidebar()"
-      class="search-icon-button">
+      class="search-icon-button"
+      title="Buscar pacientes">
       🔍
     </button>
   </div>
@@ -154,18 +155,13 @@
               <!-- Patient Info -->
               <div class="patient-info">
                 <div class="patient-name">{{ patient.name || patient.nombre_paciente || 'Nombre no disponible' }}</div>
-                <div class="patient-id">ID: {{ patient.id || patient.expediente }}</div>
+              <div class="patient-meta">{{ patient.age || 'N/A' }} años • {{ patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'N/A' }}</div>
                 <div class="patient-score" *ngIf="patient.similarity_score" style="font-size: 0.75rem; color: #6c757d;">
                   Coincidencia: {{(patient.similarity_score * 100) | number:'1.0-0'}}%
                 </div>
               </div>
 
-              <!-- Match Type Badge -->
-              <span class="match-badge"
-                    [style.background]="patient.similarity_score === 1 ? '#28a745' : '#17a2b8'"
-                    style="padding: 2px 6px; border-radius: 3px; font-size: 0.7rem; color: white;">
-                {{ patient.match_type || 'match' }}
-              </span>
+
             </div>
 
           </bmb-card>
@@ -210,13 +206,10 @@
             <!-- Patient Info -->
             <div class="patient-info">
                 <div class="patient-name">{{ patient.name || patient.nombre_paciente || 'Nombre no disponible' }}</div>
-                <div class="patient-id">ID: {{ patient.id || patient.expediente }}</div>
+                <div class="patient-meta">{{ patient.age || 'N/A' }} años • {{ patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'N/A' }}</div>
             </div>
 
-            <!-- Status Badge -->
-            <span *ngIf="isPatientActive(patient)" class="active-badge-simple">
-              ✅ Activo
-            </span>
+
                       </div>
 
         </bmb-card>

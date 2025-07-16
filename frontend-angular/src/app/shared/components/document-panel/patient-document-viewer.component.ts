@@ -640,9 +640,9 @@ import { Patient } from '../../../core/models/patient.model';
       min-height: 200px;
 
       .loading-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
         gap: var(--bmb-spacing-l, 1.5rem);
       }
 
@@ -656,8 +656,8 @@ import { Patient } from '../../../core/models/patient.model';
           height: 48px;
           border: 4px solid rgba(var(--color-blue-tec, 0, 57, 166), 0.1);
           border-left: 4px solid rgba(var(--color-blue-tec, 0, 57, 166), 1);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
         }
       }
 
@@ -670,12 +670,12 @@ import { Patient } from '../../../core/models/patient.model';
           color: var(--general_contrasts-text-primary, #111827);
           margin: 0 0 var(--bmb-spacing-s, 0.5rem) 0;
           font-family: var(--font-display, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-        }
+      }
 
-        p {
+      p {
           font-size: var(--text-lg, 1.125rem);
           color: var(--general_contrasts-text-secondary, #6b7280);
-          margin: 0;
+        margin: 0;
           line-height: var(--leading-relaxed, 1.625);
         }
       }

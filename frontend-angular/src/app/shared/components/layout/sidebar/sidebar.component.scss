@@ -468,16 +468,17 @@
 
     .patient-content {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: var(--bmb-spacing-l);
       position: relative;
       z-index: 1;
-      min-height: 60px;
+      min-height: 70px;
+      padding: var(--bmb-spacing-s, 0.5rem);
     }
 
     .patient-avatar {
-      width: 48px;
-      height: 48px;
+      width: 52px;
+      height: 52px;
       background: linear-gradient(135deg,
         rgb(var(--color-blue-tec)) 0%,
         var(--buttons-primary-hover) 100%
@@ -488,7 +489,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 0.875rem;
+      font-size: 0.9rem;
       flex-shrink: 0;
       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
       box-shadow:
@@ -533,27 +534,33 @@
     .patient-info {
       flex-grow: 1;
       min-width: 0;
+      max-width: 320px;
+      padding-top: var(--bmb-spacing-xs, 0.25rem);
 
       .patient-name {
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 600;
         color: var(--general_contrasts-100);
         margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        white-space: normal;
+        overflow: visible;
+        word-wrap: break-word;
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
         line-height: 1.2;
+        max-height: none;
+        display: block;
+        width: 100%;
       }
 
-      .patient-id {
+      .patient-meta {
         font-size: 0.75rem;
         color: var(--general_contrasts-75);
         margin: 0;
         margin-top: var(--bmb-spacing-xs);
-        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
         font-weight: 500;
         opacity: 0.8;
+        line-height: 1.2;
       }
     }
 
@@ -819,7 +826,7 @@
 /* Desktop Styles (1025px+) */
 @media (min-width: 1025px) {
   .medical-sidebar {
-    width: var(--sidebar-width-desktop, 320px) !important;
+    width: var(--sidebar-width-desktop, 450px) !important;
 
     &.collapsed {
       width: 60px !important;

@@ -363,6 +363,13 @@ interface DocumentUpload {
     </div>
   `,
   styles: [`
+    /* 🏗️ CONTENEDOR GLOBAL CON ESPACIO SUFICIENTE */
+    .global-container {
+      min-height: 100vh;
+      padding-bottom: 125px; /* Espacio extra para controles inferiores */
+      overflow-y: auto;
+    }
+
     .upload-section {
       width: 100%;
       max-width: 1200px;
@@ -634,7 +641,7 @@ interface DocumentUpload {
     .files-section {
       width: 100%;
       max-width: 1200px;
-      margin: 0 auto var(--bmb-spacing-xl) auto;
+      margin: 0 auto 100px auto; /* Espacio extra para evitar que se corte */
 
       .section-title {
         color: var(--general_contrasts-100);

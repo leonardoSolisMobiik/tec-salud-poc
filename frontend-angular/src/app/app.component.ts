@@ -187,7 +187,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                   </div>
                   <div class="patient-info">
                     <div class="patient-name">{{patient.name}}</div>
-                    <div class="patient-id">{{patient.age}} años • {{patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'Otro'}}</div>
+                    <div class="patient-meta">{{patient.age}} años • {{patient.gender === 'M' ? 'Masculino' : patient.gender === 'F' ? 'Femenino' : 'Otro'}}</div>
                      </div>
                   <div class="active-badge" *ngIf="activePatient?.id === patient.id">
                      Activo

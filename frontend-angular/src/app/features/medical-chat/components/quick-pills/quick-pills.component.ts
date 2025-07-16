@@ -53,22 +53,20 @@ import { finalize } from 'rxjs/operators';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <!-- Loading state -->
-    <div class="quick-pills-container loading" *ngIf="isLoading">
-      <div class="loading-pills">
-        <div class="loading-pill" *ngFor="let i of [1,2,3,4]"></div>
+    <!-- Loading state - only show during initial load -->
+    <div *ngIf="isLoading" class="loading-state">
+      <div class="loading-container">
+        <div class="loading-spinner">
+          <div class="spinner"></div>
+        </div>
+        <div class="loading-text">
+          <h3>🔄 Cargando pastillas...</h3>
+          <p>Obteniendo preguntas rápidas</p>
+        </div>
       </div>
     </div>
 
-    <!-- Error state -->
-    <div class="quick-pills-container error" *ngIf="errorMessage && !isLoading">
-      <div class="error-message">
-        <span class="error-icon">⚠️</span>
-        <span class="error-text">{{ errorMessage }}</span>
-      </div>
-    </div>
-
-    <!-- Pills loaded from API -->
+    <!-- Pills loaded from API - only show if we have pills -->
     <div class="quick-pills-container" *ngIf="!isLoading && !errorMessage && currentQuestions.length > 0">
       <!-- Pastillas con diseño premium sutil -->
       <div class="quick-pills-grid">
@@ -93,6 +91,9 @@ import { finalize } from 'rxjs/operators';
         </div>
       </div>
     </div>
+
+    <!-- No pills state - don't show anything if no pills available -->
+    <!-- This ensures the component is completely hidden when no pills exist -->
   `,
   styles: [`
     /* Quick Pills Container */
@@ -306,27 +307,62 @@ import { finalize } from 'rxjs/operators';
       opacity: 1;
     }
 
-    .loading-pills {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: var(--bmb-spacing-xs, 0.5rem);
+    /* 🔄 LOADING STATE */
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: var(--bmb-spacing-l) var(--bmb-spacing-m);
+      min-height: 120px;
+
+      .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--bmb-spacing-m);
+      }
     }
 
-    .loading-pill {
-      height: 36px;
-      background: linear-gradient(90deg,
-        rgba(var(--general_contrasts-container-outline), 0.1) 0%,
-        rgba(var(--general_contrasts-container-outline), 0.3) 50%,
-        rgba(var(--general_contrasts-container-outline), 0.1) 100%
-      );
-      border-radius: var(--bmb-radius-m, 1rem);
-      animation: loading-pulse 1.5s ease-in-out infinite;
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(var(--color-blue-tec), 0.1);
+        border-left: 4px solid rgba(var(--color-blue-tec), 1);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
     }
 
-    @keyframes loading-pulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
+    .loading-text {
+      text-align: center;
+
+      h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--general_contrasts-text-primary);
+        margin: 0 0 0.25rem 0;
+      }
+
+      p {
+        font-size: 0.875rem;
+        color: var(--general_contrasts-text-secondary);
+        margin: 0;
+      }
     }
+
+
+
+
 
     /* Error state */
     .quick-pills-container.error {
@@ -385,6 +421,9 @@ export class QuickPillsComponent implements OnInit, OnDestroy, OnChanges {
   /** Error message for failed API requests */
   errorMessage: string | null = null;
 
+  /** Flag to track if pills have been loaded at least once */
+  private pillsLoadedOnce = false;
+
   /**
    * Creates an instance of QuickPillsComponent
    *
@@ -422,39 +461,51 @@ export class QuickPillsComponent implements OnInit, OnDestroy, OnChanges {
   /**
    * Component changes lifecycle method
    *
-   * @description Reloads contextual questions when patient input changes
+   * @description No longer reloads pills on patient change - pills are loaded once on init
    */
   ngOnChanges(): void {
-    if (this.patient) {
-      this.loadContextualQuestions();
-    }
+    // Pills are now loaded only once on component initialization
+    // No need to reload on patient changes
   }
 
   /**
    * Loads pills from API and converts them to QuickQuestion format
    *
    * @description Fetches pills from the real API and converts them for display
+   * Only loads once during component lifecycle
    */
   private loadPillsFromAPI(): void {
+    // Don't reload if already loaded once
+    if (this.pillsLoadedOnce) {
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = null;
 
     this.pillsService.loadPills(8, 0) // Load up to 8 pills
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.isLoading = false)
+        finalize(() => {
+          this.isLoading = false;
+          this.pillsLoadedOnce = true;
+        })
       )
       .subscribe({
         next: (pills) => {
           console.log('✅ Pills loaded from API:', pills);
-          const quickQuestions = this.convertPillsToQuickQuestions(pills);
-          this.currentQuestions = quickQuestions;
+          if (pills && pills.length > 0) {
+            const quickQuestions = this.convertPillsToQuickQuestions(pills);
+            this.currentQuestions = quickQuestions;
+          } else {
+            console.log('ℹ️ No pills available from API');
+            this.currentQuestions = [];
+          }
         },
         error: (error) => {
           console.error('❌ Error loading pills:', error);
           this.errorMessage = 'Error al cargar las pastillas';
-          // Fallback to existing service if API fails
-          this.loadContextualQuestions();
+          this.currentQuestions = [];
         }
       });
   }
@@ -467,11 +518,11 @@ export class QuickPillsComponent implements OnInit, OnDestroy, OnChanges {
    */
   private convertPillsToQuickQuestions(pills: Pill[]): QuickQuestion[] {
     return pills.map(pill => {
-             // Map priority numbers to priority strings (1=high, 2=medium, 3=low)
+             // Map priority strings to QuickQuestion priority format
        let priority: 'high' | 'medium' | 'low' = 'medium';
-       if (pill.priority === 1) priority = 'high';
-       else if (pill.priority === 2) priority = 'medium';
-       else if (pill.priority === 3) priority = 'low';
+       if (pill.priority === 'alta') priority = 'high';
+       else if (pill.priority === 'media') priority = 'medium';
+       else if (pill.priority === 'baja') priority = 'low';
        else priority = 'medium'; // Default fallback
 
       // Map categories to valid QuickQuestion categories
@@ -486,7 +537,7 @@ export class QuickPillsComponent implements OnInit, OnDestroy, OnChanges {
         case 'follow-up': category = 'follow-up'; break;
         case 'prevention': category = 'prevention'; break;
         default: category = 'diagnosis'; break;
-      }
+    }
 
       const pillId = pill.id || (pill as any).pill_id || `pill-${Math.random()}`;
 
@@ -504,26 +555,8 @@ export class QuickPillsComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private subscribeToQuestions(): void {
-    // Only subscribe to fallback service if API fails
-    this.quickQuestionsService.getCurrentQuestions()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(questions => {
-        // Only update if we don't have API questions loaded
-        if (this.currentQuestions.length === 0 && !this.isLoading) {
-          this.currentQuestions = questions;
-          this.resetRotationProgress();
-        }
-      });
-  }
-
-  private loadContextualQuestions(): void {
-    if (!this.patient) return;
-
-    // Try to reload from API first, fallback to service rotation
-    this.loadPillsFromAPI();
-
-    // Start service rotation as backup
-    this.quickQuestionsService.startRotation(this.patient);
+    // No longer needed - pills are loaded once from API only
+    // Keeping method for future fallback implementation if needed
   }
 
   private startRotationProgress(): void {

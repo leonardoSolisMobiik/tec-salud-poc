@@ -27,8 +27,8 @@ interface PillFormData {
   /** Category classification */
   category: string;
 
-  /** Priority level (1 = highest priority) */
-  priority: number;
+  /** Priority level (alta = highest priority) */
+  priority: 'alta' | 'media' | 'baja' | '';
 }
 
 /**
@@ -111,7 +111,7 @@ interface PillFormData {
       <div class="admin-content">
         <div class="pills-section">
           <div class="section-header">
-            <h3 class="section-title">💊 Pastillas Disponibles</h3>
+          <h3 class="section-title">💊 Pastillas Disponibles</h3>
             <button class="add-btn secondary" [disabled]="isLoading" (click)="openCreateModal()">
               <span class="btn-icon">{{ isLoading ? '⏳' : '➕' }}</span>
               <span class="btn-text">{{ isLoading ? 'Cargando...' : 'Nueva Pastilla' }}</span>
@@ -133,10 +133,10 @@ interface PillFormData {
 
           <!-- Premium Pills List -->
           <div class="pills-list" *ngIf="!isLoading && pills.length > 0">
-            <div
-              *ngFor="let pill of pills; trackBy: trackByPill"
-              class="pill-item"
-              [class]="'priority-' + pill.priority">
+                          <div
+                *ngFor="let pill of pills; trackBy: trackByPill"
+                class="pill-item"
+                [class]="getPriorityClass(pill.priority)">
 
               <!-- Pill Icon & Info -->
               <div class="pill-info">
@@ -150,7 +150,7 @@ interface PillFormData {
                     <span class="category-badge" [class]="'category-' + pill.category">
                       {{ getCategoryLabel(pill.category) }}
                     </span>
-                    <span class="priority-indicator" [class]="'priority-' + pill.priority">
+                    <span class="priority-indicator" [class]="getPriorityClass(pill.priority)">
                       {{ getPriorityLabel(pill.priority) }}
                     </span>
                   </div>
@@ -183,10 +183,6 @@ interface PillFormData {
             <div class="error-icon">⚠️</div>
             <h3 class="error-title">Error al cargar pastillas</h3>
             <p class="error-subtitle">{{ errorMessage }}</p>
-            <button class="error-action-btn" (click)="loadPillsFromAPI()">
-              <span class="btn-icon">🔄</span>
-              <span class="btn-text">Reintentar</span>
-            </button>
           </div>
 
           <!-- Empty State -->
@@ -239,17 +235,17 @@ interface PillFormData {
               </div>
 
               <div class="form-group">
-                <label class="form-label" for="pillIcon">Icono: *</label>
+                <label class="form-label">Icono: *</label>
+                <!-- Hidden input for form validation -->
+                <input type="hidden" [(ngModel)]="formData.icon" required name="pillIcon">
                 <div class="icon-selector">
-                  <input
-                    type="text"
-                    id="pillIcon"
-                    name="pillIcon"
-                    [(ngModel)]="formData.icon"
-                    required
-                    maxlength="2"
-                    placeholder="🩺"
-                    class="form-input">
+                  <div class="selected-icon-display" *ngIf="formData.icon">
+                    <span class="current-icon">{{ formData.icon }}</span>
+                    <span class="icon-label">Icono seleccionado</span>
+                  </div>
+                  <div class="icon-message" *ngIf="!formData.icon">
+                    Selecciona un icono de la lista
+                  </div>
                   <div class="icon-options">
                     <button
                       type="button"
@@ -272,10 +268,15 @@ interface PillFormData {
                     [(ngModel)]="formData.category"
                     required
                     class="form-select">
+                    <option value="" disabled>Selecciona una categoría</option>
                     <option value="general">General</option>
-                    <option value="emergency">Emergencia</option>
-                    <option value="prevention">Prevención</option>
-                    <option value="medication">Medicación</option>
+                    <option value="medico">Médico</option>
+                    <option value="emergencia">Emergencia</option>
+                    <option value="consulta">Consulta</option>
+                    <option value="laboratorio">Laboratorio</option>
+                    <option value="radiologia">Radiología</option>
+                    <option value="farmacia">Farmacia</option>
+                    <option value="administrativo">Administrativo</option>
                   </select>
                 </div>
 
@@ -287,9 +288,10 @@ interface PillFormData {
                     [(ngModel)]="formData.priority"
                     required
                     class="form-select">
-                    <option [value]="1">Alta (1)</option>
-                    <option [value]="2">Media (2)</option>
-                    <option [value]="3">Baja (3)</option>
+                    <option value="" disabled>Selecciona una prioridad</option>
+                    <option value="alta">Alta</option>
+                    <option value="media">Media</option>
+                    <option value="baja">Baja</option>
                   </select>
                 </div>
               </div>
@@ -301,9 +303,9 @@ interface PillFormData {
               <span>❌</span>
               <span>Cancelar</span>
             </button>
-            <button type="button" class="btn btn-primary" [disabled]="!pillForm.valid" (click)="savePill()">
+            <button type="button" class="btn btn-primary" [disabled]="!pillForm.valid" (click)="savePill()" [title]="!pillForm.valid ? 'Complete todos los campos para continuar' : ''">
               <span>💾</span>
-              <span>Guardar</span>
+              <span>{{ isEditMode ? 'Actualizar' : 'Guardar' }}</span>
             </button>
           </div>
         </div>
@@ -350,29 +352,7 @@ interface PillFormData {
       max-width: 1200px;
       margin: 0 auto;
       padding: var(--bmb-spacing-m) var(--bmb-spacing-l) calc(var(--bmb-spacing-xxl) * 2) var(--bmb-spacing-l);
-      max-height: calc(100vh - 80px);
-      overflow-y: auto;
       box-sizing: border-box;
-
-      /* Custom scrollbar styling */
-      &::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: var(--general_contrasts-container-outline);
-        border-radius: 4px;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        background: rgba(var(--color-blue-tec), 0.3);
-        border-radius: 4px;
-        transition: all 0.3s ease;
-      }
-
-      &::-webkit-scrollbar-thumb:hover {
-        background: rgba(var(--color-blue-tec), 0.5);
-      }
     }
 
     .pills-section {
@@ -478,7 +458,7 @@ interface PillFormData {
       }
     }
 
-        /* 📋 PREMIUM PILLS LIST */
+    /* 📋 PREMIUM PILLS LIST */
     .pills-list {
       display: flex;
       flex-direction: column;
@@ -946,6 +926,152 @@ interface PillFormData {
       }
     }
 
+    /* 🎯 ICON SELECTOR STYLES */
+    .icon-selector {
+      .icon-message {
+        padding: var(--bmb-spacing-s);
+        text-align: center;
+        color: var(--general_contrasts-text-secondary);
+        font-size: var(--text-sm);
+        font-style: italic;
+        border: 1px dashed var(--general_contrasts-container-outline);
+        border-radius: var(--bmb-radius-s);
+        margin-bottom: var(--bmb-spacing-s);
+      }
+
+      .selected-icon-display {
+        display: flex;
+        align-items: center;
+        gap: var(--bmb-spacing-s);
+        margin-bottom: var(--bmb-spacing-s);
+        padding: var(--bmb-spacing-s);
+        border: 1px solid rgb(var(--color-blue-tec));
+        border-radius: var(--bmb-radius-s);
+        background: rgba(var(--color-blue-tec), 0.1);
+
+        .current-icon {
+          font-size: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          background: var(--general_contrasts-surface);
+          border-radius: var(--bmb-radius-s);
+          box-shadow: 0 2px 4px rgba(var(--color-blue-tec), 0.2);
+        }
+
+        .icon-label {
+          font-size: var(--text-sm);
+          color: rgb(var(--color-blue-tec));
+          font-weight: var(--font-medium);
+        }
+      }
+
+      .icon-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--bmb-spacing-s);
+        padding: var(--bmb-spacing-s);
+        border: 1px solid var(--general_contrasts-container-outline);
+        border-radius: var(--bmb-radius-s);
+        background: var(--general_contrasts-surface);
+      }
+
+      .icon-option {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--general_contrasts-container-outline);
+        border-radius: var(--bmb-radius-s);
+        background: var(--general_contrasts-surface);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 22px;
+        padding: 0;
+
+        &:hover {
+          border-color: rgb(var(--color-blue-tec));
+          background: rgba(var(--color-blue-tec), 0.1);
+          transform: scale(1.05);
+        }
+
+        &.selected {
+          border-color: rgb(var(--color-blue-tec));
+          background: rgba(var(--color-blue-tec), 0.2);
+          box-shadow: 0 2px 6px rgba(var(--color-blue-tec), 0.4);
+          transform: scale(1.05);
+        }
+
+        &:active {
+          transform: scale(0.98);
+        }
+      }
+    }
+
+    /* 🔘 MODAL BUTTON STYLES */
+    .modal-footer {
+      display: flex;
+      gap: var(--bmb-spacing-s);
+      justify-content: flex-end;
+      padding: var(--bmb-spacing-l);
+      border-top: 1px solid var(--general_contrasts-container-outline);
+
+      .btn {
+        display: flex;
+        align-items: center;
+        gap: var(--bmb-spacing-xs);
+        padding: var(--bmb-spacing-s) var(--bmb-spacing-m);
+        border: none;
+        border-radius: var(--bmb-radius-s);
+        font-weight: var(--font-medium);
+        font-size: var(--text-sm);
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &.btn-secondary {
+          background: var(--general_contrasts-container-outline);
+          color: var(--general_contrasts-text-secondary);
+
+          &:hover {
+            background: var(--general_contrasts-text-secondary);
+            color: var(--general_contrasts-surface);
+          }
+        }
+
+        &.btn-primary {
+          background: rgb(var(--color-blue-tec));
+          color: white;
+          box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.3);
+
+          &:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(var(--color-blue-tec), 0.4);
+          }
+
+          &:disabled {
+            background: var(--general_contrasts-container-outline);
+            color: var(--general_contrasts-text-disabled);
+            cursor: not-allowed;
+            opacity: 0.6;
+            transform: none;
+            box-shadow: none;
+
+            &:hover {
+              transform: none;
+              box-shadow: none;
+            }
+          }
+        }
+
+        &:active:not(:disabled) {
+          transform: translateY(0);
+        }
+      }
+    }
+
     @media (max-width: 1200px) and (min-width: 951px) {
       .admin-content {
         max-width: 1000px;
@@ -995,7 +1121,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     text: '',
     icon: '',
     category: '',
-    priority: 1  // Default to medium priority
+    priority: '' as any  // No default priority - will be empty for validation
   };
 
   /** Available medical icons for pill selection */
@@ -1081,12 +1207,12 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    */
   private loadMockData(): void {
     this.pills = [
-      { id: 'q1', starter: 'Diagnóstico', text: 'Realizar diagnóstico inicial', icon: '🩺', category: 'diagnosis', priority: 1 },
-      { id: 'q2', starter: 'Medicamentos', text: 'Revisar medicamentos', icon: '💊', category: 'medication', priority: 2 },
-      { id: 'q3', starter: 'Síntomas', text: 'Analizar síntomas', icon: '📋', category: 'symptoms', priority: 1 },
-      { id: 'q4', starter: 'Especialista', text: 'Recomendar especialista', icon: '🏥', category: 'treatment', priority: 2 },
-      { id: 'q5', starter: 'Urgencia', text: 'Evalúa la urgencia de este caso', icon: '🚨', category: 'emergency', priority: 1 },
-      { id: 'q6', starter: 'Exámenes', text: 'Qué exámenes clínicos recomiendas', icon: '🔬', category: 'tests', priority: 2 }
+          { id: 'q1', starter: 'Diagnóstico', text: 'Realizar diagnóstico inicial', icon: '🩺', category: 'diagnosis', priority: 'alta' },
+    { id: 'q2', starter: 'Medicamentos', text: 'Revisar medicamentos', icon: '💊', category: 'medication', priority: 'media' },
+    { id: 'q3', starter: 'Síntomas', text: 'Analizar síntomas', icon: '📋', category: 'symptoms', priority: 'alta' },
+    { id: 'q4', starter: 'Especialista', text: 'Recomendar especialista', icon: '🏥', category: 'treatment', priority: 'media' },
+    { id: 'q5', starter: 'Urgencia', text: 'Evalúa la urgencia de este caso', icon: '🚨', category: 'emergency', priority: 'alta' },
+    { id: 'q6', starter: 'Exámenes', text: 'Qué exámenes clínicos recomiendas', icon: '🔬', category: 'tests', priority: 'media' }
     ];
   }
 
@@ -1130,7 +1256,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
       text: pill.text,
       icon: pill.icon,
       category: pill.category,
-      priority: Number(pill.priority) // Ensure it's a number
+      priority: pill.priority // Keep as string
     };
 
     console.log('✏️ Opening edit modal for pill:', pill);
@@ -1190,7 +1316,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
       text: '',
       icon: '',
       category: '',
-      priority: 1
+      priority: '' as any  // No default priority - will be empty for validation
     };
     this.editingPillId = null;
   }
@@ -1231,20 +1357,42 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
     // Clear previous errors
     this.errorMessage = null;
 
-    // Validate form data
-    if (!this.formData.starter.trim() || !this.formData.text.trim()) {
-      console.log('❌ Validation failed: Missing required fields');
-      this.errorMessage = 'Por favor completa todos los campos requeridos';
+    // Comprehensive form validation
+    if (!this.formData.starter.trim()) {
+      console.log('❌ Validation failed: Missing starter text');
+      this.errorMessage = 'El texto inicial es requerido';
       return;
     }
 
-    // Convert priority to number if it's a string
-    this.formData.priority = Number(this.formData.priority);
+    if (!this.formData.text.trim()) {
+      console.log('❌ Validation failed: Missing question text');
+      this.errorMessage = 'El texto de la pregunta es requerido';
+      return;
+    }
 
-    // Validate priority is a valid number
-    if (isNaN(this.formData.priority) || this.formData.priority < 0) {
+    if (!this.formData.icon.trim()) {
+      console.log('❌ Validation failed: Missing icon');
+      this.errorMessage = 'Debes seleccionar un icono';
+      return;
+    }
+
+    if (!this.formData.category.trim()) {
+      console.log('❌ Validation failed: Missing category');
+      this.errorMessage = 'Debes seleccionar una categoría';
+      return;
+    }
+
+    if (!this.formData.priority) {
+      console.log('❌ Validation failed: Missing priority');
+      this.errorMessage = 'Debes seleccionar una prioridad';
+      return;
+    }
+
+    // Validate priority is a valid string
+    const validPriorities = ['alta', 'media', 'baja'];
+    if (!validPriorities.includes(this.formData.priority)) {
       console.log('❌ Validation failed: Invalid priority');
-      this.errorMessage = 'La prioridad debe ser un número válido';
+      this.errorMessage = 'La prioridad debe ser Alta, Media o Baja';
       return;
     }
 
@@ -1258,11 +1406,11 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
         id: this.editingPillId,
         starter: this.formData.starter.trim(),
         text: this.formData.text.trim(),
-        icon: this.formData.icon,
-        category: this.formData.category,
+          icon: this.formData.icon,
+          category: this.formData.category,
         priority: this.formData.priority,
         is_active: true
-      };
+        };
 
       console.log('✏️ Updating pill with data:', updateData);
 
@@ -1301,7 +1449,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
           takeUntil(this.destroy$),
           finalize(() => {
             console.log('🔄 finalize() called for create operation');
-            this.closeFormModal();
+    this.closeFormModal();
           })
         )
         .subscribe({
@@ -1357,7 +1505,7 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         finalize(() => {
           console.log('🏁 Delete operation finished, closing modal');
-          this.closeDeleteModal();
+      this.closeDeleteModal();
         })
       )
       .subscribe({
@@ -1389,6 +1537,15 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    */
   getCategoryLabel(category: string): string {
     const labels: { [key: string]: string } = {
+      'general': 'General',
+      'medico': 'Médico',
+      'emergencia': 'Emergencia',
+      'consulta': 'Consulta',
+      'laboratorio': 'Laboratorio',
+      'radiologia': 'Radiología',
+      'farmacia': 'Farmacia',
+      'administrativo': 'Administrativo',
+      // Legacy categories for backward compatibility
       'diagnosis': 'Diagnóstico',
       'symptoms': 'Síntomas',
       'treatment': 'Tratamiento',
@@ -1414,13 +1571,36 @@ export class AdminPillsManagerComponent implements OnInit, OnDestroy {
    * this.getPriorityLabel('high'); // Returns "Alta"
    * ```
    */
-  getPriorityLabel(priority: number): string {
-    const labels: { [key: number]: string } = {
-      1: 'Alta',
-      2: 'Media',
-      3: 'Baja'
+  getPriorityLabel(priority: string): string {
+    const labels: { [key: string]: string } = {
+      'alta': 'Alta',
+      'media': 'Media',
+      'baja': 'Baja'
     };
     return labels[priority] || 'Media';
+  }
+
+  /**
+   * Gets the CSS class for a priority level
+   *
+   * @param priority - The priority string value
+   * @returns CSS class name for styling
+   *
+   * @description Maps priority string values to CSS class names
+   * for consistent styling across the application.
+   *
+   * @example
+   * ```typescript
+   * this.getPriorityClass('alta'); // Returns "priority-high"
+   * ```
+   */
+  getPriorityClass(priority: string): string {
+    const classes: { [key: string]: string } = {
+      'alta': 'priority-high',
+      'media': 'priority-medium',
+      'baja': 'priority-low'
+    };
+    return classes[priority] || 'priority-medium';
   }
 
   /**

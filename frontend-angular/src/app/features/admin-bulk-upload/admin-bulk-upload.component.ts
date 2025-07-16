@@ -359,6 +359,13 @@ interface BatchUpload {
   styles: [`
     /* 🎨 COMPONENTE ESPECÍFICO - BULK UPLOAD */
 
+    /* 🏗️ CONTENEDOR GLOBAL CON ESPACIO SUFICIENTE */
+    .global-container {
+      min-height: 100vh;
+      padding-bottom: 125px; /* Espacio extra para controles inferiores */
+      overflow-y: auto;
+    }
+
     /* 🎨 PREMIUM UPLOAD INTERFACE */
     .premium-upload-interface {
       margin-bottom: var(--bmb-spacing-l);
@@ -678,7 +685,7 @@ interface BatchUpload {
 
     /* 📋 FILES LIST - CONSISTENTE CON DOCUMENT-UPLOAD */
     .files-section {
-      margin-bottom: var(--bmb-spacing-l);
+      margin-bottom: 100px; /* Espacio extra para evitar que se corte */
 
       .section-title {
         color: var(--general_contrasts-100);

@@ -1127,7 +1127,11 @@
     }
 
     .patient-name {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      white-space: normal;
+      overflow: visible;
+      word-wrap: break-word;
+      line-height: 1.1;
     }
 
     .patient-context {
@@ -1575,6 +1579,18 @@ body .app-container .main-panel .main-header .header-actions .nav-dropdown-conta
     gap: var(--bmb-spacing-s, 0.75rem) !important;
     animation: patientsListFadeIn 0.3s ease-out !important;
   }
+
+  /* Patient Meta Styles */
+  .patient-meta {
+    font-size: 0.75rem !important;
+    color: var(--general_contrasts-75, #6b7280) !important;
+    margin: 0 !important;
+    margin-top: 4px !important;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-weight: 500 !important;
+    opacity: 0.8 !important;
+    line-height: 1.2 !important;
+  }
 }
 
 /* 🎯 PATIENTS LIST ANIMATION */
@@ -1729,15 +1745,15 @@ body .app-container .main-panel .main-header .header-actions .nav-dropdown-conta
   min-width: 0 !important;
 
   .patient-name {
-    font-size: 0.875rem !important;
+    font-size: 0.8rem !important;
     font-weight: 500 !important;
     color: var(--general_contrasts-100, #1f2937) !important;
     margin: 0 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    word-wrap: break-word !important;
     font-family: var(--font-display, 'Poppins', sans-serif) !important;
-    line-height: 1.2 !important;
+    line-height: 1.1 !important;
   }
 
   .patient-id {
@@ -1870,9 +1886,9 @@ body .app-container .main-panel .main-header .header-actions .nav-dropdown-conta
   min-height: 150px !important;
 
   .loading-container {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
     gap: var(--bmb-spacing-l, 1.5rem) !important;
   }
 
@@ -1886,9 +1902,9 @@ body .app-container .main-panel .main-header .header-actions .nav-dropdown-conta
       height: 48px !important;
       border: 4px solid rgba(var(--color-blue-tec), 0.1) !important;
       border-left: 4px solid rgba(var(--color-blue-tec), 1) !important;
-      border-radius: 50% !important;
-      animation: bamboo-spin 1s linear infinite !important;
-    }
+    border-radius: 50% !important;
+    animation: bamboo-spin 1s linear infinite !important;
+  }
   }
 
   .loading-text {
@@ -1905,9 +1921,9 @@ body .app-container .main-panel .main-header .header-actions .nav-dropdown-conta
     p {
       font-size: var(--text-lg, 1.125rem) !important;
       color: var(--general_contrasts-text-secondary, #6b7280) !important;
-      margin: 0 !important;
+    margin: 0 !important;
       line-height: var(--leading-relaxed, 1.625) !important;
-      font-family: var(--font-display, 'Poppins', sans-serif) !important;
+    font-family: var(--font-display, 'Poppins', sans-serif) !important;
     }
   }
 }

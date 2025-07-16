@@ -6,6 +6,12 @@
  */
 
 /**
+ * Priority level type for pills
+ * @description Defines the possible priority values as strings
+ */
+export type PillPriority = "alta" | "media" | "baja";
+
+/**
  * Interface for Pill data structure
  *
  * @interface Pill
@@ -30,8 +36,8 @@ export interface Pill {
   /** Category classification (symptoms, diagnosis, etc.) */
   category: string;
 
-  /** Priority level (0 = highest, higher numbers = lower priority) */
-  priority: number;
+  /** Priority level (alta = highest, media = medium, baja = lowest) */
+  priority: PillPriority;
 
   /** Active status for the pill */
   is_active?: boolean;
@@ -62,8 +68,8 @@ export interface CreatePillRequest {
   /** Category classification */
   category: string;
 
-  /** Priority level (0 = highest priority) */
-  priority: number;
+  /** Priority level (alta = highest priority) */
+  priority: PillPriority;
 
   /** Active status for the pill */
   is_active?: boolean;
