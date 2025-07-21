@@ -1,0 +1,54 @@
+<div class="document-panel" [class.collapsed]="isCollapsed">
+  <!-- Header Normal -->
+  <div class="panel-header" *ngIf="!isCollapsed">
+    <div class="header-content">
+      <div class="panel-info">
+        <div class="panel-icon">📄</div>
+        <div>
+          <h2 class="panel-title">
+            <span class="medical-icon">📋</span>
+            Expedientes
+          </h2>
+          <p class="panel-subtitle">Documentos médicos</p>
+        </div>
+      </div>
+      <button
+        class="collapse-btn"
+        (click)="togglePanel()"
+        title="Contraer panel de expedientes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Header Colapsado -->
+  <div class="panel-header-collapsed" *ngIf="isCollapsed">
+    <button
+      class="expand-btn"
+      (click)="togglePanel()"
+      title="Expandir panel de expedientes">
+      📄
+    </button>
+  </div>
+
+  <!-- Contenido Principal -->
+  <div class="panel-content" *ngIf="!isCollapsed">
+    <!-- Visor de documentos -->
+    <div class="document-viewer-area">
+      <app-patient-document-viewer
+        [patient]="activePatient"
+        [isVisible]="!isCollapsed"
+        (close)="onDocumentViewerClose()">
+      </app-patient-document-viewer>
+    </div>
+
+    <!-- Estado sin paciente -->
+    <div *ngIf="!activePatient" class="no-patient-state">
+      <div class="no-patient-icon">👤</div>
+      <h3>Sin paciente seleccionado</h3>
+      <p>Selecciona un paciente del panel izquierdo para ver sus expedientes</p>
+    </div>
+  </div>
+</div>

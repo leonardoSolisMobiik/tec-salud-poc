@@ -1,0 +1,36 @@
+<div class="chart-container">
+  <div class="chart-header">
+    <h3 class="chart-title">{{ title }}</h3>
+  </div>
+
+  <div class="chart-content">
+    <div class="chart-skeleton" *ngIf="isLoading"></div>
+
+    <div class="chart-wrapper" *ngIf="!isLoading">
+      <canvas #chartCanvas
+              [width]="canvasWidth"
+              [height]="canvasHeight"
+              (mousemove)="onMouseMove($event)"
+              (mouseleave)="onMouseLeave()">
+      </canvas>
+
+      <div class="chart-legend" *ngIf="showLegend && legendItems.length > 0">
+        <div class="legend-item" *ngFor="let item of legendItems">
+          <div class="legend-color" [style.background-color]="item.color"></div>
+          <span class="legend-label">{{ item.label }}</span>
+          <span class="legend-value">{{ item.value }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-tooltip"
+         *ngIf="tooltip.show"
+         [style.left.px]="tooltip.x"
+         [style.top.px]="tooltip.y">
+      <div class="tooltip-content">
+        <strong>{{ tooltip.label }}</strong>
+        <span>{{ tooltip.value }}</span>
+      </div>
+    </div>
+  </div>
+</div>

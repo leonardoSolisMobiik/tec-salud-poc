@@ -1,0 +1,54 @@
+<div class="chat-input-container">
+  <!-- Input Area -->
+  <div class="input-wrapper" [class.disabled]="!canSend && messageText.trim().length === 0">
+    <textarea
+      class="message-input"
+      [(ngModel)]="messageText"
+      (keydown)="onKeyDown($event)"
+      placeholder="{{ (activePatient$ | async)?.name ? 'Escribe tu consulta médica sobre ' + (activePatient$ | async)?.name + '...' : 'Selecciona un paciente para comenzar...' }}"
+      [disabled]="(activePatient$ | async) === null"
+      rows="1">
+    </textarea>
+
+    <!-- Character Counter -->
+    <div class="character-counter" [class.warning]="messageText.length > 1800" [class.error]="messageText.length > 2000">
+      {{ messageText.length }}/2000
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button
+      class="send-button"
+      [disabled]="!canSend"
+      (click)="sendMessage()"
+      title="Enviar mensaje (Ctrl+Enter)">
+      <span class="send-icon" [class.loading]="isStreamingValue">
+        {{ isStreamingValue ? '⏳' : '📤' }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="quick-actions" *ngIf="activePatient$ | async">
+    <button class="quick-action" (click)="insertQuickAction('Realizar diagnóstico inicial basado en los síntomas del paciente')">
+      🩺 Diagnóstico
+    </button>
+    <button class="quick-action" (click)="insertQuickAction('Revisar historial médico y medicamentos actuales')">
+      📋 Historial
+    </button>
+    <button class="quick-action" (click)="insertQuickAction('Recomendar estudios de laboratorio necesarios')">
+      🔬 Laboratorios
+    </button>
+  </div>
+
+  <!-- Status Indicators -->
+  <div class="status-bar" *ngIf="activePatient$ | async">
+    <div class="patient-indicator">
+      👤 {{ (activePatient$ | async)?.name }}
+    </div>
+    <div class="streaming-indicator" [class.active]="isStreamingValue">
+      {{ isStreamingValue ? '🤖 IA pensando...' : '✅ Listo para consulta' }}
+    </div>
+  </div>
+</div>

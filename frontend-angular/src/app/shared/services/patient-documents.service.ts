@@ -445,16 +445,42 @@ export class PatientDocumentsService {
    * @returns URL string for document access
    */
   private generateDocumentUrl(apiDoc: ApiPatientDocument): string {
+    console.log(`🔍 Generating URL for document:`, {
+      filename: apiDoc.filename,
+      document_id: apiDoc.document_id,
+      storage_info: apiDoc.storage_info
+    });
+
     // Priority 1: Use blob URL if available from storage
     if (apiDoc.storage_info?.blob_url) {
-      console.log(`📄 Using blob URL for document: ${apiDoc.filename}`);
-      return apiDoc.storage_info.blob_url;
+      const blobUrl = apiDoc.storage_info.blob_url.trim();
+      if (blobUrl && blobUrl.length > 0) {
+        console.log(`✅ Using blob URL for document: ${apiDoc.filename}`);
+        console.log(`🔗 Blob URL: ${blobUrl}`);
+
+        // Ensure Azure blob URLs are properly formatted
+        if (blobUrl.includes('blob.core.windows.net')) {
+          // If URL contains spaces or special characters, ensure proper encoding
+          const encodedUrl = blobUrl.includes('%') ? blobUrl : encodeURI(blobUrl);
+          console.log(`☁️ Azure blob URL (encoded): ${encodedUrl}`);
+          return encodedUrl;
+        }
+
+        return blobUrl;
+      }
+    }
+
+    console.log(`⚠️ No valid blob URL found, checking alternatives...`);
+    console.log(`📊 Storage info available:`, !!apiDoc.storage_info);
+    console.log(`📊 Blob URL available:`, !!apiDoc.storage_info?.blob_url);
+    if (apiDoc.storage_info?.blob_url) {
+      console.log(`📊 Blob URL value: "${apiDoc.storage_info.blob_url}"`);
     }
 
     // Priority 2: Construct URL using document ID for backend endpoint
     if (apiDoc.document_id) {
-              const backendUrl = 'http://localhost:3000/api/v1'; // TODO: Use environment config
-              const documentUrl = `${backendUrl}/documents/${apiDoc.document_id}`;
+      const backendUrl = 'http://localhost:3000/api/v1'; // TODO: Use environment config
+      const documentUrl = `${backendUrl}/documents/${apiDoc.document_id}/content`;
       console.log(`📄 Using backend document endpoint: ${apiDoc.filename} -> ${documentUrl}`);
       return documentUrl;
     }

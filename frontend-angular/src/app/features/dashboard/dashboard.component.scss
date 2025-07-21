@@ -1,0 +1,94 @@
+.dashboard-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1 {
+  color: var(--medical-blue);
+  margin-bottom: 0.5rem;
+}
+
+.quick-actions {
+  margin-top: 3rem;
+}
+
+.action-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.action-card {
+  padding: 1.5rem;
+  background: var(--medical-surface);
+  border: 1px solid var(--medical-divider);
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  h3 {
+    color: var(--medical-blue);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: var(--medical-text-secondary);
+  }
+}
+
+.action-card.admin-card {
+  background: linear-gradient(135deg,
+    rgba(var(--color-blue-tec), 0.05) 0%,
+    rgba(var(--color-blue-tec), 0.02) 100%
+  );
+  border: 1px solid rgba(var(--color-blue-tec), 0.2);
+
+  &:hover {
+    background: linear-gradient(135deg,
+      rgba(var(--color-blue-tec), 0.1) 0%,
+      rgba(var(--color-blue-tec), 0.05) 100%
+    );
+    border-color: rgba(var(--color-blue-tec), 0.3);
+  }
+
+  h3 {
+    color: var(--medical-blue);
+
+    &::after {
+      content: '🛠️';
+      margin-left: 0.5rem;
+      font-size: 0.8em;
+      opacity: 0.7;
+    }
+  }
+}
+
+.system-status {
+  margin-top: 3rem;
+  padding: 1rem;
+  background: var(--medical-context-active);
+  border-radius: 4px;
+
+  .test-btn {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--medical-blue);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--medical-blue);
+      opacity: 0.9;
+    }
+  }
+}

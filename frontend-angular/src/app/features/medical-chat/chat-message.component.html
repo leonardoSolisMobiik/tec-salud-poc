@@ -1,0 +1,13 @@
+<div class="message" [class.user]="message.role === 'user'" [class.assistant]="message.role === 'assistant'">
+  <div class="message-avatar">
+    <span *ngIf="message.role === 'user'">👤</span>
+    <span *ngIf="message.role === 'assistant'">🤖</span>
+  </div>
+  <div class="message-content">
+    <div class="message-header">
+      <span class="message-role">{{ message.role === 'user' ? 'Tú' : 'TecSalud AI' }}</span>
+      <span class="message-time">{{ getFormattedTime() }}</span>
+    </div>
+    <div class="message-text" [innerHTML]="formatContent(message.content)"></div>
+  </div>
+</div>

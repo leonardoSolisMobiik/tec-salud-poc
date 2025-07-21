@@ -1,0 +1,56 @@
+<div class="processing-type-selector">
+  <label class="selector-label">⚙️ Tipo de Procesamiento</label>
+  <p class="selector-description">
+    Selecciona cómo quieres procesar tus documentos médicos
+  </p>
+
+  <div class="processing-options">
+    <div
+      *ngFor="let option of processingOptions"
+      class="processing-option"
+      [class.selected]="selectedType === option.value"
+      [class.recommended]="option.recommended"
+      (click)="selectOption(option.value)">
+
+      <div class="option-header">
+        <div class="option-icon">{{ option.icon }}</div>
+        <div class="option-content">
+          <h4 class="option-title">
+            {{ option.label }}
+            <span *ngIf="option.recommended" class="recommended-badge">Recomendado</span>
+          </h4>
+          <p class="option-description">{{ option.description }}</p>
+          <p class="option-use-case">{{ option.useCase }}</p>
+        </div>
+        <div class="option-selector">
+          <div class="radio-button" [class.active]="selectedType === option.value">
+            <div class="radio-inner"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="option-benefits" *ngIf="selectedType === option.value">
+        <h5>✨ Características:</h5>
+        <ul>
+          <li *ngFor="let benefit of option.benefits">{{ benefit }}</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing Info Panel -->
+  <div class="processing-info" *ngIf="selectedType">
+    <div class="info-card">
+      <h3>📋 Configuración Seleccionada</h3>
+      <div class="info-content">
+        <div class="info-item">
+          <span class="info-icon">{{ getSelectedOption()?.icon }}</span>
+          <div class="info-details">
+            <div class="info-title">{{ getSelectedOption()?.label }}</div>
+            <div class="info-subtitle">{{ getSelectedOption()?.useCase }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

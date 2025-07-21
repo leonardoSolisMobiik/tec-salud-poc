@@ -1,0 +1,311 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--medical-background, #f8f9fa);
+}
+
+.chat-header {
+  padding: var(--bmb-spacing-m, 1rem);
+  border-bottom: 1px solid var(--medical-divider, #e5e7eb);
+  background: var(--medical-surface, #ffffff);
+  display: flex;
+  align-items: center;
+  gap: var(--bmb-spacing-m, 1rem);
+}
+
+.patient-info {
+  display: flex;
+  align-items: center;
+  gap: var(--bmb-spacing-s, 0.75rem);
+}
+
+.patient-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--medical-blue, #0066cc);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.patient-details {
+  h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--medical-text-primary, #1f2937);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--medical-text-secondary, #6b7280);
+  }
+}
+
+.no-patient {
+  color: var(--medical-text-secondary, #6b7280);
+  font-style: italic;
+}
+
+.chat-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--bmb-spacing-m, 1rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hero-content {
+  h2 {
+    margin: 0 0 var(--bmb-spacing-s, 0.75rem) 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--medical-text-primary, #1f2937);
+  }
+
+  p {
+    margin: 0;
+    font-size: 1.125rem;
+    color: var(--medical-text-secondary, #6b7280);
+  }
+}
+
+.messages-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bmb-spacing-m, 1rem);
+  padding-bottom: var(--bmb-spacing-m, 1rem);
+}
+
+.message-wrapper {
+  display: flex;
+  gap: var(--bmb-spacing-s, 0.75rem);
+
+  &.user-wrapper {
+    flex-direction: row-reverse;
+    margin-left: auto;
+    max-width: 70%;
+  }
+
+  &.assistant-wrapper {
+    flex-direction: row;
+    margin-right: auto;
+    max-width: 85%;
+  }
+}
+
+.message-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+
+  &.user-avatar {
+    background: var(--medical-blue, #0066cc);
+    color: white;
+  }
+
+  &.assistant-avatar {
+    background: var(--medical-purple, #9c27b0);
+    color: white;
+  }
+}
+
+.bubble-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.speech-bubble {
+  border-radius: var(--bmb-radius-m, 1rem);
+  padding: var(--bmb-spacing-s, 0.75rem) var(--bmb-spacing-m, 1rem);
+  position: relative;
+  word-wrap: break-word;
+
+  &.user-bubble {
+    background: var(--medical-blue, #0066cc);
+    color: white;
+    margin-left: var(--bmb-spacing-s, 0.75rem);
+  }
+
+  &.assistant-bubble {
+    background: var(--medical-surface, #ffffff);
+    border: 1px solid var(--medical-divider, #e5e7eb);
+    color: var(--medical-text-primary, #1f2937);
+    margin-right: var(--bmb-spacing-s, 0.75rem);
+
+    &.streaming-bubble {
+      border-color: var(--medical-purple, #9c27b0);
+      box-shadow: 0 0 0 1px rgba(156, 39, 176, 0.1);
+    }
+  }
+}
+
+.bubble-content {
+  .message-text {
+    line-height: 1.5;
+    font-size: 0.9375rem;
+  }
+}
+
+.bubble-tail {
+  position: absolute;
+  width: 0;
+  height: 0;
+
+  &.user-tail {
+    right: -8px;
+    top: 12px;
+    border-left: 8px solid var(--medical-blue, #0066cc);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+  }
+
+  &.assistant-tail {
+    left: -8px;
+    top: 12px;
+    border-right: 8px solid var(--medical-surface, #ffffff);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+  }
+}
+
+.message-timestamp {
+  font-size: 0.75rem;
+  color: var(--medical-text-secondary, #6b7280);
+  margin-top: var(--bmb-spacing-xs, 0.5rem);
+
+  &.user-timestamp {
+    text-align: right;
+  }
+
+  &.assistant-timestamp {
+    text-align: left;
+  }
+}
+
+.thinking-dots {
+  .dot {
+    animation: thinking 1.4s infinite ease-in-out;
+
+    &:nth-child(1) { animation-delay: 0s; }
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+.typing-cursor {
+  animation: blink 1s infinite;
+  font-weight: bold;
+  color: var(--medical-blue, #0066cc);
+}
+
+.scroll-anchor {
+  height: 1px;
+}
+
+.chat-footer {
+  padding: var(--bmb-spacing-m, 1rem);
+  border-top: 1px solid var(--medical-divider, #e5e7eb);
+  background: var(--medical-surface, #ffffff);
+}
+
+.input-container {
+  border: 1px solid var(--medical-divider, #e5e7eb);
+  border-radius: var(--bmb-radius-m, 1rem);
+  overflow: hidden;
+}
+
+.message-input {
+  width: 100%;
+  border: none;
+  padding: var(--bmb-spacing-m, 1rem);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  resize: none;
+  background: transparent;
+  outline: none;
+
+  &::placeholder {
+    color: var(--medical-text-secondary, #6b7280);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.input-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--bmb-spacing-xs, 0.5rem) var(--bmb-spacing-m, 1rem);
+  background: var(--medical-background, #f8f9fa);
+  border-top: 1px solid var(--medical-divider, #e5e7eb);
+}
+
+.char-count {
+  font-size: 0.75rem;
+  color: var(--medical-text-secondary, #6b7280);
+}
+
+.send-btn-premium {
+  background: var(--medical-blue, #0066cc);
+  color: white;
+  border: none;
+  padding: var(--bmb-spacing-xs, 0.5rem) var(--bmb-spacing-m, 1rem);
+  border-radius: var(--bmb-radius-s, 0.5rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--medical-blue-dark, #0052a3);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+@keyframes thinking {
+  0%, 60%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  30% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}

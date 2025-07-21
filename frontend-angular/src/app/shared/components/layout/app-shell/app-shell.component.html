@@ -1,0 +1,19 @@
+<div class="app-shell" [class.sidebar-open]="isSidebarOpen$ | async">
+  <!-- Global Components -->
+  <app-toast-container></app-toast-container>
+  <app-global-loader></app-global-loader>
+
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content Area -->
+  <div class="main-content" [style.marginLeft.px]="sidebarWidth$ | async">
+    <!-- Header -->
+    <app-header></app-header>
+
+    <!-- Page Content -->
+    <div class="page-content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

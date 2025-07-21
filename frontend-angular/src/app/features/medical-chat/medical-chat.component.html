@@ -1,0 +1,139 @@
+<!-- Main chat container -->
+<div class="chat-container">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="patient-info" *ngIf="activePatient">
+      <div class="patient-avatar">
+        {{ activePatient.name.charAt(0) }}
+        </div>
+      <div class="patient-details">
+        <h3>{{ activePatient.name }}</h3>
+        <p>ID: {{ activePatient.id }}</p>
+          </div>
+          </div>
+    <div class="no-patient" *ngIf="!activePatient">
+      Selecciona un paciente para comenzar
+          </div>
+      </div>
+
+  <!-- Messages area -->
+  <div class="chat-main" #messagesContainer>
+    <div class="welcome-section" *ngIf="!activePatient">
+      <div class="hero-content">
+        <h2>Asistente Médico IA</h2>
+        <p>Selecciona un paciente para comenzar la consulta</p>
+          </div>
+    </div>
+
+    <!-- Messages with Bubble Design -->
+    <div class="messages-list" *ngIf="activePatient">
+      <div
+        *ngFor="let message of chatMessages; trackBy: trackMessage"
+        class="message-wrapper"
+        [class.user-wrapper]="message.role === 'user'"
+        [class.assistant-wrapper]="message.role === 'assistant'"
+      >
+        <!-- Avatar -->
+        <div class="message-avatar"
+             [class.user-avatar]="message.role === 'user'"
+             [class.assistant-avatar]="message.role === 'assistant'">
+          <span *ngIf="message.role === 'user'">👨‍⚕️</span>
+          <span *ngIf="message.role === 'assistant'">🤖</span>
+        </div>
+
+        <!-- Bubble Container -->
+        <div class="bubble-container">
+          <!-- Speech Bubble -->
+          <div class="speech-bubble"
+               [class.user-bubble]="message.role === 'user'"
+               [class.assistant-bubble]="message.role === 'assistant'">
+
+            <!-- Message Content -->
+            <div class="bubble-content">
+              <div class="message-text" [innerHTML]="formatMessageContent(message.content)"></div>
+            </div>
+
+            <!-- Bubble Tail -->
+            <div class="bubble-tail"
+                 [class.user-tail]="message.role === 'user'"
+                 [class.assistant-tail]="message.role === 'assistant'">
+            </div>
+          </div>
+
+          <!-- Timestamp -->
+          <div class="message-timestamp"
+               [class.user-timestamp]="message.role === 'user'"
+               [class.assistant-timestamp]="message.role === 'assistant'">
+            {{ formatTime(message.timestamp) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Streaming message with bubble design -->
+      <div class="message-wrapper assistant-wrapper" *ngIf="isStreaming">
+        <!-- Avatar -->
+        <div class="message-avatar assistant-avatar">
+          <span class="typing-indicator">🤖</span>
+        </div>
+
+        <!-- Bubble Container -->
+        <div class="bubble-container">
+          <!-- Speech Bubble -->
+          <div class="speech-bubble assistant-bubble streaming-bubble">
+            <!-- Message Content -->
+            <div class="bubble-content">
+              <div class="message-text">
+                <span *ngIf="streamingMessage" [innerHTML]="formatMessageContent(streamingMessage)"></span>
+                <span *ngIf="!streamingMessage" class="thinking-dots">
+                  <span class="dot">.</span>
+                  <span class="dot">.</span>
+                  <span class="dot">.</span>
+                </span>
+                <span class="typing-cursor">|</span>
+              </div>
+            </div>
+
+            <!-- Bubble Tail -->
+            <div class="bubble-tail assistant-tail"></div>
+          </div>
+
+          <!-- Timestamp -->
+          <div class="message-timestamp assistant-timestamp">
+            Escribiendo...
+          </div>
+        </div>
+      </div>
+
+      <!-- STICKY SCROLL ANCHOR - This element will stick to bottom -->
+      <div #scrollAnchor class="scroll-anchor" *ngIf="chatMessages.length > 0 || isStreaming"></div>
+    </div>
+
+  <!-- Footer -->
+  <div class="chat-footer" *ngIf="activePatient">
+    <div class="input-section">
+      <div class="input-container">
+        <textarea
+          [(ngModel)]="currentMessage"
+          (keydown.enter)="onEnterPressed($event)"
+          (input)="onInputChange($event)"
+          placeholder="Describe los síntomas o haz una pregunta médica..."
+          class="message-input"
+          rows="3"
+          [disabled]="isStreaming"
+        ></textarea>
+        <div class="input-footer">
+          <div class="char-count">
+            {{ currentMessage.length }}/1000
+          </div>
+          <button
+            (click)="sendMessage()"
+            [disabled]="!canSendMessage"
+            class="send-btn-premium"
+          >
+            <span class="premium-text">ENVIAR</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

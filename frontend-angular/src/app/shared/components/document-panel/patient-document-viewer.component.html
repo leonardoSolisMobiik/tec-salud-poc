@@ -1,0 +1,127 @@
+<div class="document-viewer-container">
+  <!-- Header con info del paciente -->
+  <div class="viewer-header">
+    <div class="patient-info">
+      <div class="patient-avatar">
+        {{getPatientInitials()}}
+      </div>
+      <div class="patient-details">
+        <h3 class="patient-name">{{patient?.name || 'Sin paciente'}}</h3>
+        <p class="document-count">{{documents.length}} documento{{documents.length !== 1 ? 's' : ''}} disponible{{documents.length !== 1 ? 's' : ''}}</p>
+      </div>
+    </div>
+    <!-- REMOVED: Close button eliminated -->
+  </div>
+
+  <!-- Tabs de documentos -->
+  <div class="document-tabs" #documentTabs *ngIf="documents.length > 1">
+    <button
+      *ngFor="let doc of documents; trackBy: trackByDocId; let i = index"
+      class="tab-btn"
+      [class.active]="activeDocumentIndex === i"
+      (click)="setActiveDocument(i)">
+      <span class="tab-icon">{{getDocumentIcon(doc)}}</span>
+      <span class="tab-label">{{getShortDisplayName(doc)}}</span>
+      <span class="tab-type" [class]="'type-' + doc.type.toLowerCase()">{{doc.type}}</span>
+    </button>
+  </div>
+
+  <!-- Área principal del documento -->
+  <div class="document-content">
+    <!-- Vista normal de documentos -->
+    <div *ngIf="!showPdfViewer">
+    <div *ngIf="documents.length === 0" class="no-documents">
+      <div class="no-docs-icon">📄</div>
+      <h3>Sin documentos disponibles</h3>
+      <p>No se encontraron expedientes para este paciente</p>
+    </div>
+
+    <div *ngIf="activeDocument" class="pdf-viewer-container">
+      <!-- Info del documento activo -->
+      <div class="document-info">
+        <div class="doc-title">
+          <span class="doc-icon">{{getDocumentIcon(activeDocument)}}</span>
+          <span class="doc-name">{{activeDocument.displayName}}</span>
+          <span class="doc-badge" [class]="'badge-' + activeDocument.type.toLowerCase()">
+            {{activeDocument.type === 'CONS' ? 'Consulta' : 'Emergencia'}}
+          </span>
+        </div>
+      </div>
+
+      <!-- Document Preview (MVP Version) -->
+      <div class="document-preview">
+        <div class="document-placeholder">
+          <div class="pdf-icon">📄</div>
+          <h3>{{activeDocument.displayName}}</h3>
+          <p class="file-info">{{activeDocument.fileName}}</p>
+          <div class="document-meta">
+            <span class="doc-type" [class]="'type-' + activeDocument.type.toLowerCase()">
+              {{activeDocument.type === 'CONS' ? 'Historia Clínica' : 'Atención de Emergencia'}}
+            </span>
+            <span class="doc-size">PDF Document</span>
+          </div>
+          <div class="preview-actions">
+              <button class="action-btn primary" (click)="openInNewTab(activeDocument)" title="Ver PDF integrado">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+              </svg>
+                Ver PDF
+            </button>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+    <!-- Visor de PDF integrado -->
+    <div *ngIf="showPdfViewer && viewedDocument" class="integrated-pdf-viewer">
+      <!-- Header del visor con botón de regreso -->
+      <div class="pdf-viewer-header">
+        <button class="back-btn" (click)="closePdfViewer()" title="Regresar a la vista de documentos">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"/>
+          </svg>
+          Regresar
+        </button>
+        <div class="pdf-info">
+          <span class="pdf-title">{{viewedDocument.displayName}}</span>
+          <span class="pdf-filename">{{viewedDocument.fileName}}</span>
+        </div>
+      </div>
+
+                <!-- Contenido del PDF -->
+      <div class="pdf-content">
+        <pdf-viewer
+          [src]="viewedDocument.url"
+          [render-text]="true"
+          [original-size]="false"
+          [show-all]="true"
+          [fit-to-page]="true"
+          [zoom]="1.0"
+          [rotation]="0"
+          (after-load-complete)="onPdfLoaded($event)"
+          (error)="onPdfError($event)"
+          (page-rendered)="onPageRendered($event)"
+          (progress)="onPdfProgress($event)"
+          (loading-started)="onLoadingStarted()"
+          (text-layer-rendered)="onTextLayerRendered($event)"
+          class="pdf-viewer-component"
+          style="width: 100%; height: 100%; display: block;">
+        </pdf-viewer>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="loading-container">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+      </div>
+      <div class="loading-text">
+        <h3>🔄 Cargando expedientes...</h3>
+        <p>Obteniendo documentos del paciente</p>
+      </div>
+    </div>
+  </div>
+</div>

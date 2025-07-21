@@ -1,0 +1,104 @@
+<header class="app-header" [class.patient-active]="activePatient$ | async">
+  <!-- Mobile Menu Toggle -->
+  <button class="menu-toggle"
+          (click)="toggleSidebar()"
+          *ngIf="isMobile$ | async">
+    <span class="menu-icon">☰</span>
+  </button>
+
+  <!-- Active Patient Context -->
+  <div class="patient-context" *ngIf="activePatient$ | async as patient">
+    <div class="patient-badge">
+      <span class="patient-icon">👤</span>
+      <div class="patient-details">
+        <span class="patient-name">{{ patient.name }}</span>
+        <span class="patient-meta">{{ patient.age }} años • {{ patient.gender }}</span>
+      </div>
+    </div>
+    <button class="clear-context"
+            (click)="clearPatientContext()"
+            title="Limpiar contexto del paciente">
+      ✕
+    </button>
+  </div>
+
+  <!-- Default State -->
+  <div class="default-context" *ngIf="!(activePatient$ | async)">
+    <h1 class="app-title">TecSalud Medical Assistant</h1>
+    <span class="subtitle">Selecciona un paciente para comenzar</span>
+  </div>
+
+  <!-- Actions -->
+  <div class="header-actions">
+    <button class="action-btn" title="Notificaciones">
+      <span class="action-icon">🔔</span>
+      <span class="notification-badge" *ngIf="false">3</span>
+    </button>
+
+    <!-- Dropdown de navegación con administración de pastillas -->
+    <div class="nav-dropdown" style="position: relative; z-index: 9999;">
+      <button class="nav-dropdown-trigger"
+              (click)="toggleNavDropdown()"
+              style="background: var(--medical-blue) !important; color: white !important; padding: 12px 20px !important; border: none !important; border-radius: var(--bmb-radius-m, 1rem) !important; font-weight: 600 !important; font-size: 14px !important; cursor: pointer !important; transition: all 0.3s ease !important; box-shadow: 0 2px 8px rgba(var(--color-blue-tec), 0.2) !important;">
+        ⚙️ Configuración
+      </button>
+
+      <div class="nav-dropdown-menu"
+           *ngIf="isNavDropdownOpen"
+           style="position: absolute !important; top: 100% !important; right: 0 !important; background: var(--medical-surface) !important; border: 1px solid var(--medical-divider) !important; border-radius: var(--bmb-radius-m, 1rem) !important; box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important; padding: 8px !important; min-width: 280px !important; z-index: 9999 !important; backdrop-filter: blur(10px) !important;">
+
+        <a routerLink="/chat"
+           (click)="closeNavDropdown()"
+           class="nav-dropdown-item"
+           style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+          <span style="font-size: 1.25rem !important;">🩺</span>
+          <span>Copiloto Médico</span>
+        </a>
+
+        <a routerLink="/dashboard"
+           (click)="closeNavDropdown()"
+           class="nav-dropdown-item"
+           style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+          <span style="font-size: 1.25rem !important;">📈</span>
+          <span>Dashboard</span>
+        </a>
+
+        <!-- COMMENTED OUT: Patient Management functionality -->
+        <!-- <a routerLink="/patients"
+           (click)="closeNavDropdown()"
+           class="nav-dropdown-item"
+           style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+          <span style="font-size: 1.25rem !important;">👥</span>
+          <span>Gestión Pacientes</span>
+        </a> -->
+
+        <a routerLink="/documents"
+           (click)="closeNavDropdown()"
+           class="nav-dropdown-item"
+           style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+          <span style="font-size: 1.25rem !important;">📄</span>
+          <span>Documentos</span>
+        </a>
+
+        <hr style="margin: 8px 0 !important; border: none !important; border-top: 1px solid var(--medical-divider) !important;">
+
+        <div style="padding: 8px 16px !important; color: var(--medical-text-secondary) !important; font-size: 12px !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important;">
+          Administración
+        </div>
+
+        <a routerLink="/admin-pills"
+           (click)="closeNavDropdown()"
+           class="nav-dropdown-item"
+           style="display: flex !important; align-items: center !important; gap: 12px !important; padding: 12px 16px !important; margin: 4px 0 !important; background: transparent !important; color: var(--medical-text-primary) !important; text-decoration: none !important; border-radius: var(--bmb-radius-s) !important; font-weight: 500 !important; transition: all 0.2s !important;">
+          <span style="font-size: 1.25rem !important;">💊</span>
+          <span>Gestión de Pastillas</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="user-menu">
+      <div class="user-avatar">LS</div>
+      <span class="user-name" *ngIf="!(isMobile$ | async)">Dr. Solis</span>
+    </div>
+  </div>
+</header>

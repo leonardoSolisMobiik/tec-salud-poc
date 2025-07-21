@@ -499,7 +499,7 @@ import { DocumentPanelComponent } from './shared/components/document-panel/docum
                 />
                 <button
                   (click)="sendMessage()"
-                  [disabled]="!inputMessage.trim() || !activePatient || isLoading"
+                  [disabled]="!activePatient || isLoading"
                   class="send-button-premium"
                   [class.loading]="isLoading">
                   <div class="btn-content-premium">

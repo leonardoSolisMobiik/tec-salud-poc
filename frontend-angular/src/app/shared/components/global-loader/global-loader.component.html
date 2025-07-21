@@ -1,0 +1,16 @@
+<div class="loader-overlay"
+     *ngIf="isLoading$ | async"
+     [@fadeIn]>
+  <div class="loader-content">
+    <div class="loader-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
+    <div class="loader-text">
+      <h3>Procesando...</h3>
+      <p>Por favor espere mientras completamos su solicitud</p>
+    </div>
+  </div>
+</div>

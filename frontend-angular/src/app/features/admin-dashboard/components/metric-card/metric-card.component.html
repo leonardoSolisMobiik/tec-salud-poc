@@ -1,0 +1,18 @@
+<div class="metric-card" [class.loading]="isLoading">
+  <div class="metric-header">
+    <div class="metric-icon">{{ icon }}</div>
+    <div class="metric-title">{{ title }}</div>
+  </div>
+
+  <div class="metric-content">
+    <div class="metric-value" *ngIf="!isLoading">{{ value }}</div>
+    <div class="metric-skeleton" *ngIf="isLoading"></div>
+
+    <div class="metric-trend" *ngIf="trend && !isLoading" [class.trend-up]="trendUp" [class.trend-down]="!trendUp">
+      <span class="trend-icon">{{ trendUp ? '↗' : '↘' }}</span>
+      <span class="trend-value">{{ trend }}</span>
+    </div>
+  </div>
+
+  <div class="metric-subtitle" *ngIf="subtitle && !isLoading">{{ subtitle }}</div>
+</div>

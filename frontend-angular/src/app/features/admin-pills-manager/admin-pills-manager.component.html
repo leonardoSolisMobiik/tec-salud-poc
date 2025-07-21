@@ -1,0 +1,262 @@
+<div class="global-container">
+  <!-- Header siguiendo patrón existente -->
+  <div class="global-header">
+    <div class="header-top">
+      <div class="header-back-row">
+        <button
+          class="global-back-button"
+          (click)="goBack()"
+          title="Volver al dashboard">
+          <span class="back-icon">←</span>
+          <span class="back-text">Volver</span>
+        </button>
+      </div>
+
+      <div class="header-title-row">
+        <div class="title-container">
+          <h1 class="main-title">💊 Gestión de Pastillas</h1>
+          <div class="main-subtitle">
+            Administra las pastillas de preguntas rápidas para el chat médico
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Pills List -->
+  <div class="admin-content">
+    <div class="pills-section">
+      <div class="section-header">
+      <h3 class="section-title">💊 Pastillas Disponibles</h3>
+        <button class="add-btn secondary" [disabled]="isLoading" (click)="openCreateModal()">
+          <span class="btn-icon">{{ isLoading ? '⏳' : '➕' }}</span>
+          <span class="btn-text">{{ isLoading ? 'Cargando...' : 'Nueva Pastilla' }}</span>
+        </button>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading">
+        <div class="loading-container">
+          <div class="loading-spinner">
+            <div class="spinner"></div>
+          </div>
+          <div class="loading-text">
+            <h3>🔄 Cargando pastillas...</h3>
+            <p>Obteniendo datos del servidor</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium Pills List -->
+      <div class="pills-list" *ngIf="!isLoading && pills.length > 0">
+                      <div
+            *ngFor="let pill of pills; trackBy: trackByPill"
+            class="pill-item"
+            [class]="getPriorityClass(pill.priority)">
+
+          <!-- Pill Icon & Info -->
+          <div class="pill-info">
+            <div class="pill-icon-container">
+              <span class="pill-icon">{{ pill.icon }}</span>
+            </div>
+            <div class="pill-content">
+              <div class="pill-starter">{{ pill.starter }}</div>
+              <div class="pill-text">{{ pill.text }}</div>
+              <div class="pill-meta">
+                <span class="category-badge" [class]="'category-' + pill.category">
+                  {{ getCategoryLabel(pill.category) }}
+                </span>
+                <span class="priority-indicator" [class]="getPriorityClass(pill.priority)">
+                  {{ getPriorityLabel(pill.priority) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pill Actions -->
+          <div class="pill-actions">
+            <button
+              class="action-button edit-button"
+              (click)="openEditModal(pill)"
+              title="Editar pastilla">
+              <span class="action-icon">✏️</span>
+              <span class="action-text">Editar</span>
+            </button>
+            <button
+              class="action-button delete-button"
+              (click)="openDeleteModal(pill)"
+              title="Eliminar pastilla">
+              <span class="action-icon">🗑️</span>
+              <span class="action-text">Eliminar</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div class="error-state" *ngIf="!isLoading && errorMessage">
+        <div class="error-icon">⚠️</div>
+        <h3 class="error-title">Error al cargar pastillas</h3>
+        <p class="error-subtitle">{{ errorMessage }}</p>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading && !errorMessage && pills.length === 0">
+        <div class="empty-icon">💊</div>
+        <h3 class="empty-title">No hay pastillas configuradas</h3>
+        <p class="empty-subtitle">Crea tu primera pastilla para empezar a configurar preguntas rápidas</p>
+        <button class="empty-action-btn" (click)="openCreateModal()">
+          <span class="btn-icon">➕</span>
+          <span class="btn-text">Crear Primera Pastilla</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Create/Edit usando sistema estandarizado -->
+  <div class="modal-overlay" *ngIf="showFormModal" (click)="closeFormModal()">
+    <div class="modal-content modal-md" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">{{ isEditMode ? '✏️ Editar Pastilla' : '➕ Nueva Pastilla' }}</h3>
+        <button class="modal-close" (click)="closeFormModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <form class="modal-form" (ngSubmit)="savePill(); $event.preventDefault();" #pillForm="ngForm">
+          <div class="form-group">
+            <label class="form-label" for="pillStarter">Texto inicial: *</label>
+            <input
+              type="text"
+              id="pillStarter"
+              name="pillStarter"
+              [(ngModel)]="formData.starter"
+              required
+              maxlength="50"
+              placeholder="Ej: Diagnóstico, Síntomas, Medicamentos"
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="pillText">Texto de la pregunta: *</label>
+            <input
+              type="text"
+              id="pillText"
+              name="pillText"
+              [(ngModel)]="formData.text"
+              required
+              maxlength="100"
+              placeholder="Ej: ¿Cuáles son los síntomas principales?"
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Icono: *</label>
+            <!-- Hidden input for form validation -->
+            <input type="hidden" [(ngModel)]="formData.icon" required name="pillIcon">
+            <div class="icon-selector">
+              <div class="selected-icon-display" *ngIf="formData.icon">
+                <span class="current-icon">{{ formData.icon }}</span>
+                <span class="icon-label">Icono seleccionado</span>
+              </div>
+              <div class="icon-message" *ngIf="!formData.icon">
+                Selecciona un icono de la lista
+              </div>
+              <div class="icon-options">
+                <button
+                  type="button"
+                  *ngFor="let icon of iconOptions"
+                  class="icon-option"
+                  [class.selected]="formData.icon === icon"
+                  (click)="selectIcon(icon)">
+                  {{ icon }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="pillCategory">Categoría: *</label>
+              <select
+                id="pillCategory"
+                name="pillCategory"
+                [(ngModel)]="formData.category"
+                required
+                class="form-select">
+                <option value="" disabled>Selecciona una categoría</option>
+                <option value="general">General</option>
+                <option value="medico">Médico</option>
+                <option value="emergencia">Emergencia</option>
+                <option value="consulta">Consulta</option>
+                <option value="laboratorio">Laboratorio</option>
+                <option value="radiologia">Radiología</option>
+                <option value="farmacia">Farmacia</option>
+                <option value="administrativo">Administrativo</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="pillPriority">Prioridad: *</label>
+              <select
+                id="pillPriority"
+                name="pillPriority"
+                [(ngModel)]="formData.priority"
+                required
+                class="form-select">
+                <option value="" disabled>Selecciona una prioridad</option>
+                <option value="alta">Alta</option>
+                <option value="media">Media</option>
+                <option value="baja">Baja</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeFormModal()">
+          <span>❌</span>
+          <span>Cancelar</span>
+        </button>
+        <button type="button" class="btn btn-primary" [disabled]="!pillForm.valid" (click)="savePill()" [title]="!pillForm.valid ? 'Complete todos los campos para continuar' : ''">
+          <span>💾</span>
+          <span>{{ isEditMode ? 'Actualizar' : 'Guardar' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Delete usando sistema estandarizado -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+    <div class="modal-content modal-sm modal-danger" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">🗑️ Eliminar Pastilla</h3>
+        <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="confirmation-content">
+          <div class="warning-icon">⚠️</div>
+          <p class="confirmation-message">¿Estás seguro de eliminar esta pastilla?</p>
+          <div class="item-preview" *ngIf="pillToDelete">
+            <span class="preview-icon">{{ pillToDelete.icon }}</span>
+            <span class="preview-text">"{{ pillToDelete.text }}"</span>
+          </div>
+          <p class="warning-text">Esta acción no se puede deshacer.</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+          <span>❌</span>
+          <span>Cancelar</span>
+        </button>
+        <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+          <span>🗑️</span>
+          <span>Sí, eliminar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

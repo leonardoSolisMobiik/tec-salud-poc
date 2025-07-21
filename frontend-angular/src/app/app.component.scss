@@ -765,12 +765,68 @@
   border: none !important;
   border-radius: var(--bmb-radius-m, 1rem) !important;
   padding: 0 var(--bmb-spacing-m, 1rem) !important;
-  cursor: pointer !important;
+    cursor: pointer !important;
   overflow: hidden !important;
   transition: all 0.3s ease !important;
   box-shadow:
     0 2px 8px rgba(var(--color-blue-tec, 0, 57, 166), 0.2),
     0 1px 3px rgba(0, 0, 0, 0.1) !important;
+
+  /* Estado habilitado con hover */
+  &:not(:disabled) {
+    cursor: pointer !important;
+
+    &:hover {
+      cursor: pointer !important;
+      transform: translateY(-1px) !important;
+      box-shadow:
+        0 4px 16px rgba(var(--color-blue-tec, 0, 57, 166), 0.3),
+        0 2px 6px rgba(0, 0, 0, 0.15) !important;
+
+      .airplane-icon {
+        transform: translateX(2px) !important;
+      }
+    }
+
+    &:active {
+      cursor: pointer !important;
+      transform: translateY(0px) !important;
+      box-shadow:
+        0 2px 8px rgba(var(--color-blue-tec, 0, 57, 166), 0.2),
+        0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+
+  /* Estado deshabilitado */
+  &:disabled {
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+    background: linear-gradient(135deg,
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.5) 0%,
+      rgba(var(--color-blue-tec, 0, 57, 166), 0.4) 100%
+    ) !important;
+    box-shadow:
+      0 1px 4px rgba(var(--color-blue-tec, 0, 57, 166), 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    transform: none !important;
+
+    .premium-btn-text {
+      opacity: 0.8 !important;
+    }
+
+    .airplane-icon {
+      opacity: 0.7 !important;
+    }
+
+    /* Asegurar que no hay hover cuando está disabled */
+    &:hover {
+      cursor: not-allowed !important;
+      transform: none !important;
+      box-shadow:
+        0 1px 4px rgba(var(--color-blue-tec, 0, 57, 166), 0.1),
+        0 1px 2px rgba(0, 0, 0, 0.05) !important;
+    }
+  }
 }
 
 .btn-content-premium {

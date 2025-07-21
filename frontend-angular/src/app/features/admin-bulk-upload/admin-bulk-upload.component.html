@@ -1,0 +1,207 @@
+<div class="global-container">
+  <!-- Header -->
+  <div class="global-header">
+    <div class="header-top">
+      <div class="header-back-row">
+      <button
+          class="global-back-button"
+        (click)="goBack()"
+        title="Volver al dashboard">
+        <span class="back-icon">←</span>
+        <span class="back-text">Volver</span>
+      </button>
+  </div>
+
+      <div class="header-title-row">
+        <div class="title-container">
+          <h1 class="main-title">🔧 Carga Masiva de Expedientes</h1>
+          <div class="main-subtitle">
+            Procesamiento automático con OCR → OneLake + Cosmos DB
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Upload Interface -->
+  <div class="premium-upload-interface">
+    <div class="upload-row">
+      <!-- Premium Drop Zone -->
+    <div
+        class="premium-drop-zone"
+      [class.drag-over]="isDragOver"
+      [class.has-files]="batchFiles.length > 0"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()">
+
+      <div class="drop-zone-content">
+          <div class="drop-icon-container">
+            <div class="drop-icon">📁</div>
+        </div>
+
+          <div class="drop-text-content">
+            <h3 class="drop-title">Arrastra expedientes aquí</h3>
+            <div class="drop-subtitle">
+              <span class="format-badge-premium">PDF</span>
+            </div>
+            <div class="drop-hint">o haz clic para seleccionar archivos</div>
+        </div>
+
+          <div class="drop-action-indicator">
+            <span class="action-text">📤 Subir</span>
+        </div>
+      </div>
+
+      <input
+        #fileInput
+        type="file"
+        multiple
+        accept=".pdf"
+        (change)="onFileSelected($event)"
+          class="file-input-hidden">
+    </div>
+
+      <!-- Process Controls -->
+      <div class="process-controls">
+        <div class="file-counter" *ngIf="batchFiles.length > 0">
+          <span class="count-number">{{ batchFiles.length }}</span>
+          <span class="count-label">{{ batchFiles.length === 1 ? 'expediente' : 'expedientes' }}</span>
+        </div>
+
+
+
+    <button
+          *ngIf="batchFiles.length > 0 && !isProcessing"
+          class="premium-process-btn"
+      (click)="startBatchProcessing()">
+          <span class="btn-icon">🚀</span>
+          <span class="btn-text">Procesar Expedientes</span>
+    </button>
+
+        <div *ngIf="isProcessing" class="processing-indicator">
+          <span class="processing-text">Procesando</span>
+          <div class="processing-dots">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+    </div>
+  </div>
+          </div>
+          </div>
+        </div>
+
+
+
+    <!-- Files List -->
+    <div class="files-section" *ngIf="batchFiles.length > 0">
+      <h3 class="section-title">📋 Expedientes Seleccionados</h3>
+
+      <!-- Premium Files List -->
+      <div class="files-list">
+        <div
+          *ngFor="let file of batchFiles; trackBy: trackByFile"
+          class="file-item"
+          [class]="'status-' + file.status">
+
+          <!-- File Icon & Info -->
+          <div class="file-info">
+            <div class="file-icon-container">
+              <span class="file-icon">📄</span>
+            </div>
+            <div class="file-content">
+              <div class="file-name">{{ truncateFilename(file.filename, 60) }}</div>
+              <div class="file-meta">
+                <span class="file-size">{{ getFileSize(file.file.size) }}</span>
+                <span class="file-type-badge" [class]="'type-' + file.patientInfo?.tipo">
+                  {{ file.patientInfo?.tipo || 'UNKNOWN' }}
+                </span>
+                <span class="file-patient">{{ file.patientInfo?.apellido_paterno }} {{ file.patientInfo?.apellido_materno }}, {{ file.patientInfo?.nombre }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Status & Progress -->
+          <div class="file-status">
+            <div *ngIf="file.status === 'pending'" class="status-badge status-pending">
+              <span class="status-icon">⏳</span>
+              <span class="status-text">Pendiente</span>
+            </div>
+
+            <div *ngIf="file.status === 'processing'" class="status-badge status-processing">
+              <span class="status-text">Procesando</span>
+              <div class="processing-dots">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+            </div>
+
+            <div *ngIf="file.status === 'completed'" class="status-badge status-success">
+              <span class="status-icon">✅</span>
+              <span class="status-text">Completado</span>
+              <div *ngIf="file.warning" class="warning-indicator" [title]="file.warning">
+                <span class="warning-icon">⚠️</span>
+              </div>
+            </div>
+
+            <div *ngIf="file.status === 'error'" class="status-badge status-error">
+              <span class="status-icon">❌</span>
+              <span class="status-text">Error</span>
+              <div *ngIf="file.error" class="error-indicator" [title]="file.error">
+                <span class="error-icon">❌</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Actions -->
+          <div class="file-actions">
+            <button
+              *ngIf="file.status === 'pending' && !isProcessing"
+              class="action-button remove-button"
+              (click)="removeFile(file)"
+              title="Eliminar archivo">
+              <span class="action-icon">🗑️</span>
+              <span class="action-text">Eliminar</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  <!-- Reduced spacing before completion summary when processing -->
+  <div style="height: 10px;"></div>
+
+  <!-- Completion Summary -->
+  <div class="completion-summary" *ngIf="batchUpload?.status === 'completed' && !hasErrorsOrWarnings()">
+    <div class="success-content">
+      <div class="success-info">
+        <h3 class="success-title">¡Procesamiento Completado!</h3>
+        <p class="success-subtitle">
+          {{ batchUpload?.completed_files }} expedientes procesados exitosamente
+        </p>
+      </div>
+    </div>
+
+    <div class="completion-actions">
+      <button
+        class="action-btn primary"
+        (click)="testSearchWithNewDocuments()">
+        <span class="btn-icon">🔍</span>
+        <span class="btn-text">Probar en Chat Médico</span>
+      </button>
+      <button
+        class="action-btn secondary"
+        (click)="startNewBatch()">
+        <span class="btn-icon">🔄</span>
+        <span class="btn-text">Procesar Más Expedientes</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ✅ REDUCED BOTTOM SPACER -->
+  <div style="height: 40px; width: 100%;"></div>
+
+</div>

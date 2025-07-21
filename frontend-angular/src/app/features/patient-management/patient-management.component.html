@@ -1,0 +1,31 @@
+<div class="global-container">
+  <div class="global-header">
+    <div class="header-top">
+      <button
+        class="global-back-button"
+        (click)="goBack()"
+        title="Volver al dashboard">
+        <span class="back-icon">←</span>
+        <span class="back-text">Volver</span>
+      </button>
+
+      <div class="title-container">
+        <h1 class="main-title">👥 Gestión de Pacientes</h1>
+        <div class="main-subtitle">
+          Administra la información de los pacientes del sistema
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="patients-placeholder">
+    <h2>⚠️ Funcionalidad Deshabilitada</h2>
+    <p>La gestión de pacientes ha sido temporalmente deshabilitada.</p>
+    <p>Esta funcionalidad no está disponible en la versión actual.</p>
+    <div class="placeholder-actions">
+      <a routerLink="/dashboard" class="back-button">
+        🏠 Volver al Dashboard
+      </a>
+    </div>
+  </div>
+</div>

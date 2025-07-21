@@ -1,0 +1,190 @@
+<div class="global-container">
+  <!-- Header -->
+  <div class="global-header">
+    <div class="header-top">
+      <button
+        class="global-back-button"
+        (click)="goBack()"
+        title="Volver">
+        <span class="back-icon">←</span>
+        <span class="back-text">Volver</span>
+      </button>
+      <div class="title-container">
+        <h1 class="main-title">📄 Subir Documentos</h1>
+        <div class="main-subtitle">
+          Procesar expedientes médicos con IA
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Section -->
+  <div class="upload-section">
+    <!-- Configuration Panel -->
+    <div class="config-panel">
+      <h2 class="section-title">⚙️ Configuración</h2>
+
+      <!-- Patient Selection -->
+      <div class="form-group">
+        <label for="patientSelect" class="form-label">Paciente</label>
+        <select
+          id="patientSelect"
+          [(ngModel)]="defaultUserId"
+          class="form-select"
+          [disabled]="isLoadingPatients">
+          <option value="" disabled>
+            {{ isLoadingPatients ? 'Cargando pacientes...' : 'Selecciona un paciente' }}
+          </option>
+          <option *ngFor="let patient of recentPatients" [value]="patient.id">
+            {{ patient.name }} - {{ patient.age }} años
+          </option>
+        </select>
+      </div>
+
+      <!-- Document Type Selection -->
+      <div class="form-group">
+        <label for="documentType" class="form-label">Tipo de Documento</label>
+        <select
+          id="documentType"
+          [(ngModel)]="defaultDocumentType"
+          class="form-select">
+          <option value="" disabled>Selecciona tipo de documento</option>
+          <option *ngFor="let type of documentTypes" [value]="type.value">
+            {{ type.icon }} {{ type.label }} - {{ type.description }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- File Upload Area -->
+    <div class="upload-area">
+      <h2 class="section-title">📁 Seleccionar Archivos</h2>
+
+      <!-- Drag & Drop Zone -->
+      <div
+        class="drop-zone"
+        [class.drag-over]="isDragOver"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)">
+
+        <div class="drop-zone-content">
+          <div class="upload-icon">📄</div>
+          <div class="upload-text">
+            <strong>Arrastra archivos aquí</strong>
+            <span>o</span>
+          </div>
+
+          <label for="fileInput" class="upload-button">
+            Seleccionar Archivos
+            <input
+              id="fileInput"
+              type="file"
+              multiple
+              accept=".pdf,.png,.jpg,.jpeg"
+              (change)="onFileSelected($event)"
+              hidden>
+          </label>
+
+          <div class="upload-info">
+            <small>Soporta: PDF, PNG, JPG • Máximo: 50MB por archivo</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- File List -->
+      <div class="file-list" *ngIf="selectedFiles.length > 0">
+        <div class="file-list-header">
+          <h3>Archivos Seleccionados ({{ selectedFiles.length }})</h3>
+          <button
+            class="clear-all-btn"
+            (click)="clearFiles()"
+            title="Limpiar todos los archivos">
+            🗑️ Limpiar Todo
+          </button>
+        </div>
+
+        <div class="file-items">
+          <div
+            *ngFor="let file of selectedFiles; let i = index"
+            class="file-item">
+
+            <div class="file-info">
+              <div class="file-icon">📄</div>
+              <div class="file-details">
+                <div class="file-name">{{ file.name }}</div>
+                <div class="file-meta">
+                  {{ (file.size / 1024 / 1024).toFixed(2) }} MB •
+                  {{ file.type || 'Tipo desconocido' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="file-status">
+              <span
+                class="status-badge"
+                [class]="'status-' + uploads[i].status">
+                {{ getStatusLabel(uploads[i].status) }}
+              </span>
+            </div>
+
+            <button
+              class="remove-file-btn"
+              (click)="removeFile(i)"
+              title="Remover archivo">
+              ❌
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Actions -->
+      <div class="upload-actions" *ngIf="selectedFiles.length > 0">
+        <button
+          class="upload-btn primary"
+          [disabled]="!defaultUserId || !defaultDocumentType || isUploading"
+          (click)="uploadDocuments()"
+          title="{{ getUploadButtonTooltip() }}">
+          <span *ngIf="!isUploading">🚀 Procesar Documentos</span>
+          <span *ngIf="isUploading">⏳ Procesando...</span>
+        </button>
+
+        <div class="upload-requirements" *ngIf="!defaultUserId || !defaultDocumentType">
+          <small class="warning-text">
+            ⚠️ Selecciona un paciente y tipo de documento para continuar
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Results -->
+    <div class="upload-results" *ngIf="showResults">
+      <h2 class="section-title">📊 Resultados del Procesamiento</h2>
+
+      <div class="results-list">
+        <div
+          *ngFor="let upload of uploads; let i = index"
+          class="result-item"
+          [class]="'result-' + upload.status">
+
+          <div class="result-info">
+            <div class="result-file">{{ upload.file.name }}</div>
+            <div class="result-status">
+              <span class="status-icon">{{ getStatusIcon(upload.status) }}</span>
+              <span>{{ getStatusMessage(upload.status) }}</span>
+            </div>
+
+            <div class="result-details" *ngIf="upload.error || upload.warning">
+              <div class="error-message" *ngIf="upload.error">
+                ❌ {{ upload.error }}
+              </div>
+              <div class="warning-message" *ngIf="upload.warning">
+                ⚠️ {{ upload.warning }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

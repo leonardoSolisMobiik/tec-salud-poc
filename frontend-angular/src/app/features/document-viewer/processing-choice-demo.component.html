@@ -1,0 +1,186 @@
+<div class="global-container">
+
+  <!-- Header -->
+  <div class="global-header">
+    <div class="header-top">
+    <button
+        class="global-back-button"
+      (click)="goBack()"
+      title="Volver">
+        <span class="back-icon">←</span>
+        <span class="back-text">Volver</span>
+    </button>
+      <div class="title-container">
+        <h1 class="main-title">⚡ Demostración de Tipos de Procesamiento</h1>
+        <div class="main-subtitle">
+      Explora las diferentes opciones de procesamiento para documentos médicos
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demo Section -->
+  <div class="demo-section">
+
+    <!-- File Simulation -->
+    <div class="file-simulation">
+      <h2>📁 Simulación de Archivos</h2>
+      <div class="file-controls">
+        <button
+          class="add-file-btn"
+          (click)="addSimulatedFile()"
+          [disabled]="simulatedFiles.length >= 10">
+          ➕ Agregar Archivo Simulado
+        </button>
+        <button
+          class="clear-files-btn"
+          (click)="clearSimulatedFiles()"
+          [disabled]="simulatedFiles.length === 0">
+          🗑️ Limpiar Todo
+        </button>
+      </div>
+
+      <div class="simulated-files" *ngIf="simulatedFiles.length > 0">
+        <div
+          *ngFor="let file of simulatedFiles; trackBy: trackByFile"
+          class="simulated-file">
+          <span class="file-icon">{{ file.icon }}</span>
+          <span class="file-name">{{ file.name }}</span>
+          <span class="file-size">{{ file.size }}</span>
+          <button
+            class="remove-file"
+            (click)="removeSimulatedFile(file.id)"
+            title="Eliminar">
+            ❌
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Processing Choice Integration -->
+    <div class="processing-choice-section">
+      <h2>⚙️ Selección de Tipo de Procesamiento</h2>
+
+      <app-processing-choice
+        [fileCount]="simulatedFiles.length"
+        [initialType]="selectedProcessingType"
+        (processingTypeChange)="onProcessingTypeChange($event)">
+      </app-processing-choice>
+    </div>
+
+    <!-- Live Results -->
+    <div class="results-section" *ngIf="selectedProcessingType">
+      <h2>📊 Vista Previa de Resultados</h2>
+
+      <div class="result-cards">
+
+        <!-- Processing Summary -->
+        <div class="result-card summary">
+          <h3>📋 Resumen de Procesamiento</h3>
+          <div class="summary-details">
+            <div class="detail-item">
+              <span class="detail-label">Tipo seleccionado:</span>
+              <span class="detail-value">
+                {{ getProcessingTypeIcon() }} {{ getProcessingTypeLabel() }}
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Archivos a procesar:</span>
+              <span class="detail-value">{{ simulatedFiles.length }} documentos</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Capacidades:</span>
+              <span class="detail-value">{{ getProcessingCapabilities() }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vectorization Results -->
+        <div class="result-card vectorization" *ngIf="isVectorizationEnabled()">
+          <h3>🔍 Búsqueda Semántica</h3>
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">⚡</span>
+              <span class="feature-text">Búsquedas ultrarrápidas (< 100ms)</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🧠</span>
+              <span class="feature-text">Análisis conceptual automático</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">🔗</span>
+              <span class="feature-text">Relaciones entre documentos</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📊</span>
+              <span class="feature-text">~{{ getEstimatedChunks() }} chunks estimados</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Complete Storage Results -->
+        <div class="result-card storage" *ngIf="isCompleteStorageEnabled()">
+          <h3>📄 Almacenamiento Completo</h3>
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">💾</span>
+              <span class="feature-text">Documentos completos preservados</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">👁️</span>
+              <span class="feature-text">Visualización directa</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📖</span>
+              <span class="feature-text">Referencias exactas</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📁</span>
+              <span class="feature-text">~{{ getEstimatedStorageSize() }} de almacenamiento</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Action Simulation -->
+    <div class="action-section" *ngIf="simulatedFiles.length > 0 && selectedProcessingType">
+      <h2>🚀 Simulación de Procesamiento</h2>
+
+      <button
+        class="simulate-btn"
+        [class.processing]="isSimulating"
+        [disabled]="isSimulating"
+        (click)="simulateProcessing()">
+        <span *ngIf="!isSimulating">🚀 Simular Procesamiento</span>
+        <span *ngIf="isSimulating">⏳ Procesando... {{ simulationProgress }}%</span>
+      </button>
+
+      <div class="simulation-results" *ngIf="simulationComplete">
+        <div class="success-message">
+          ✅ ¡Simulación completada exitosamente!
+        </div>
+        <div class="simulation-stats">
+          <div class="stat-item">
+            <span class="stat-label">Archivos procesados:</span>
+            <span class="stat-value">{{ simulatedFiles.length }}</span>
+          </div>
+          <div class="stat-item" *ngIf="isVectorizationEnabled()">
+            <span class="stat-label">Chunks creados:</span>
+            <span class="stat-value">{{ getEstimatedChunks() }}</span>
+          </div>
+          <div class="stat-item" *ngIf="isCompleteStorageEnabled()">
+            <span class="stat-label">Documentos almacenados:</span>
+            <span class="stat-value">{{ simulatedFiles.length }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Tiempo simulado:</span>
+            <span class="stat-value">{{ getSimulatedProcessingTime() }}s</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

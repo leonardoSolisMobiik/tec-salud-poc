@@ -1,0 +1,41 @@
+<!-- Loading state - only show during initial load -->
+<div *ngIf="isLoading" class="loading-state">
+  <div class="loading-container">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+    </div>
+    <div class="loading-text">
+      <h3>🔄 Cargando pastillas...</h3>
+      <p>Obteniendo preguntas rápidas</p>
+    </div>
+  </div>
+</div>
+
+<!-- Pills loaded from API - only show if we have pills -->
+<div class="quick-pills-container" *ngIf="!isLoading && !errorMessage && currentQuestions.length > 0">
+  <!-- Pastillas con diseño premium sutil -->
+  <div class="quick-pills-grid">
+    <button
+      *ngFor="let question of currentQuestions; trackBy: trackByQuestion"
+      class="quick-pill-btn"
+      [class.priority-high]="question.priority === 'high'"
+      [class.priority-medium]="question.priority === 'medium'"
+      [class.priority-low]="question.priority === 'low'"
+      (click)="onPillClick(question)"
+      [disabled]="isRotating">
+
+      <span class="pill-icon">{{ question.icon }}</span>
+      <span class="pill-text">{{ question.text }}</span>
+    </button>
+  </div>
+
+  <!-- Indicador de rotación sutil -->
+  <div class="rotation-indicator" *ngIf="showRotationIndicator">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="rotationProgress"></div>
+    </div>
+  </div>
+</div>
+
+<!-- No pills state - don't show anything if no pills available -->
+<!-- This ensures the component is completely hidden when no pills exist -->
